@@ -1,19 +1,19 @@
 #include "../headers/calendar.h"
+#include "../headers/logging.h"
 #include <iostream>
 #include <curses.h>
 #include <unistd.h> // for STDOUT_FILENO
 #include <sys/ioctl.h> // ioctl() and TIOCGWINSZ
-using namespace std;
 
 #define PER_LINE_IN_MONTH_LEN 27
-string months[12] = {"January", "February", "March", "April", "May",
+std::string months[12] = {"January", "February", "March", "April", "May",
 						"June",	"July", "August", "September", "October",
 						"November", "December"};
 const int days_norm[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 // for calculate day in a week
 const int century_code[4] = {6, 4, 2, 0};
 const int month_code[12] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
-string weekday[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+std::string weekday[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 
 bool initNcurses()
@@ -45,6 +45,42 @@ bool initColors()
 void endNcurses()
 {
 	endwin();
+}
+
+void loopingMove(Screen &sc)
+{
+	int ch;
+	int cur_x;
+	int cur_y;
+	Logging &logger = Logging::getInstance();
+	logger.log("[loopingMove] size of screen months=[%d]", sc.getMonthsSize());
+	while(1)
+	{
+		getyx(stdscr, cur_y, cur_x);
+		logger.log("[loopingMove] cur_x=[%d], cur_y=[%d]", cur_x, cur_y);
+		ch = getch();
+		switch(ch)
+		{
+			case KEY_UP:
+				move(cur_y-1, cur_x);
+				break;
+			case KEY_DOWN:
+				move(cur_y+1, cur_x);
+				break;
+			case KEY_LEFT:
+				move(cur_y, cur_x-1);
+				break;
+			case KEY_RIGHT:
+				move(cur_y, cur_x+1);
+				break;
+			case 27: // esc
+				logger.log("[loppingMove] get esc key, break loppingMove");
+				return;
+			default:
+				break;
+		}
+		refresh();
+	}
 }
 
 int *getYearMonths(int year)
@@ -86,19 +122,37 @@ void printSingleMonth(int month, int year)
 			not considering terminal width and height in single month print
 			(presume the width and height should be enought for single month)
 	*/
-	int start_weekday = getWeekDay(1, month, year);
+	int weekday = getWeekDay(1, month, year); // initial weekday
 	int *days_months = getYearMonths(year);
 	int days = days_months[month-1];
-	string month_str = getMonthStrCenterAlign(month, PER_LINE_IN_MONTH_LEN);
-	int y = 5; // initial y
-	int x = 5; // initial x
+	std::string month_str = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
+    int initial_y = 2;
+    int initial_x = 5;
+	int y = initial_y;
+	int x = initial_x;
 	
 	mvprintw(y++, x, "%s", month_str.c_str());
 	mvprintw(y++, x, "                           ");
 	mvprintw(y++, x, "Sun Mon Tue Wed Thu Fri Sat");
 	// move x to the start weekday
-	
-	for (int i=0; i<days; i++)
+	x = initial_x + weekday*4;
+	for (int i=1; i<=days; i++) // i=date in the month
+    {
+        if (i / 10 == 0)
+            x += 2;
+        else
+            x += 1;
+        mvprintw(y, x, "%d", i);
+
+        // move to next position
+        weekday++;
+        if (weekday >= 7)
+        {
+            weekday = 0;
+            y++;
+        }
+        x = initial_x + weekday*4;
+    }
 	refresh();
 	free(days_months);
 }
@@ -125,13 +179,90 @@ int getWeekDay(int day, int month, int year)
 	return remainder;
 }
 
-string getMonthStrCenterAlign(int month, int len)
+std::string getMonthStr(int month, int len)
 {
-	string mstr = months[month-1];
+	std::string mstr = months[month-1];
 	// int pre_len = (len - mstr.length())/2;
 	// int post_len = len - mstr.length() - pre_len;
 	int post_len = len - mstr.length() - 1;
-	// string res = string(pre_len, ' ') + mstr + string(post_len, ' ');
-	string res = mstr + " " + string(post_len, '-');
+	// std::string res = std::string(pre_len, ' ') + mstr + std::string(post_len, ' ');
+	std::string res = mstr + " " + std::string(post_len, '-');
 	return res;
+}
+
+
+
+//########################################################################
+
+// class Month methods
+Month::Month(int yr, int m, int x, int y)
+{
+	year = yr;
+	month = m;
+	start_weekday = getWeekDay(1, month, year);
+	init_x = x;
+	init_y = y;
+	// TODO: initialize end_x, end_y
+}
+
+Month::~Month()
+{
+	Logging &logger = Logging::getInstance();
+	logger.log("[~Month] destructor called, [%p]", this);
+}
+
+void Month::print()
+{
+	Logging &logger = Logging::getInstance();
+	int weekday = start_weekday;
+	int *days_months = getYearMonths(year);
+	int days = days_months[month-1];
+	std::string month_str = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
+	int y = init_y;
+	int x = init_x;
+	mvprintw(y++, x, "%s", month_str.c_str());
+	mvprintw(y++, x, "                           ");
+	mvprintw(y++, x, "Sun Mon Tue Wed Thu Fri Sat");
+	// move x to the start weekday
+	x = init_x + weekday*4;
+	for (int i=1; i<=days; i++) // i=date in the month
+    {
+        if (i / 10 == 0)
+            x += 2;
+        else
+            x += 1;
+        mvprintw(y, x, "%d", i);
+
+        // move to next position
+        weekday++;
+        if (weekday >= 7)
+        {
+            weekday = 0;
+            y++;
+        }
+        x = init_x + weekday*4;
+    }
+	refresh();
+	free(days_months);
+}
+
+
+// class Screen methods
+
+Screen::Screen()
+{
+
+}
+Screen::~Screen()
+{
+	Logging &logger = Logging::getInstance();
+	logger.log("[~Screen] destructor called");
+}
+int Screen::getMonthsSize()
+{
+	return months.size();
+}
+void Screen::addMonth(Month *mp)
+{
+	months.push_back(mp); //use pointer to avoid copying a new Month instance
 }
