@@ -19,7 +19,7 @@ char *Logging::getCurTime()
     struct tm *local_t = localtime(&tt);
 
     char *timestr = (char *)malloc(sizeof(char)*100);
-    sprintf(timestr, "[%04u-%02u-%02u %02u:%02u:%02u.%06u]", 
+    sprintf(timestr, "[%04u-%02u-%02u %02u:%02u:%02u.%03u]", 
         (*local_t).tm_year+1900, (*local_t).tm_mon+1, (*local_t).tm_mday,
         (*local_t).tm_hour, (*local_t).tm_min, (*local_t).tm_sec,
         static_cast<unsigned>(tp / milliseconds(1)));
@@ -46,6 +46,6 @@ void Logging::log(const char *fmt, ...)
     vsprintf(buf, fmt, args);
     va_end(args);
     std::ofstream out(path, std::ios_base::app);
-    out << buf << "\n";
+    out << curT << " " << buf << "\n";
     out.close();
 }

@@ -5,7 +5,10 @@
 #include <unistd.h> // for STDOUT_FILENO
 #include <sys/ioctl.h> // ioctl() and TIOCGWINSZ
 
-#define PER_LINE_IN_MONTH_LEN 27
+#define PER_LINE_IN_MONTH_LEN 27 // 7*3 + 6*1(d=1)
+#define DATE_CELL_LEN 3 // Ex: Sun, Mon, ...
+#define M_MARGIN 2 // margin between months
+#define D_DIST 1 // distance between days in same month
 std::string months[12] = {"January", "February", "March", "April", "May",
 						"June",	"July", "August", "September", "October",
 						"November", "December"};
@@ -52,12 +55,11 @@ void loopingMove(Screen &sc)
 	int ch;
 	int cur_x;
 	int cur_y;
+	bool s;
 	Logging &logger = Logging::getInstance();
-	logger.log("[loopingMove] size of screen months=[%d]", sc.getMonthsSize());
 	while(1)
 	{
 		getyx(stdscr, cur_y, cur_x);
-		logger.log("[loopingMove] cur_x=[%d], cur_y=[%d]", cur_x, cur_y);
 		ch = getch();
 		switch(ch)
 		{
@@ -76,10 +78,14 @@ void loopingMove(Screen &sc)
 			case 27: // esc
 				logger.log("[loppingMove] get esc key, break loppingMove");
 				return;
+			case 13: // CR (for nonl, if nl => 10)
+				s = sc.selected(cur_y, cur_x);
+				logger.log("[loopingMove] s=[%s]", s ? "true":"false");
+				break;
 			default:
 				break;
 		}
-		refresh();
+		sc.refreshScr();
 	}
 }
 
@@ -91,6 +97,14 @@ int *getYearMonths(int year)
 	if (year%4 == 0)
 		days_of_months[1] += 1;
 	return days_of_months;
+}
+
+int getTotalWeeks(int td, int sd)
+{ // td: total_days; sd: start_weekday
+	int tmp_rs = (td-(7-sd));
+	if (tmp_rs % 7 == 0)
+		return tmp_rs/7 + 1;
+	return tmp_rs/7 +2;
 }
 
 void getTerminalSize(int& height, int&width)
@@ -115,48 +129,6 @@ bool isLeapYear(int year)
 	return false;
 }
 
-void printSingleMonth(int month, int year)
-{
-	/*
-		print single month of a year
-			not considering terminal width and height in single month print
-			(presume the width and height should be enought for single month)
-	*/
-	int weekday = getWeekDay(1, month, year); // initial weekday
-	int *days_months = getYearMonths(year);
-	int days = days_months[month-1];
-	std::string month_str = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
-    int initial_y = 2;
-    int initial_x = 5;
-	int y = initial_y;
-	int x = initial_x;
-	
-	mvprintw(y++, x, "%s", month_str.c_str());
-	mvprintw(y++, x, "                           ");
-	mvprintw(y++, x, "Sun Mon Tue Wed Thu Fri Sat");
-	// move x to the start weekday
-	x = initial_x + weekday*4;
-	for (int i=1; i<=days; i++) // i=date in the month
-    {
-        if (i / 10 == 0)
-            x += 2;
-        else
-            x += 1;
-        mvprintw(y, x, "%d", i);
-
-        // move to next position
-        weekday++;
-        if (weekday >= 7)
-        {
-            weekday = 0;
-            y++;
-        }
-        x = initial_x + weekday*4;
-    }
-	refresh();
-	free(days_months);
-}
-
 int getWeekDay(int day, int month, int year)
 {
 	 /*
@@ -170,6 +142,9 @@ int getWeekDay(int day, int month, int year)
 		1. 15 + 2 + 6 + 50 + 12 = 85
 		2. 85 / 7 = 12 ... 1
 		=> is a Monday
+
+		==== return value ====
+		0: Sun, 1: Mon, ..., 6: Sat
 	*/
 	int sum = day + month_code[month-1] + century_code[(year/100)%4]\
 		+ (year%100) + (year%100)/4;
@@ -197,55 +172,108 @@ std::string getMonthStr(int month, int len)
 // class Month methods
 Month::Month(int yr, int m, int x, int y)
 {
+	Logging &logger = Logging::getInstance();
 	year = yr;
 	month = m;
 	start_weekday = getWeekDay(1, month, year);
 	init_x = x;
 	init_y = y;
-	// TODO: initialize end_x, end_y
+
+	// get total_days, total_weeks
+	int *days_months = getYearMonths(year);
+	total_days = days_months[month-1];
+	total_weeks = getTotalWeeks(total_days, start_weekday);
+
+	// initialize dmap (on the base of init_x, init_y)
+	dmap = new int *[total_weeks];
+	for (int i=0; i<total_weeks; i++)
+	{
+		dmap[i] = new int[PER_LINE_IN_MONTH_LEN];
+		for (int j=0; j<PER_LINE_IN_MONTH_LEN; j++)
+			dmap[i][j] = -1; // init all cells to -1
+	}
+	int wd = start_weekday; // copy sd for iterator
+	int ix = 0;
+	int iy = 0;
+	for (int i=1; i<=total_days; i++)
+	{
+		ix = wd*DATE_CELL_LEN + wd*D_DIST;
+		if (i / 10 == 0) // date = 1~9
+		{
+			// logger.log("[dmap_0]setting(%d,%d)",iy, ix+2);
+			dmap[iy][ix+2] = i;
+		}
+		else // date >= 10
+		{
+			// logger.log("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
+			dmap[iy][ix+1] = i;
+			dmap[iy][ix+2] = i;
+		}
+		wd++;
+		if (wd >= 7)
+		{
+			wd = 0;
+			iy++;
+		}
+	}
+
+	free(days_months);
 }
 
 Month::~Month()
 {
 	Logging &logger = Logging::getInstance();
 	logger.log("[~Month] destructor called, [%p]", this);
-}
 
+	for (int i=0; i<total_weeks; i++)
+		delete[] dmap[i];
+	delete[] dmap;
+}
+int Month::getMonth()
+{
+	return month;
+}
+int Month::getYear()
+{
+	return year;
+}
+int Month::selected_day(int y, int x)
+{
+	Logging &logger = Logging::getInstance();
+	int act_y = y-init_y-3; // 3 lines of headers
+	int act_x = x-init_x;
+	// logger.log("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
+	// 	y, x, act_y, act_x);
+
+	if ((act_y < 0 || act_y >= total_weeks)
+		|| (act_x < 0 || act_x >= PER_LINE_IN_MONTH_LEN))
+		return -1;
+
+	return dmap[act_y][act_x];
+}
 void Month::print()
 {
 	Logging &logger = Logging::getInstance();
-	int weekday = start_weekday;
-	int *days_months = getYearMonths(year);
-	int days = days_months[month-1];
-	std::string month_str = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
 	int y = init_y;
 	int x = init_x;
-	mvprintw(y++, x, "%s", month_str.c_str());
+	std::string mstr = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
+	mvprintw(y++, x, "%s", mstr.c_str());
 	mvprintw(y++, x, "                           ");
 	mvprintw(y++, x, "Sun Mon Tue Wed Thu Fri Sat");
-	// move x to the start weekday
-	x = init_x + weekday*4;
-	for (int i=1; i<=days; i++) // i=date in the month
-    {
-        if (i / 10 == 0)
-            x += 2;
-        else
-            x += 1;
-        mvprintw(y, x, "%d", i);
-
-        // move to next position
-        weekday++;
-        if (weekday >= 7)
-        {
-            weekday = 0;
-            y++;
-        }
-        x = init_x + weekday*4;
-    }
+	int pre_print = 0;
+	for (int i=0; i<total_weeks; i++)
+	{
+		for (int j=0; j<PER_LINE_IN_MONTH_LEN; j++)
+		{
+			// no day on this pos, or this day already printed
+			if (dmap[i][j] == -1 || dmap[i][j] == pre_print)
+				continue;
+			mvprintw(y+i, x+j, "%d", dmap[i][j]);
+			pre_print = dmap[i][j];
+		}
+	}
 	refresh();
-	free(days_months);
 }
-
 
 // class Screen methods
 
@@ -265,4 +293,29 @@ int Screen::getMonthsSize()
 void Screen::addMonth(Month *mp)
 {
 	months.push_back(mp); //use pointer to avoid copying a new Month instance
+	d_month_num++;
+}
+void Screen::refreshScr()
+{
+	refresh();
+}
+bool Screen::selected(int y, int x)
+{
+	Logging &logger = Logging::getInstance();
+	int d;
+	int yr;
+	int mon;
+	// TODO: more effecient way to check (instead of checking all months)
+	for (int i=0; i<d_month_num; i++)
+	{
+		d = (*months[i]).selected_day(y, x);
+		if (d != -1)
+		{// TODO: get and return (year, month) of selected day??
+			yr = (*months[i]).getYear();
+			mon = (*months[i]).getMonth();
+			logger.log("[Screen::selected] (%d, %d, %d) selected", yr, mon, d);
+			return true;
+		}
+	}
+	return false;
 }
