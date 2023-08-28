@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <curses.h>
+#include <chrono>
+#include <ctime>
 #include "./headers/logging.h"
 #include "./headers/calendar.h"
 //#include <windows.h>
@@ -14,8 +16,15 @@ int main()
 		exit(1);
 	}
 
-	// printSingleMonth(5, 2024);
-	Month m = Month(2024, 5, 5, 2);
+	// get current year, month
+	using namespace std;
+	using namespace std::chrono;
+	system_clock::time_point now = system_clock::now();
+	time_t tt = system_clock::to_time_t(now);
+    struct tm *local_t = localtime(&tt);
+
+	// TODO: detect screen size to decide how many displaying months
+	Month m = Month((*local_t).tm_year+1900, (*local_t).tm_mon+1, 5, 2);
 	m.print();
 	Screen sc = Screen();
 	sc.addMonth(&m);
