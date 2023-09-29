@@ -11,7 +11,7 @@ typedef struct {
     int d;
     std::string start_time;
     std::string state; // Todo(X), In Progress(>), Done(O)
-    int priority; // Urgent(red), High(blue), Normal(white)
+    std::string priority; // Urgent(red), High(blue), Normal(white)
     std::string desc;
 } task_entry;
 

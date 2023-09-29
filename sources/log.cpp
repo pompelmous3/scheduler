@@ -1,4 +1,4 @@
-#include "../headers/logging.h"
+#include "../headers/log.h"
 #include <chrono>
 #include <ctime>
 #include <fstream>
@@ -6,7 +6,7 @@
 
 // TODO: check log level setting (in where?)
 
-char *Logging::getCurTime()
+char *Log::getCurTime()
 {
     using namespace std;
     using namespace std::chrono;
@@ -26,18 +26,18 @@ char *Logging::getCurTime()
     return timestr;
 }
 
-Logging::Logging(std::string p)
+Log::Log(std::string p)
 {
     path = p;
 }
 
-Logging& Logging::getInstance() // cannot and no need to specify static here
+Log& Log::gI() // cannot and no need to specify static here
 {
-    static Logging instance("/var/log/scheduler.log");
+    static Log instance("/var/log/scheduler.log");
     return instance;
 }
 
-void Logging::log(const char *fmt, ...)
+void Log::log(const char *fmt, ...)
 {
     char *curT = getCurTime();
     va_list args;
