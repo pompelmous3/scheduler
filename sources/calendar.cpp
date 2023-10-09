@@ -1,5 +1,5 @@
 #include "../headers/calendar.h"
-#include "../headers/logging.h"
+#include "../headers/log.h"
 #include <iostream>
 #include <curses.h>
 #include <unistd.h> // for STDOUT_FILENO
@@ -42,6 +42,9 @@ bool initColors()
         printf("[initColors] Do not support colors, return..\n");
         return false;
     }
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_BLUE, COLOR_BLACK);
+	init_pair(3, COLOR_WHITE, COLOR_BLACK);
 	return true;
 }
 
@@ -56,36 +59,44 @@ void loopingMove(Screen &sc)
 	int cur_x;
 	int cur_y;
 	bool s;
-	Logging &logger = Logging::getInstance();
+	day *dent;
 	while(1)
 	{
+		dent = nullptr;
+		s = false;
 		getyx(stdscr, cur_y, cur_x);
 		ch = getch();
+		// Log::gI().log("[loopingMove] ch=%d", ch);
 		switch(ch)
 		{
 			case KEY_UP:
-				move(cur_y-1, cur_x);
+				sc.move_sy(-1);
 				break;
 			case KEY_DOWN:
-				move(cur_y+1, cur_x);
+				sc.move_sy(1);
 				break;
 			case KEY_LEFT:
-				move(cur_y, cur_x-1);
+				sc.move_sx(-1);
 				break;
 			case KEY_RIGHT:
-				move(cur_y, cur_x+1);
+				sc.move_sx(1);
 				break;
 			case 27: // esc
-				logger.log("[loppingMove] get esc key, break loppingMove");
+				Log::gI().log("[loppingMove] get esc key, break loppingMove");
 				return;
 			case 13: // CR (for nonl, if nl => 10)
-				s = sc.selected(cur_y, cur_x);
-				logger.log("[loopingMove] s=[%s]", s ? "true":"false");
+				dent = sc.selected(cur_y, cur_x);
+				if (dent)
+					s = true;
+				Log::gI().log("[loopingMove] s=[%s]", s ? "true":"false");
+				// display (flush screen)
 				break;
 			default:
 				break;
 		}
 		sc.refreshScr();
+		if (dent)
+			free(dent);
 	}
 }
 
@@ -165,6 +176,35 @@ std::string getMonthStr(int month, int len)
 	return res;
 }
 
+int getTaskSign(std::string state)
+{
+	if (state == "Todo")
+		return 88; // X
+	else if ( state == "In Progress")
+		return 62; // >
+	else if (state == "Done")
+		return 79; // O
+	return -1;
+}
+
+void setTaskColor(std::string priority)
+{
+	if (priority == "Urgent")
+		attron(COLOR_PAIR(1));
+	else if (priority == "High")
+		attron(COLOR_PAIR(2));
+	else if (priority == "Normal")
+		attron(COLOR_PAIR(3));
+}
+void resetTaskColor(std::string priority)
+{
+	if (priority == "Urgent")
+		attroff(COLOR_PAIR(1));
+	else if (priority == "High")
+		attroff(COLOR_PAIR(2));
+	else if (priority == "Normal")
+		attroff(COLOR_PAIR(3));
+}
 
 
 //########################################################################
@@ -172,7 +212,11 @@ std::string getMonthStr(int month, int len)
 // class Month methods
 Month::Month(int yr, int m, int x, int y)
 {
-	Logging &logger = Logging::getInstance();
+	/*
+		1. (x, y) is the top left point of this month
+		2. (ix, iy) is the coordinate according to the initial point (x, y)
+			for storing dmap for this month
+	*/
 	year = yr;
 	month = m;
 	start_weekday = getWeekDay(1, month, year);
@@ -200,12 +244,12 @@ Month::Month(int yr, int m, int x, int y)
 		ix = wd*DATE_CELL_LEN + wd*D_DIST;
 		if (i / 10 == 0) // date = 1~9
 		{
-			// logger.log("[dmap_0]setting(%d,%d)",iy, ix+2);
+			// Log::gI().log("[dmap_0]setting(%d,%d)",iy, ix+2);
 			dmap[iy][ix+2] = i;
 		}
 		else // date >= 10
 		{
-			// logger.log("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
+			// Log::gI().log("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
 			dmap[iy][ix+1] = i;
 			dmap[iy][ix+2] = i;
 		}
@@ -218,12 +262,15 @@ Month::Month(int yr, int m, int x, int y)
 	}
 
 	free(days_months);
+
+	// set tasks_x, tasks_y
+	tasks_x = init_x;
+	tasks_y = init_y + 3 + iy + 1; // the 3 is the title bar
 }
 
 Month::~Month()
 {
-	Logging &logger = Logging::getInstance();
-	logger.log("[~Month] destructor called, [%p]", this);
+	Log::gI().log("[~Month] destructor called, [%p]", this);
 
 	for (int i=0; i<total_weeks; i++)
 		delete[] dmap[i];
@@ -239,10 +286,9 @@ int Month::getYear()
 }
 int Month::selected_day(int y, int x)
 {
-	Logging &logger = Logging::getInstance();
 	int act_y = y-init_y-3; // 3 lines of headers
 	int act_x = x-init_x;
-	// logger.log("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
+	// Log::gI().log("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
 	// 	y, x, act_y, act_x);
 
 	if ((act_y < 0 || act_y >= total_weeks)
@@ -251,9 +297,12 @@ int Month::selected_day(int y, int x)
 
 	return dmap[act_y][act_x];
 }
-void Month::print()
+void Month::printMonth()
 {
-	Logging &logger = Logging::getInstance();
+	/*
+		no need to refresh here, cause printMonth always invoked by
+		Screen::refreshScr() => Screen::printScr()
+	*/
 	int y = init_y;
 	int x = init_x;
 	std::string mstr = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
@@ -272,19 +321,43 @@ void Month::print()
 			pre_print = dmap[i][j];
 		}
 	}
-	refresh();
+	printTasks();
+}
+void Month::printTasks()
+{
+	std::vector <task_entry> lr = dbh.getLastResults();
+	// Log::gI().log("lr.size()=%d, tasks_x=%d, tasks_y=%d",
+	// 	lr.size(), tasks_x, tasks_y);
+	int tx = tasks_x;
+	int ty = tasks_y;
+	int sign;
+	// mvprintw(tasks_y, tasks_x, "aaa");
+
+	attron(COLOR_PAIR(1));
+	for (int i=0; i<lr.size(); i++) {
+		sign = getTaskSign(lr[i].state);
+		setTaskColor(lr[i].priority);
+		// Log::gI().log("desc=%s",lr[i].desc.c_str());
+		mvprintw(ty, tx, "%c %s", sign, lr[i].desc.c_str());
+		resetTaskColor(lr[i].priority);
+		ty++;
+	}
+	attroff(COLOR_PAIR(1));
 }
 
-// class Screen methods
 
+
+
+
+// class Screen methods
 Screen::Screen()
 {
-
+	getyx(stdscr, sy, sx);
+	Log::gI().log("[Screen] after init, sy=[%d], sx=[%d]", sy, sx);
 }
 Screen::~Screen()
 {
-	Logging &logger = Logging::getInstance();
-	logger.log("[~Screen] destructor called");
+	Log::gI().log("[~Screen] destructor called");
 }
 int Screen::getMonthsSize()
 {
@@ -295,27 +368,48 @@ void Screen::addMonth(Month *mp)
 	months.push_back(mp); //use pointer to avoid copying a new Month instance
 	d_month_num++;
 }
+void Screen::printScr()
+{
+	for (int i=0; i<d_month_num; i++) {
+		(*months[i]).printMonth();
+	}
+	// move cursor after printMonth()s because those will move cursor too
+	move(sy, sx);
+}
 void Screen::refreshScr()
 {
+	// TODO: clear current screen?
+	// TODO: rewrite current screen with latest data
+	erase();
+	printScr();
 	refresh();
 }
-bool Screen::selected(int y, int x)
+void Screen::move_sx(int x)
 {
-	Logging &logger = Logging::getInstance();
+	sx += x;
+}
+void Screen::move_sy(int y)
+{
+	sy += y;
+}
+day *Screen::selected(int y, int x)
+{
 	int d;
 	int yr;
 	int mon;
+
 	// TODO: more effecient way to check (instead of checking all months)
 	for (int i=0; i<d_month_num; i++)
 	{
 		d = (*months[i]).selected_day(y, x);
 		if (d != -1)
-		{// TODO: get and return (year, month) of selected day??
+		{
 			yr = (*months[i]).getYear();
 			mon = (*months[i]).getMonth();
-			logger.log("[Screen::selected] (%d, %d, %d) selected", yr, mon, d);
-			return true;
+			day *res = new day{yr, mon, d};
+			(*months[i]).dbh.queryDateTasks(yr, mon, d);
+			return res;
 		}
 	}
-	return false;
+	return nullptr;
 }

@@ -31,7 +31,7 @@ DBHandler::DBHandler(const char *p)
         "day INT NOT NULL,"
         "start_time TEXT,"
         "state TEXT NOT NULL,"
-        "priority INT NOT NULL,"
+        "priority TEXT NOT NULL,"
         "description TEXT NOT NULL);");
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
     // close connection
@@ -43,6 +43,12 @@ DBHandler::DBHandler(const char *p)
     }
     sqlite3_close(db);
     Log::gI().log("[DBHandler] finished constructor");
+
+
+    // insert test entries
+    snprintf(sql, sizeof(sql), "%s", "INSERT INTO "
+    "tasks (year, month, day, start_time, state, priority, description) "
+    "values (2023, 9, 24, '', 'Todo', 'Urgent', 'buy eggs')");
 }
 DBHandler::~DBHandler()
 {
@@ -84,9 +90,8 @@ void DBHandler::queryDateTasks(int y, int m, int d)
         int d = sqlite3_column_int(stmt, 3);
         std::string start_time = (const char*)sqlite3_column_text(stmt, 4);
         std::string state = (const char*)sqlite3_column_text(stmt, 5);
-        int priority = sqlite3_column_int(stmt, 6);
+        std::string priority = (const char*)sqlite3_column_text(stmt, 6);
         std::string desc = (const char*)sqlite3_column_text(stmt, 7);
-        Log::gI().log("[loop-rows] id=%d", id);
         task_entry entry = { id, y, m, d, start_time, state, priority, desc};
         lastResults.push_back(entry);
     }

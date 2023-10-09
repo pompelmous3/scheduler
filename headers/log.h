@@ -1,14 +1,14 @@
-#ifndef LOGGING_H
-#define LOGGING_H
+#ifndef Log_H
+#define Log_H
 #include <string>
 
-class Logging {
+class Log {
     std::string path;
     char *getCurTime();
-    Logging(std::string path);
+    Log(std::string path);
     // TODO: destructor
 public:
-    static Logging& getInstance();
+    static Log& gI();
     void log(const char *fmt, ...);
 };
 #endif

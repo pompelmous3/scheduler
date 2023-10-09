@@ -3,7 +3,7 @@
 #include <curses.h>
 #include <chrono>
 #include <ctime>
-#include "./headers/logging.h"
+#include "./headers/log.h"
 #include "./headers/calendar.h"
 //#include <windows.h>
 using namespace std;
@@ -25,9 +25,9 @@ int main()
 
 	// TODO: detect screen size to decide how many displaying months
 	Month m = Month((*local_t).tm_year+1900, (*local_t).tm_mon+1, 5, 2);
-	m.print();
 	Screen sc = Screen();
 	sc.addMonth(&m);
+	sc.printScr();
 
 	loopingMove(sc);
 	int height, width;
