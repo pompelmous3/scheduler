@@ -24,7 +24,7 @@ DBHandler::DBHandler(const char *p)
 
     // create table
     snprintf(sql, sizeof(sql), "%s",
-        "CREATE TABLE tasks("
+        "CREATE TABLE If not exists tasks("
         "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
         "year INT NOT NULL,"
         "month INT NOT NULL,"
@@ -73,9 +73,9 @@ void DBHandler::queryDateTasks(int y, int m, int d)
         goto end;
     }
 
-    // compile sql statement
+    // compile sql statement (tasks)
     snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE year=%d and "
-        "month=%d and day>=%d;", y, m, d);
+        "month=%d and day=%d;", y, m, d);
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         Log::gI().log("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
@@ -100,6 +100,7 @@ void DBHandler::queryDateTasks(int y, int m, int d)
 
 end:
     sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }
 const std::vector <task_entry> DBHandler::getLastResults() const
 {

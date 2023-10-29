@@ -1,6 +1,8 @@
 #ifndef CALENDAR_H
 #define CALENDAR_H
 #include "db.h"
+#include "menu.h"
+#include "addtaskpanel.h"
 #include <string> // need include here so we can use std::string
 #include <vector>
 
@@ -17,10 +19,8 @@ class Month {
     int start_weekday;
     int total_days;
     int total_weeks;
-    int init_x;
-    int init_y;
-    int tasks_x; // starting x of tasks
-    int tasks_y; // starting y of tasks
+    int init_x, init_y; // starting position
+    int tasks_x, tasks_y; // starting position of tasks in this month
     int **dmap;
     
 public:
@@ -34,32 +34,8 @@ public:
     void printTasks();
 };
 
-// ==== class Screen ====
-class Screen {
-    std::vector<Month *> months;
-    int d_month_num = 0;
-    // DBHandler dbh = DBHandler("/var/log/scheduler.db");
-    int sx;
-    int sy;
-    
-    // TODO: current movable range of x and y
-public:
-    Screen();
-    ~Screen();
-    int getMonthsSize();
-    void addMonth(Month *m);
-    void printScr();
-    void refreshScr();
-    void move_sx(int x);
-    void move_sy(int y);
-    day *selected(int y, int x);
-};
-
 // ==== other functions ====
-bool initNcurses();
-bool initColors();
-void endNcurses();
-void loopingMove(Screen &sc); 
+
 int *getYearMonths(int year);
 int getTotalWeeks(int td, int sd);
 void getTerminalSize(int& height, int&width);

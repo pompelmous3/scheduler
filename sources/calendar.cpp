@@ -19,86 +19,6 @@ const int month_code[12] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
 std::string weekday[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 
-bool initNcurses()
-{
-	initscr();
-	cbreak(); // read all input immediately rather than store in buffer
-	nonl(); // type ENTER do not change new line
-	noecho(); // input do not show on screen
-	intrflush(stdscr, FALSE);
-	keypad(stdscr, TRUE); // enable special keys (Ex: arrow keys)
-	start_color();
-	refresh();
-
-	if (initColors() == false)
-        return false;
-	return true;
-}
-
-bool initColors()
-{
-	if (has_colors() == FALSE)
-    {
-        printf("[initColors] Do not support colors, return..\n");
-        return false;
-    }
-	init_pair(1, COLOR_RED, COLOR_BLACK);
-	init_pair(2, COLOR_BLUE, COLOR_BLACK);
-	init_pair(3, COLOR_WHITE, COLOR_BLACK);
-	return true;
-}
-
-void endNcurses()
-{
-	endwin();
-}
-
-void loopingMove(Screen &sc)
-{
-	int ch;
-	int cur_x;
-	int cur_y;
-	bool s;
-	day *dent;
-	while(1)
-	{
-		dent = nullptr;
-		s = false;
-		getyx(stdscr, cur_y, cur_x);
-		ch = getch();
-		// Log::gI().log("[loopingMove] ch=%d", ch);
-		switch(ch)
-		{
-			case KEY_UP:
-				sc.move_sy(-1);
-				break;
-			case KEY_DOWN:
-				sc.move_sy(1);
-				break;
-			case KEY_LEFT:
-				sc.move_sx(-1);
-				break;
-			case KEY_RIGHT:
-				sc.move_sx(1);
-				break;
-			case 27: // esc
-				Log::gI().log("[loppingMove] get esc key, break loppingMove");
-				return;
-			case 13: // CR (for nonl, if nl => 10)
-				dent = sc.selected(cur_y, cur_x);
-				if (dent)
-					s = true;
-				Log::gI().log("[loopingMove] s=[%s]", s ? "true":"false");
-				// display (flush screen)
-				break;
-			default:
-				break;
-		}
-		sc.refreshScr();
-		if (dent)
-			free(dent);
-	}
-}
 
 int *getYearMonths(int year)
 {
@@ -265,7 +185,7 @@ Month::Month(int yr, int m, int x, int y)
 
 	// set tasks_x, tasks_y
 	tasks_x = init_x;
-	tasks_y = init_y + 3 + iy + 1; // the 3 is the title bar
+	tasks_y = init_y + 3 + iy + 1+1; // the 3 is the title bar
 }
 
 Month::~Month()
@@ -276,14 +196,17 @@ Month::~Month()
 		delete[] dmap[i];
 	delete[] dmap;
 }
+
 int Month::getMonth()
 {
 	return month;
 }
+
 int Month::getYear()
 {
 	return year;
 }
+
 int Month::selected_day(int y, int x)
 {
 	int act_y = y-init_y-3; // 3 lines of headers
@@ -297,6 +220,7 @@ int Month::selected_day(int y, int x)
 
 	return dmap[act_y][act_x];
 }
+
 void Month::printMonth()
 {
 	/*
@@ -323,6 +247,7 @@ void Month::printMonth()
 	}
 	printTasks();
 }
+
 void Month::printTasks()
 {
 	std::vector <task_entry> lr = dbh.getLastResults();
@@ -345,71 +270,3 @@ void Month::printTasks()
 	attroff(COLOR_PAIR(1));
 }
 
-
-
-
-
-// class Screen methods
-Screen::Screen()
-{
-	getyx(stdscr, sy, sx);
-	Log::gI().log("[Screen] after init, sy=[%d], sx=[%d]", sy, sx);
-}
-Screen::~Screen()
-{
-	Log::gI().log("[~Screen] destructor called");
-}
-int Screen::getMonthsSize()
-{
-	return months.size();
-}
-void Screen::addMonth(Month *mp)
-{
-	months.push_back(mp); //use pointer to avoid copying a new Month instance
-	d_month_num++;
-}
-void Screen::printScr()
-{
-	for (int i=0; i<d_month_num; i++) {
-		(*months[i]).printMonth();
-	}
-	// move cursor after printMonth()s because those will move cursor too
-	move(sy, sx);
-}
-void Screen::refreshScr()
-{
-	// TODO: clear current screen?
-	// TODO: rewrite current screen with latest data
-	erase();
-	printScr();
-	refresh();
-}
-void Screen::move_sx(int x)
-{
-	sx += x;
-}
-void Screen::move_sy(int y)
-{
-	sy += y;
-}
-day *Screen::selected(int y, int x)
-{
-	int d;
-	int yr;
-	int mon;
-
-	// TODO: more effecient way to check (instead of checking all months)
-	for (int i=0; i<d_month_num; i++)
-	{
-		d = (*months[i]).selected_day(y, x);
-		if (d != -1)
-		{
-			yr = (*months[i]).getYear();
-			mon = (*months[i]).getMonth();
-			day *res = new day{yr, mon, d};
-			(*months[i]).dbh.queryDateTasks(yr, mon, d);
-			return res;
-		}
-	}
-	return nullptr;
-}

@@ -5,6 +5,8 @@
 #include <ctime>
 #include "./headers/log.h"
 #include "./headers/calendar.h"
+#include "./headers/looping.h"
+
 //#include <windows.h>
 using namespace std;
 
@@ -23,18 +25,19 @@ int main()
 	time_t tt = system_clock::to_time_t(now);
     struct tm *local_t = localtime(&tt);
 
-	// TODO: detect screen size to decide how many displaying months
+	int height, width;
+	getTerminalSize(height, width);
+	// TODO: decide how many displaying months accordingly
 	Month m = Month((*local_t).tm_year+1900, (*local_t).tm_mon+1, 5, 2);
-	Screen sc = Screen();
+	Screen sc = Screen{height, width};
 	sc.addMonth(&m);
 	sc.printScr();
 
 	loopingMove(sc);
-	int height, width;
-	getTerminalSize(height, width);
-	// cout << "h: " << height << "; w: " << width << "\n";
 	getch();
 	endNcurses();
+	getch();
+	free(local_t);
 	return 0;
 }
 
