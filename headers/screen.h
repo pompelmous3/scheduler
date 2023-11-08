@@ -30,6 +30,7 @@ public:
     void handleEnter();
     int isMenuMode();
     int isAtpMode();
+    int passedOp(int ch);
     // TODO: send to ScreenObject
     // void doMenuOption();
 };
