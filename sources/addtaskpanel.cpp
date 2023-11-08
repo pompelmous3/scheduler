@@ -4,36 +4,86 @@
 #include <curses.h>
 
 addTaskPanel::addTaskPanel(int sc_h, int sc_w)
+    : ScreenObject(sc_h, sc_w)
 {
-    height = sc_h/2;
-    width = sc_w/3;
-    init_x = (sc_w - width) / 2;
-    init_y = (sc_h - height) / 2;
-    x = init_x;
-    y = init_y;
+    printMap.push_back(std::string(width, '#'));
+    printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
+    printMap.push_back(std::string(width, '#'));
+    printMap.push_back(specialLJust(" Date:     /  /  ", width, '#'));
+    printMap.push_back(specialLJust(" start_time:     ", width, '#'));
+    printMap.push_back(specialLJust(" state:     ", width, '#'));
+    printMap.push_back(specialLJust(" priority:     ", width, '#'));
+    printMap.push_back(specialLJust(" description:     ", width, '#'));
+    printMap.push_back(std::string(width, '#'));
 
-    // initialize info_map
-    
-    info_map.push_back(std::string(width, '#'));
-    info_map.push_back(specialWrapCenterText("Add a task", width, '#'));
-    info_map.push_back(std::string(width, '#'));
-    info_map.push_back(specialLJust(" Date:     /  /  ", width, '#'));
-    info_map.push_back(specialLJust(" start_time:     ", width, '#'));
-    info_map.push_back(specialLJust(" state:     ", width, '#'));
-    info_map.push_back(specialLJust(" priority:     ", width, '#'));
-    info_map.push_back(specialLJust(" description:     ", width, '#'));
-    info_map.push_back(std::string(width, '#'));
+    init_inputFields();
+
+    // inputFields
+    // inputField.push_back(std::string("year"));
+    // inputFieldPos.push_back
+    // inputField.push_back(std::string("month"));
+    // inputField.push_back(std::string("day"));
+    // inputField.push_back(std::string("state"));
+    // inputField.push_back(std::string("priority"));
+    // inputField.push_back(std::string("description"));
+}
+
+void addTaskPanel::init_inputFields()
+{
+    // line 1: date (year, month, day)
+    std::vector<inputField> lineOne;
+    inputField year = {
+        init_y + 3,
+        init_x + 8,
+        std::string("1999"),
+    };
+    inputField month = {
+        init_y + 3,
+        init_x + 13,
+        std::string("12"),
+    };
+    inputField day = {
+        init_y + 3,
+        init_x + 16,
+        std::string("12"),
+    };
+    lineOne.push_back(year);
+    lineOne.push_back(month);
+    lineOne.push_back(day);
+    inputFields.push_back(lineOne);
+
+    // line 2: 
+    curPos = std::make_pair(0, 0);
+}
+
+void addTaskPanel::print_inputFields()
+{
+    int color = 10;
+    for (int row=0; row<inputFields.size(); row++) {
+        for (int col=0; col<inputFields[row].size(); col++) {
+            mvprintwColor(inputFields[row][col].sc_y,
+                inputFields[row][col].sc_x,
+                inputFields[row][col].value.c_str(),
+                (curPos.first == row && curPos.second == col) ? 14 : 10);
+        }
+    }
 }
 
 addTaskPanel::~addTaskPanel()
 {
 }
 
+void addTaskPanel::handleOp(int ch)
+{
+    Log::gI().log("[addTaskPanel][handleOp] ch=[%d]", ch);
+}
 void addTaskPanel::print()
 {
-    x = init_x;
-    y = init_y;
-    for (int i=0; i<info_map.size(); i++) {
-        mvprintw(y++, x, info_map[i].c_str());
-    }
+    ScreenObject::print();
+    print_inputFields();
+    // x = init_x;
+    // y = init_y;
+    // for (int i=0; i<printMap.size(); i++) {
+    //     mvprintw(y++, x, printMap[i].c_str());
+    // }
 }

@@ -6,6 +6,7 @@
 #include "./headers/log.h"
 #include "./headers/calendar.h"
 #include "./headers/looping.h"
+#include "./headers/tool.h"
 
 //#include <windows.h>
 using namespace std;

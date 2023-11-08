@@ -16,6 +16,7 @@ public:
     Menu(int sc_h, int sc_w);
     ~Menu();
     void moveOption(int y);
+    void handleOp(int ch);
     void print();
     void printSelected();
     int getOptionIdx();

@@ -5,8 +5,6 @@
 Menu::Menu(int sc_h, int sc_w)
     : ScreenObject(sc_h, sc_w)
 {
-    Log::gI().log("[Menu] (init_x, init_y)=(%d,%d)", init_x, init_y);
-
     printMap.push_back(std::string(width, '#'));
     printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
     printMap.push_back(specialWrapCenterText("Exit", width, '#'));
@@ -15,7 +13,6 @@ Menu::Menu(int sc_h, int sc_w)
     options.push_back(std::string("Add a task"));
     options.push_back(std::string("Exit"));
     sl_idx = 0;
-
 }
 
 Menu::~Menu()
@@ -25,6 +22,11 @@ Menu::~Menu()
 void Menu::moveOption(int y)
 {
     sl_idx = (sl_idx + y) % options.size();
+}
+
+void Menu::handleOp(int ch)
+{
+    Log::gI().log("[Menu][handleOp] ch=[%d]", ch);
 }
 
 void Menu::print()

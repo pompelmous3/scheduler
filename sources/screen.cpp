@@ -43,7 +43,8 @@ void Screen::refreshScr()
 {
 	// TODO: clear current screen?
 	// TODO: rewrite current screen with latest data
-    Log::gI().log("[refreshScr] atpMode=[%d], menuMode=[%d]", atpMode, menuMode);
+    // Log::gI().log("[refreshScr] atpMode=[%d], menuMode=[%d]", atpMode,
+	// 	menuMode);
 	erase();
 	printScr();
 	refresh();
@@ -102,11 +103,13 @@ void Screen::toggleAtpMode()
 
 void Screen::handleEsc()
 {
-    if (isAtpMode() || isMenuMode()) {
-        toggleAtpMode();
-    } else {
+    if (isAtpMode())
+		toggleAtpMode();
+	else if (isMenuMode())
         toggleMenuMode();
-    }
+    else
+        toggleMenuMode();
+    
 }
 
 void Screen::handleEnter()
@@ -143,6 +146,22 @@ int Screen::isMenuMode()
 int Screen::isAtpMode()
 {
 	return atpMode;
+}
+
+int Screen::passedOp(int ch)
+{
+	int passed = 0;
+
+	// ESC and ENTER only handled by Screen because state may change
+	if (isMenuMode() && ch != 27 && ch != 13) {
+		menu.handleOp(ch);
+		passed = 1;
+	}
+	if (isAtpMode() && ch != 27 && ch != 13) {
+		atp.handleOp(ch);
+		passed = 1;
+	}
+	return passed;
 }
 
 // void Screen::doMenuOption()

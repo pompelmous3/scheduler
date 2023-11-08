@@ -1,5 +1,60 @@
 #include "../headers/tool.h"
 
+bool initNcurses()
+{
+	initscr();
+	cbreak(); // read all input immediately rather than store in buffer
+	nonl(); // type ENTER do not change new line
+	noecho(); // input do not show on screen
+	intrflush(stdscr, FALSE);
+	keypad(stdscr, TRUE); // enable special keys (Ex: arrow keys)
+	start_color();
+	refresh();
+
+	if (initColors() == false)
+        return false;
+	return true;
+}
+
+bool initColors()
+{
+	if (has_colors() == FALSE)
+    {
+        printf("[initColors] Do not support colors, return..\n");
+        return false;
+    }
+	// diff foreground colors
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_BLUE, COLOR_BLACK);
+	init_pair(3, COLOR_WHITE, COLOR_BLACK);
+	init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
+	init_pair(5, COLOR_CYAN, COLOR_BLACK);
+	init_pair(6, COLOR_GREEN, COLOR_BLACK);
+	init_pair(7, COLOR_YELLOW, COLOR_BLACK);
+
+	// diff background colors
+	init_pair(8, COLOR_BLACK, COLOR_RED);
+	init_pair(9, COLOR_BLACK, COLOR_BLUE);
+	init_pair(10, COLOR_BLACK, COLOR_WHITE);
+	init_pair(11, COLOR_BLACK, COLOR_MAGENTA);
+	init_pair(12, COLOR_BLACK, COLOR_CYAN);
+	init_pair(13, COLOR_BLACK, COLOR_GREEN);
+	init_pair(14, COLOR_BLACK, COLOR_YELLOW);
+	return true;
+}
+
+void mvprintwColor(int y, int x, const char* str, int color)
+{
+	attron(COLOR_PAIR(color));
+	mvprintw(y, x, str);
+	attroff(COLOR_PAIR(color));
+}
+
+void endNcurses()
+{
+	endwin();
+}
+
 std::string centerText(const std::string& text, int length)
 {
     int textLength = text.length();
