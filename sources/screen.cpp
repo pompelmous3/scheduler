@@ -126,7 +126,7 @@ void Screen::handleEnter()
             break;
         }
     } else if (isAtpMode()) { // 
-
+		atp.handleOp(KEY_ENTER);
     } else { // check if date selected, update query cache
         int cur_x, cur_y;
         getyx(stdscr, cur_y, cur_x);
@@ -163,22 +163,3 @@ int Screen::passedOp(int ch)
 	}
 	return passed;
 }
-
-// void Screen::doMenuOption()
-// {
-// 	// 1. get current menu option index
-// 	// 2. do the option
-// 	int opt_idx = menu.getOptionIdx();
-// 	switch (opt_idx)
-// 	{
-// 	case 0: // Add task
-// 		Log::gI().log("[doMenuOption] adding task");
-// 		atp.print();
-// 		break;
-// 	case 1: // exit
-// 		exit(0);
-// 		break;
-// 	default:
-// 		break;
-// 	}
-// }
