@@ -1,6 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 #include "calendar.h"
+#include "addtaskpanel.h"
 
 // ==== class Screen ====
 class Screen {

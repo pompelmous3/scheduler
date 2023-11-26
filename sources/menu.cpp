@@ -27,6 +27,11 @@ void Menu::moveOption(int y)
 void Menu::handleOp(int ch)
 {
     Log::gI().log("[Menu][handleOp] ch=[%d]", ch);
+    if (ch == KEY_UP) {
+        moveOption(-1);
+    } else if (ch == KEY_DOWN) {
+        moveOption(1);
+    }
 }
 
 void Menu::print()
