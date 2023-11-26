@@ -2,7 +2,6 @@
 #define CALENDAR_H
 #include "db.h"
 #include "menu.h"
-#include "addtaskpanel.h"
 #include <string> // need include here so we can use std::string
 #include <vector>
 

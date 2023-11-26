@@ -7,6 +7,7 @@
 #include "./headers/calendar.h"
 #include "./headers/looping.h"
 #include "./headers/tool.h"
+#include "./headers/addtaskpanel.h"
 
 //#include <windows.h>
 using namespace std;
@@ -31,6 +32,7 @@ int main()
 	// TODO: decide how many displaying months accordingly
 	Month m = Month((*local_t).tm_year+1900, (*local_t).tm_mon+1, 5, 2);
 	Screen sc = Screen{height, width};
+	// Screen sc(height, width);
 	sc.addMonth(&m);
 	sc.printScr();
 

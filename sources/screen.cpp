@@ -96,6 +96,8 @@ void Screen::toggleAtpMode()
     atpMode = (atpMode + 1) % 2;
     if (atpMode) {
         curs_set(0);
+		Log::gI().log("[Screen] reassigning new atp");
+		atp = addTaskPanel(sc_h, sc_w); // should auto delete previous one
     } else {
         curs_set(1);
     }

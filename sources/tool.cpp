@@ -55,6 +55,18 @@ void endNcurses()
 	endwin();
 }
 
+std::tm* curTimeCompnt()
+{
+	auto now = std::chrono::system_clock::now();
+
+    // Convert the system time point to a time_t object
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    // Convert the time_t object to a tm structure
+    std::tm* timeInfo = std::localtime(&currentTime);
+	return timeInfo;
+}
+
 std::string centerText(const std::string& text, int length)
 {
     int textLength = text.length();
@@ -81,21 +93,31 @@ std::string specialWrapCenterText(const std::string& text, int length, char chr)
     return res;
 }
 
-std::string ljust(const std::string& text, int length)
+std::string ljust(const std::string& text, int length, char ch)
 {
     int textLength = text.length();
     if (textLength > length) {
         return text;
     }
-    std::string rest = std::string(length - textLength, ' ');
+    std::string rest = std::string(length - textLength, ch);
 
-    return text+rest;
+    return text + rest;
+}
+
+std::string rjust(const std::string& text, int length, char ch)
+{
+    int textLength = text.length();
+    if (textLength > length) {
+        return text;
+    }
+    std::string pre = std::string(length - textLength, ch);
+    return pre + text;
 }
 
 std::string specialLJust(const std::string& text, int length, char ch)
 {
     std::string ret = std::string("#");
-    ret.append(ljust(text, length-2));
+    ret.append(ljust(text, length-2, ' '));
     ret.append("#");
     return ret;
 }
