@@ -126,7 +126,7 @@ void strIF::switchV(int i)
     if (idx >= optSize) {
         idx = idx % optSize;
     } else if (idx < 0) {
-        idx = optSize - ((0 - idx) % optSize);
+        idx = (optSize - 1) - (1- (0-idx));
     }
 }
 
