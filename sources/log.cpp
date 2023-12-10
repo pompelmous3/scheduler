@@ -42,7 +42,7 @@ void Log::log(const char *fmt, ...)
     char *curT = getCurTime();
     va_list args;
     va_start(args, fmt);
-    char buf[200];
+    char buf[1028];
     vsprintf(buf, fmt, args);
     va_end(args);
     std::ofstream out(path, std::ios_base::app);

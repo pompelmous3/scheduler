@@ -5,7 +5,6 @@ Screen::Screen(int sc_h, int sc_w)
 	: sc_h {sc_h}, sc_w {sc_w}, menu(sc_h, sc_w), atp(sc_h, sc_w)
 {
 	getyx(stdscr, cs_y, cs_x);
-	Log::gI().log("[Screen] after init, cs=(%d,%d)", cs_y, cs_x);
 }
 
 Screen::~Screen()
@@ -26,17 +25,24 @@ void Screen::addMonth(Month *mp)
 
 void Screen::printScr()
 {
+	std::optional<std::pair<int, int>> curs; 
 	if (atpMode) {
-		atp.print();
+		curs = atp.print();
 	} else if (menuMode) {
 		menu.print();
 	} else {
 		for (int i=0; i<d_month_num; i++) {
 			(*months[i]).printMonth();
 		}
+		curs = std::make_pair(cs_y, cs_x);
 	}
-	// move cursor after printMonth()s because those will move cursor too
-	move(cs_y, cs_x);
+	// move cursor after all printed
+	if (curs) {
+		move((*curs).first, (*curs).second);
+		curs_set(1);
+	} else {
+		curs_set(0);
+	}
 }
 
 void Screen::refreshScr()
@@ -85,22 +91,38 @@ day *Screen::selected(int y, int x)
 void Screen::toggleMenuMode()
 {
 	menuMode = (menuMode + 1) % 2;
-	if (menuMode) {
-		curs_set(0);
-	} else {
-		curs_set(1);
-	}
+	// if (menuMode) {
+	// 	curs_set(0);
+	// } else {
+	// 	curs_set(1);
+	// }
 }
 void Screen::toggleAtpMode()
 {
     atpMode = (atpMode + 1) % 2;
     if (atpMode) {
-        curs_set(0);
+        // curs_set(0);
 		Log::gI().log("[Screen] reassigning new atp");
 		atp = addTaskPanel(sc_h, sc_w); // should auto delete previous one
-    } else {
-        curs_set(1);
-    }
+    } 
+	// else {
+    //     curs_set(1);
+    // }
+}
+
+void Screen::handleArrow(int ch)
+{
+	if (isMenuMode())
+		menu.handleOp(ch);
+	else if (isAtpMode())
+		atp.handleOp(ch);
+	else {
+		if (ch == KEY_UP || ch == KEY_DOWN) {
+			cs_y = (ch == KEY_UP) ? cs_y-1 : cs_y+1;
+		} else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
+			cs_x = (ch == KEY_LEFT) ? cs_x-1 : cs_x+1;
+		}
+	}
 }
 
 void Screen::handleEsc()
@@ -140,6 +162,13 @@ void Screen::handleEnter()
     }
 }
 
+void Screen::handleBS()
+{
+	if (isAtpMode()) {
+		atp.handleOp(KEY_BACKSPACE);
+	}
+}
+
 int Screen::isMenuMode()
 {
 	return menuMode;
@@ -150,18 +179,11 @@ int Screen::isAtpMode()
 	return atpMode;
 }
 
-int Screen::passedOp(int ch)
+void Screen::passOp(int ch)
 {
-	int passed = 0;
-
-	// ESC and ENTER only handled by Screen because state may change
-	if (isMenuMode() && ch != 27 && ch != 13) {
+	if (isMenuMode()) {
 		menu.handleOp(ch);
-		passed = 1;
-	}
-	if (isAtpMode() && ch != 27 && ch != 13) {
+	} else if (isAtpMode()) {
 		atp.handleOp(ch);
-		passed = 1;
 	}
-	return passed;
 }

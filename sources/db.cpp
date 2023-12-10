@@ -42,7 +42,6 @@ DBHandler::DBHandler(const char *p)
         // TODO: throw exception?
     }
     sqlite3_close(db);
-    Log::gI().log("[DBHandler] finished constructor");
 
 
     // insert test entries

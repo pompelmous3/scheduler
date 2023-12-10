@@ -3,6 +3,9 @@
 
 void loopingMove(Screen &sc)
 {
+	/*
+		routers: handle different forms of keys and forward them
+	*/
 	int ch;
 	int mvx, mvy;
 	while(1)
@@ -10,19 +13,21 @@ void loopingMove(Screen &sc)
 		mvx = 0;
 		mvy = 0;
 		ch = getch();
+		// Log::gI().log("[loopingMove] ch=[%d]",ch);
 
-		if (sc.passedOp(ch)==0) {
-			if (ch == KEY_UP || ch == KEY_DOWN) {
-				mvy = (ch == KEY_UP) ? -1 : 1;
-			} else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
-				mvx = (ch == KEY_LEFT) ? -1 : 1;
-			} else if (ch == 27) {
-				sc.handleEsc();
-			} else if (ch == 13) {
-				sc.handleEnter();
-			}
-			sc.move_cs(mvx, mvy);
+		if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_LEFT || ch==KEY_RIGHT) {
+			sc.handleArrow(ch);
+		} else if (ch == 27) {
+			sc.handleEsc();
+		} else if (ch == 13) {
+			sc.handleEnter();
+		} else if (ch == 8) { // 127, \b ?
+			sc.handleBS();
+		} else {
+			sc.passOp(ch);
 		}
+		sc.move_cs(mvx, mvy);
+
 
 		sc.refreshScr();
 	}

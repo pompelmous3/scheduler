@@ -2,6 +2,7 @@
 #define SCREEN_H
 #include "calendar.h"
 #include "addtaskpanel.h"
+#include "tool.h"
 
 // ==== class Screen ====
 class Screen {
@@ -27,11 +28,13 @@ public:
     day *selected(int y, int x);
     void toggleMenuMode();
     void toggleAtpMode();
+    void handleArrow(int ch);
     void handleEsc();
     void handleEnter();
+    void handleBS();
     int isMenuMode();
     int isAtpMode();
-    int passedOp(int ch);
+    void passOp(int ch);
     // TODO: send to ScreenObject
     // void doMenuOption();
 };
