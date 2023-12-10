@@ -4,6 +4,7 @@
 #include "curses.h"
 #include <ctime>
 #include <chrono>
+#include <optional>
 
 bool initNcurses();
 bool initColors();

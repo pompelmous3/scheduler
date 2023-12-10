@@ -1,22 +1,17 @@
 #include "../headers/addtaskpanel.h"
 #include "../headers/log.h"
 #include <curses.h>
+#include<iostream>
 
 inputField::inputField(int y, int x, std::string n)
-    : sc_y {y}, sc_x {x}, name {n}, entering {0}
+    : sc_y {y}, sc_x {x}, cursorIdx {0}, name {n},
+      strValue{std::string("")}, entering {0}, typing {0}
 {
-    optIdx = 0;
-
-    Log::gI().log("[inputField::inputField]");
+    // Log::gI().log("[inputField::inputField]");
 }
 
 inputField::~inputField()
 {}
-
-// void inputField::switchV(int i)
-// {
-//     // option
-// }
 
 int inputField::gety()
 {
@@ -28,11 +23,15 @@ int inputField::getx()
     return sc_x;
 }
 
-// std::string inputField::getv()
-// {
-//     Log::gI().log("[inputField::getv] ??");
-//     return std::string("aaa");
-// }
+int inputField::getTyping()
+{
+    return typing;
+}
+
+int inputField::getCursorIdx()
+{
+    return cursorIdx;
+}
 
 int inputField::geten()
 {
@@ -42,6 +41,9 @@ int inputField::geten()
 void inputField::toggleen()
 {
     entering = (entering + 1) % 2;
+    if (entering == 0 && typing == 1) {
+        typing = 0;
+    }
 }
 
 intIF::intIF(int y, int x, std::string n, int val)
@@ -50,8 +52,8 @@ intIF::intIF(int y, int x, std::string n, int val)
     // TODO: set upper and lower limit
     if (strcmp(n.c_str(), "year") == 0) {
         fixedLen = 4;
-        upperBnd = 2200;
-        lowerBnd = 2000;
+        upperBnd = 9999;
+        lowerBnd = 0;
     } else if (strcmp(n.c_str(), "month") == 0) {
         fixedLen = 2;
         upperBnd = 12;
@@ -79,14 +81,22 @@ intIF::~intIF()
 std::string intIF::getv()
 {
     std::string numStr = std::to_string(value);
-    std::string rres = rjust(numStr, fixedLen, '0');
-    // Log::gI().log("[intIF::getv] rres=[%s]", rres.c_str());
-    return rres;
+    strValue = rjust(numStr, fixedLen, '0');
+    return strValue;
+}
+
+void intIF::setv(int ch)
+{
+    LOG("[intIF::setv] unsupported yet");
+}
+
+void intIF::deletev()
+{
+    LOG("[intIF::deletev] unsupported yet");
 }
 
 void intIF::switchV(int i)
 {
-    Log::gI().log("[intIF::switchV] value=%d, i=%d");
     value += i;
     if (value > upperBnd) {
         value = lowerBnd + (value - upperBnd - 1);
@@ -116,7 +126,27 @@ strIF::~strIF()
 
 std::string strIF::getv()
 {
-    return opts[idx];
+    strValue = opts[idx];
+    return strValue;
+}
+
+void strIF::setv(int ch)
+{
+    if (typing == 0) {
+        cursorIdx = 0;
+        typing = 1;
+        opts[idx].clear();
+    }
+    opts[idx].push_back(ch);
+    cursorIdx++;
+}
+
+void strIF::deletev()
+{
+    if (typing == 1 && cursorIdx >= 1) {
+        cursorIdx--;
+        opts[idx].pop_back();
+    }
 }
 
 void strIF::switchV(int i)
@@ -206,12 +236,14 @@ int addTaskPanel::getIFColor(int row, int col)
         }
         return 14;
     }
-    return 10;
+    return 2;
 }
 
-void addTaskPanel::print_inputFields()
+std::optional<std::pair<int, int>> addTaskPanel::print_inputFields()
 {
     int color;
+    int cur_y = 0;
+    int cur_x = 0;
     for (int row=0; row<inputFields.size(); row++) {
         for (int col=0; col<inputFields[row].size(); col++) {
             // Log::gI().log("[print_inputFields] (%d,%d)",row, col);
@@ -220,7 +252,19 @@ void addTaskPanel::print_inputFields()
                 inputFields[row][col]->getx(),
                 inputFields[row][col]->getv().c_str(),
                 color);
+            if (inputFields[row][col]->getTyping() == 1) {
+                cur_y = inputFields[row][col]->gety();
+                cur_x = inputFields[row][col]->getx()
+                    + inputFields[row][col]->getCursorIdx();
+            }
         }
+    }
+
+    if (cur_y == 0 && cur_x == 0) { // no inputField is typing
+        return std::nullopt;
+    }
+    else {
+        return std::make_pair(cur_y, cur_x);
     }
 }
 
@@ -231,9 +275,8 @@ addTaskPanel::~addTaskPanel()
 
 void addTaskPanel::handleOp(int ch)
 {
-    Log::gI().log("[addTaskPanel][handleOp] enterMode=%d", enterMode);
     if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
-        if (enterMode) {
+        if (enterMode) { // one of the inputFields is selected, do switch
             switch (ch) {
             case KEY_UP:
                 inputFields[enterPos.first][enterPos.second]->switchV(1);
@@ -246,7 +289,8 @@ void addTaskPanel::handleOp(int ch)
             }
             return;
         }
-        switch(ch) {
+
+        switch(ch) { // moving between inputFields
         case KEY_UP:
             if (curPos.first == 0)
                 curPos.first = inputFields.size()-1;
@@ -275,18 +319,24 @@ void addTaskPanel::handleOp(int ch)
     }
 
     else if (ch == KEY_ENTER) {
-        Log::gI().log("setting ENTER on (%d, %d)", curPos.first, curPos.second);
         inputFields[curPos.first][curPos.second]->toggleen();
         enterMode = (enterMode + 1) % 2;
         enterPos.first = curPos.first;
         enterPos.second = curPos.second;
-        // curs_set(1);
-        // getstr()
+    } else if (ch == KEY_BACKSPACE) { // Backspace
+        if (enterMode) {
+            inputFields[curPos.first][curPos.second]->deletev();
+        }
+    } else { // not ARROW/ENTER/BACKSPACE
+        if (enterMode) {
+            inputFields[curPos.first][curPos.second]->setv(ch);
+        }
     }
 }
-void addTaskPanel::print()
+std::optional<std::pair<int, int>> addTaskPanel::print()
 {
     // Log::gI().log("[print] curPos=(%d, %d)", curPos.first, curPos.second);
     ScreenObject::print();
-    print_inputFields();
+    std::optional<std::pair<int, int>> curs = print_inputFields();
+    return curs;
 }

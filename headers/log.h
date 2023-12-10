@@ -11,4 +11,6 @@ public:
     static Log& gI();
     void log(const char *fmt, ...);
 };
+
+#define LOG(fmt, ...) Log::gI().log(fmt, ##__VA_ARGS__)
 #endif

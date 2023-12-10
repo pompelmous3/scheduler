@@ -8,28 +8,28 @@
 #include <vector>
 #include <memory>
 
-// typedef struct {
-//     int sc_y;
-//     int sc_x;
-//     std::string value;
-//     int selected;
-// } inputField;
-
 class inputField
 {
+protected:
     int sc_y, sc_x;
-    int optIdx;
+    int cursorIdx;
     std::string name;
+    std::string strValue;
     int entering;
+    int typing;
 
 public:
     inputField(int y, int x, std::string n);
     ~inputField();
-    virtual void switchV(int i) = 0; // diff in intIF/strIF
+    virtual void switchV(int i) = 0;
     // void readInput();
     int gety();
     int getx();
-    virtual std::string getv() = 0; // diff in intIF/strIF
+    virtual std::string getv() = 0;
+    virtual void setv(int ch) = 0;
+    virtual void deletev() = 0;
+    int getTyping();
+    int getCursorIdx();
     int geten();
     void toggleen();
 };
@@ -46,6 +46,8 @@ public:
     intIF(int y, int x, std::string n, int val);
     ~intIF();
     std::string getv() override;
+    void setv(int ch) override;
+    void deletev() override;
     void switchV(int i) override;
 };
 
@@ -58,6 +60,8 @@ public:
     strIF(int y, int x, std::string n);
     ~strIF();
     std::string getv() override;
+    void setv(int ch) override;
+    void deletev() override;
     void switchV(int i) override;
 };
 
@@ -82,13 +86,13 @@ private:
     int enterMode = 0;
     void init_inputFields();
     int getIFColor(int row, int col);
-    void print_inputFields();
+    std::optional<std::pair<int, int>> print_inputFields();
 
 public:
     addTaskPanel(int sc_h, int sc_w);
     ~addTaskPanel();
     void handleOp(int ch);
-    void print();
+    std::optional<std::pair<int, int>> print();
 };
 
 #endif
