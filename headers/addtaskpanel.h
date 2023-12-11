@@ -28,6 +28,7 @@ public:
     virtual std::string getv() = 0;
     virtual void setv(int ch) = 0;
     virtual void deletev() = 0;
+    virtual void shiftCurs(int i) = 0;
     int getTyping();
     int getCursorIdx();
     int geten();
@@ -48,6 +49,7 @@ public:
     std::string getv() override;
     void setv(int ch) override;
     void deletev() override;
+    void shiftCurs(int i) override;
     void switchV(int i) override;
 };
 
@@ -62,6 +64,7 @@ public:
     std::string getv() override;
     void setv(int ch) override;
     void deletev() override;
+    void shiftCurs(int i) override;
     void switchV(int i) override;
 };
 
@@ -83,7 +86,8 @@ private:
     std::pair<int, int> curPos; // current inputField pos
     std::pair<int, int> enterPos; // entering inputField pos
     // int selected; // if selected, the curPos need to print in another color
-    int enterMode = 0;
+    int enterMode;
+    int typingMode;
     void init_inputFields();
     int getIFColor(int row, int col);
     std::optional<std::pair<int, int>> print_inputFields();
