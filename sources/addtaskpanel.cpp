@@ -95,6 +95,11 @@ void intIF::deletev()
     LOG("[intIF::deletev] unsupported yet");
 }
 
+void intIF::shiftCurs(int i)
+{
+    LOG("[intIF::shiftCurs] unsupported yet");
+}
+
 void intIF::switchV(int i)
 {
     value += i;
@@ -135,9 +140,8 @@ void strIF::setv(int ch)
     if (typing == 0) {
         cursorIdx = 0;
         typing = 1;
-        opts[idx].clear();
     }
-    opts[idx].push_back(ch);
+    opts[idx].insert(cursorIdx, 1, ch);
     cursorIdx++;
 }
 
@@ -145,8 +149,20 @@ void strIF::deletev()
 {
     if (typing == 1 && cursorIdx >= 1) {
         cursorIdx--;
-        opts[idx].pop_back();
+        opts[idx].erase(cursorIdx, 1);
     }
+}
+
+void strIF::shiftCurs(int i)
+{
+    cursorIdx += i;
+    if (cursorIdx < 0) {
+        cursorIdx = 0;
+    }
+    if (cursorIdx > opts[idx].size()) {
+        cursorIdx = opts[idx].size();
+    }
+
 }
 
 void strIF::switchV(int i)
@@ -162,7 +178,7 @@ void strIF::switchV(int i)
 
 
 addTaskPanel::addTaskPanel(int sc_h, int sc_w)
-    : ScreenObject(sc_h, sc_w)
+    : ScreenObject(sc_h, sc_w), enterMode {0}, typingMode {0}
 {
     printMap.push_back(std::string(width, '#'));
     printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
@@ -276,6 +292,17 @@ addTaskPanel::~addTaskPanel()
 void addTaskPanel::handleOp(int ch)
 {
     if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
+        if (typingMode) {
+            switch (ch) {
+            case KEY_LEFT:
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(-1);
+                break;
+            case KEY_RIGHT:
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(1);
+                break;
+            }
+            return;
+        }
         if (enterMode) { // one of the inputFields is selected, do switch
             switch (ch) {
             case KEY_UP:
@@ -321,6 +348,9 @@ void addTaskPanel::handleOp(int ch)
     else if (ch == KEY_ENTER) {
         inputFields[curPos.first][curPos.second]->toggleen();
         enterMode = (enterMode + 1) % 2;
+        if (enterMode == 0) {
+            typingMode = 0;
+        }
         enterPos.first = curPos.first;
         enterPos.second = curPos.second;
     } else if (ch == KEY_BACKSPACE) { // Backspace
@@ -329,6 +359,7 @@ void addTaskPanel::handleOp(int ch)
         }
     } else { // not ARROW/ENTER/BACKSPACE
         if (enterMode) {
+            typingMode = 1;
             inputFields[curPos.first][curPos.second]->setv(ch);
         }
     }
