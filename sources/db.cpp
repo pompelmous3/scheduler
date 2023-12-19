@@ -68,7 +68,7 @@ void DBHandler::queryDateTasks(int y, int m, int d)
     sqlite3_stmt *stmt;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
-        Log::gI().log("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
+        LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
         goto end;
     }
 
@@ -77,7 +77,7 @@ void DBHandler::queryDateTasks(int y, int m, int d)
         "month=%d and day=%d;", y, m, d);
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
-        Log::gI().log("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
+        LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
         goto end;
     }
 
@@ -104,4 +104,40 @@ end:
 const std::vector <task_entry> DBHandler::getLastResults() const
 {
     return (std::vector <task_entry> &) lastResults;
+}
+
+void DBHandler::insertTask(int year, int month, int day, std::string start_time,
+    std::string state, std::string priority, std::string desc)
+{
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        Log::gI().log("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql), "INSERT INTO tasks(year, month, day, start_time"
+        ", state, priority, description) values (?, ?, ?, ?, ?, ?, ?)");
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[insertTask] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    sqlite3_bind_int(stmt, 1, year);
+    sqlite3_bind_int(stmt, 2, month);
+    sqlite3_bind_int(stmt, 3, day);
+    sqlite3_bind_text(stmt, 4, start_time.c_str(), start_time.size(), NULL);
+    sqlite3_bind_text(stmt, 5, state.c_str(), state.size(), NULL);
+    sqlite3_bind_text(stmt, 6, priority.c_str(), priority.size(), NULL);
+    sqlite3_bind_text(stmt, 7, desc.c_str(), desc.size(), NULL);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[insertTask] sqlite3_step failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }

@@ -17,6 +17,7 @@ protected:
     std::string strValue;
     int entering;
     int typing;
+    bool forAction;
 
 public:
     inputField(int y, int x, std::string n);
@@ -25,6 +26,7 @@ public:
     // void readInput();
     int gety();
     int getx();
+    std::string getname();
     virtual std::string getv() = 0;
     virtual void setv(int ch) = 0;
     virtual void deletev() = 0;
@@ -32,6 +34,7 @@ public:
     int getTyping();
     int getCursorIdx();
     int geten();
+    bool getAction();
     void toggleen();
 };
 
@@ -91,12 +94,14 @@ private:
     void init_inputFields();
     int getIFColor(int row, int col);
     std::optional<std::pair<int, int>> print_inputFields();
+    void addTask();
 
 public:
     addTaskPanel(int sc_h, int sc_w);
     ~addTaskPanel();
     void handleOp(int ch);
     std::optional<std::pair<int, int>> print();
+    std::string getIFValue(std::string name);
 };
 
 #endif
