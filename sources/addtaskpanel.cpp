@@ -5,7 +5,8 @@
 
 inputField::inputField(int y, int x, std::string n)
     : sc_y {y}, sc_x {x}, cursorIdx {0}, name {n},
-      strValue{std::string("")}, entering {0}, typing {0}
+      strValue{std::string("")}, entering {0}, typing {0},
+      forAction {false}
 {
     // Log::gI().log("[inputField::inputField]");
 }
@@ -23,6 +24,11 @@ int inputField::getx()
     return sc_x;
 }
 
+std::string inputField::getname()
+{
+    return name;
+}
+
 int inputField::getTyping()
 {
     return typing;
@@ -36,6 +42,11 @@ int inputField::getCursorIdx()
 int inputField::geten()
 {
     return entering;
+}
+
+bool inputField::getAction()
+{
+    return forAction;
 }
 
 void inputField::toggleen()
@@ -124,6 +135,9 @@ strIF::strIF(int y, int x, std::string n)
         opts.push_back(std::string("Normal"));
     } else if (n == "description") {
         opts.push_back(std::string("description"));
+    } else if (n == "enter") {
+        opts.push_back(std::string("ENTER"));
+        forAction = 1;
     }
 }
 strIF::~strIF()
@@ -176,23 +190,6 @@ void strIF::switchV(int i)
     }
 }
 
-
-addTaskPanel::addTaskPanel(int sc_h, int sc_w)
-    : ScreenObject(sc_h, sc_w), enterMode {0}, typingMode {0}
-{
-    printMap.push_back(std::string(width, '#'));
-    printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
-    printMap.push_back(std::string(width, '#'));
-    printMap.push_back(specialLJust(" Date:            /  /  ", width, '#'));
-    printMap.push_back(specialLJust(" start_time:    :  ", width, '#'));
-    printMap.push_back(specialLJust(" state:     ", width, '#'));
-    printMap.push_back(specialLJust(" priority:     ", width, '#'));
-    printMap.push_back(specialLJust(" description:     ", width, '#'));
-    printMap.push_back(std::string(width, '#'));
-
-    init_inputFields();
-}
-
 void addTaskPanel::init_inputFields()
 {
     std::tm* curT = curTimeCompnt();
@@ -240,6 +237,13 @@ void addTaskPanel::init_inputFields()
     lineFive.push_back(std::move(description));
     inputFields.push_back(lineFive);
 
+    // line 7:
+    std::vector<std::shared_ptr<inputField>> lineSeven;
+    std::shared_ptr<strIF> enter = std::make_shared<strIF>(init_y+9,
+        init_x+2+(width-4)/2-2, std::string("enter"));
+    lineSeven.push_back(std::move(enter));
+    inputFields.push_back(lineSeven);
+
     curPos = std::make_pair(0, 0);
 }
 
@@ -282,6 +286,39 @@ std::optional<std::pair<int, int>> addTaskPanel::print_inputFields()
     else {
         return std::make_pair(cur_y, cur_x);
     }
+}
+
+void addTaskPanel::addTask()
+{
+    int year = std::stoi(getIFValue(std::string("year")));
+    int month = std::stoi(getIFValue(std::string("month")));
+    int day = std::stoi(getIFValue(std::string("day")));
+    int hour = std::stoi(getIFValue(std::string("hour")));
+    int min = std::stoi(getIFValue(std::string("min")));
+    std::string start_time = std::to_string(hour) + std::string(":")
+        + std::to_string(min);
+    std::string state = getIFValue(std::string("state"));
+    std::string priority = getIFValue(std::string("priority"));
+    std::string desc = getIFValue(std::string("description"));
+    dbh.insertTask(year, month, day, start_time, state, priority, desc);
+}
+
+addTaskPanel::addTaskPanel(int sc_h, int sc_w)
+    : ScreenObject(sc_h, sc_w), enterMode {0}, typingMode {0}
+{
+    printMap.push_back(std::string(width, '#'));
+    printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
+    printMap.push_back(std::string(width, '#'));
+    printMap.push_back(specialLJust(" Date:            /  /  ", width, '#'));
+    printMap.push_back(specialLJust(" start_time:    :  ", width, '#'));
+    printMap.push_back(specialLJust(" state:     ", width, '#'));
+    printMap.push_back(specialLJust(" priority:     ", width, '#'));
+    printMap.push_back(specialLJust(" description:     ", width, '#'));
+    printMap.push_back(std::string(width, '#'));
+    printMap.push_back(specialWrapCenterText("", width, '#'));
+    printMap.push_back(std::string(width, '#'));
+
+    init_inputFields();
 }
 
 addTaskPanel::~addTaskPanel()
@@ -346,13 +383,17 @@ void addTaskPanel::handleOp(int ch)
     }
 
     else if (ch == KEY_ENTER) {
-        inputFields[curPos.first][curPos.second]->toggleen();
-        enterMode = (enterMode + 1) % 2;
-        if (enterMode == 0) {
-            typingMode = 0;
+        if (inputFields[curPos.first][curPos.second]->getAction()) {
+            addTask();
+        } else {
+            inputFields[curPos.first][curPos.second]->toggleen();
+            enterMode = (enterMode + 1) % 2;
+            if (enterMode == 0) {
+                typingMode = 0;
+            }
+            enterPos.first = curPos.first;
+            enterPos.second = curPos.second;
         }
-        enterPos.first = curPos.first;
-        enterPos.second = curPos.second;
     } else if (ch == KEY_BACKSPACE) { // Backspace
         if (enterMode) {
             inputFields[curPos.first][curPos.second]->deletev();
@@ -370,4 +411,17 @@ std::optional<std::pair<int, int>> addTaskPanel::print()
     ScreenObject::print();
     std::optional<std::pair<int, int>> curs = print_inputFields();
     return curs;
+}
+
+std::string addTaskPanel::getIFValue(std::string name)
+{
+    for (int row=0; row<inputFields.size(); row++) {
+        for (int col=0; col<inputFields[row].size(); col++) {
+            if (inputFields[row][col]->getname() == name) {
+                return inputFields[row][col]->getv();
+            }
+        }
+    }
+    LOG("[getIFValue] cannot find [%s] in inputFields", name);
+    return std::string("");
 }

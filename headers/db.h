@@ -31,5 +31,7 @@ public:
     ~DBHandler();
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
+    void insertTask(int year, int month, int day, std::string start_time,
+        std::string state, std::string priority, std::string desc);
 };
 #endif
