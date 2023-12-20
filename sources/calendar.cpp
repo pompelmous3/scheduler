@@ -227,6 +227,10 @@ void Month::printMonth()
 		no need to refresh here, cause printMonth always invoked by
 		Screen::refreshScr() => Screen::printScr()
 	*/
+
+	std::map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
+	std::map<int, int>::iterator iter;
+
 	int y = init_y;
 	int x = init_x;
 	std::string mstr = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
@@ -241,7 +245,14 @@ void Month::printMonth()
 			// no day on this pos, or this day already printed
 			if (dmap[i][j] == -1 || dmap[i][j] == pre_print)
 				continue;
-			mvprintw(y+i, x+j, "%d", dmap[i][j]);
+			char tmp[128];
+			sprintf(tmp, "%d", dmap[i][j]);
+			iter = curTaskDays.find(dmap[i][j]);
+			if (iter != curTaskDays.end()) { // found
+				mvprintwColor(y+i, x+j, tmp, 9);
+			} else { // not found
+				mvprintw(y+i, x+j, "%d", dmap[i][j]);
+			}
 			pre_print = dmap[i][j];
 		}
 	}

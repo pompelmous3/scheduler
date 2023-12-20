@@ -1,5 +1,6 @@
 #ifndef DB_H
 #define DB_H
+#include "tool.h"
 #include <sqlite3.h>
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@ class DBHandler {
 public:
     DBHandler(const char *p);
     ~DBHandler();
+    std::map<int, int> getScheduledDays(int y, int m);
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
     void insertTask(int year, int month, int day, std::string start_time,

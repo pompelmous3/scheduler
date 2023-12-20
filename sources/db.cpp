@@ -49,12 +49,44 @@ DBHandler::DBHandler(const char *p)
     "tasks (year, month, day, start_time, state, priority, description) "
     "values (2023, 9, 24, '', 'Todo', 'Urgent', 'buy eggs')");
 }
+
 DBHandler::~DBHandler()
 {
     // no need to free std::string, should be taken care of automatically
     if (zErrMsg != NULL)
         free(zErrMsg);
 }
+
+std::map<int, int> DBHandler::getScheduledDays(int y, int m)
+{
+    std::map<int, int> res;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[getScheduledDays] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql), "SELECT day FROM tasks WHERE year=%d and "
+        "month=%d GROUP BY day;", y, m);
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[getScheduledDays] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // TODO: sort days in ascending order?
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        int d = sqlite3_column_int(stmt, 0);
+        res[d] = 1;
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return res;
+}
+
 void DBHandler::queryDateTasks(int y, int m, int d)
 {
     /*
