@@ -164,12 +164,12 @@ Month::Month(int yr, int m, int x, int y)
 		ix = wd*DATE_CELL_LEN + wd*D_DIST;
 		if (i / 10 == 0) // date = 1~9
 		{
-			// Log::gI().log("[dmap_0]setting(%d,%d)",iy, ix+2);
+			// LOG("[dmap_0]setting(%d,%d)",iy, ix+2);
 			dmap[iy][ix+2] = i;
 		}
 		else // date >= 10
 		{
-			// Log::gI().log("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
+			// LOG("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
 			dmap[iy][ix+1] = i;
 			dmap[iy][ix+2] = i;
 		}
@@ -190,7 +190,7 @@ Month::Month(int yr, int m, int x, int y)
 
 Month::~Month()
 {
-	Log::gI().log("[~Month] destructor called, [%p]", this);
+	LOG("[~Month] destructor called, [%p]", this);
 
 	for (int i=0; i<total_weeks; i++)
 		delete[] dmap[i];
@@ -211,7 +211,7 @@ int Month::selected_day(int y, int x)
 {
 	int act_y = y-init_y-3; // 3 lines of headers
 	int act_x = x-init_x;
-	// Log::gI().log("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
+	// LOG("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
 	// 	y, x, act_y, act_x);
 
 	if ((act_y < 0 || act_y >= total_weeks)
@@ -251,7 +251,7 @@ void Month::printMonth()
 void Month::printTasks()
 {
 	std::vector <task_entry> lr = dbh.getLastResults();
-	// Log::gI().log("lr.size()=%d, tasks_x=%d, tasks_y=%d",
+	// LOG("lr.size()=%d, tasks_x=%d, tasks_y=%d",
 	// 	lr.size(), tasks_x, tasks_y);
 	int tx = tasks_x;
 	int ty = tasks_y;
@@ -262,7 +262,7 @@ void Month::printTasks()
 	for (int i=0; i<lr.size(); i++) {
 		sign = getTaskSign(lr[i].state);
 		setTaskColor(lr[i].priority);
-		// Log::gI().log("desc=%s",lr[i].desc.c_str());
+		// LOG("desc=%s",lr[i].desc.c_str());
 		mvprintw(ty, tx, "%c %s", sign, lr[i].desc.c_str());
 		resetTaskColor(lr[i].priority);
 		ty++;

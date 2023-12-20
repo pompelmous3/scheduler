@@ -3,11 +3,11 @@
 #include <cstdlib>
 
 // static int callback(void *data, int argc, char **argv, char **azColName){
-//     Log::gI().log("[db] callback function called");
+//     LOG("[db] callback function called");
 //     std::vector <std::string> res = static_cast<std::vector<std::string>>(data);
 //     int i;
 //     for(i=0; i<argc; i++){
-//         Log::gI().log("%s = %s", azColName[i], argv[i] ? argv[i] : "NULL");
+//         LOG("%s = %s", azColName[i], argv[i] ? argv[i] : "NULL");
 //     }
 //     return 0;
 // }
@@ -18,7 +18,7 @@ DBHandler::DBHandler(const char *p)
     // open connection
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
-        Log::gI().log("[DBHandler] cannot open db: %s", sqlite3_errmsg(db));
+        LOG("[DBHandler] cannot open db: %s", sqlite3_errmsg(db));
         // TODO: throw exception
     }
 
@@ -36,7 +36,7 @@ DBHandler::DBHandler(const char *p)
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
     // close connection
     if (rc) {
-        Log::gI().log("[DBHandler] create table err: %s", sqlite3_errmsg(db));
+        LOG("[DBHandler] create table err: %s", sqlite3_errmsg(db));
         // free the memory obtained from sqlite3_malloc()
         sqlite3_free(zErrMsg);
         // TODO: throw exception?
@@ -112,7 +112,7 @@ void DBHandler::insertTask(int year, int month, int day, std::string start_time,
     sqlite3_stmt *stmt;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
-        Log::gI().log("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
+        LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
         goto end;
     }
 

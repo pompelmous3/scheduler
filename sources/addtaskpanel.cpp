@@ -8,7 +8,7 @@ inputField::inputField(int y, int x, std::string n)
       strValue{std::string("")}, entering {0}, typing {0},
       forAction {false}
 {
-    // Log::gI().log("[inputField::inputField]");
+    // LOG("[inputField::inputField]");
 }
 
 inputField::~inputField()
@@ -82,7 +82,7 @@ intIF::intIF(int y, int x, std::string n, int val)
         upperBnd = 59;
         lowerBnd = 0;
     } else {
-        Log::gI().log("[intIF::intIF] unknown init name=[%s]", n.c_str());
+        LOG("[intIF::intIF] unknown init name=[%s]", n.c_str());
         fixedLen = 2;
     }
 }
@@ -250,7 +250,6 @@ void addTaskPanel::init_inputFields()
 int addTaskPanel::getIFColor(int row, int col)
 {
     if (curPos.first == row && curPos.second == col) {
-        // Log::gI().log("[getIFColor] entering=%d", inputFields[curPos.first][curPos.second]->geten());
         if (inputFields[curPos.first][curPos.second]->geten()) {
             return 8;
         }
@@ -266,7 +265,6 @@ std::optional<std::pair<int, int>> addTaskPanel::print_inputFields()
     int cur_x = 0;
     for (int row=0; row<inputFields.size(); row++) {
         for (int col=0; col<inputFields[row].size(); col++) {
-            // Log::gI().log("[print_inputFields] (%d,%d)",row, col);
             color = getIFColor(row, col);
             mvprintwColor(inputFields[row][col]->gety(),
                 inputFields[row][col]->getx(),
@@ -323,7 +321,7 @@ addTaskPanel::addTaskPanel(int sc_h, int sc_w)
 
 addTaskPanel::~addTaskPanel()
 {
-    Log::gI().log("[~addTaskPanel] called");
+    LOG("[~addTaskPanel] called");
 }
 
 void addTaskPanel::handleOp(int ch)
@@ -407,7 +405,6 @@ void addTaskPanel::handleOp(int ch)
 }
 std::optional<std::pair<int, int>> addTaskPanel::print()
 {
-    // Log::gI().log("[print] curPos=(%d, %d)", curPos.first, curPos.second);
     ScreenObject::print();
     std::optional<std::pair<int, int>> curs = print_inputFields();
     return curs;

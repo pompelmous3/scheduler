@@ -9,7 +9,7 @@ Screen::Screen(int sc_h, int sc_w)
 
 Screen::~Screen()
 {
-	Log::gI().log("[~Screen] destructor called");
+	LOG("[~Screen] destructor called");
 }
 
 int Screen::getMonthsSize()
@@ -25,7 +25,7 @@ void Screen::addMonth(Month *mp)
 
 void Screen::printScr()
 {
-	std::optional<std::pair<int, int>> curs; 
+	std::optional<std::pair<int, int>> curs;
 	if (atpMode) {
 		curs = atp.print();
 	} else if (menuMode) {
@@ -49,7 +49,6 @@ void Screen::refreshScr()
 {
 	// TODO: clear current screen?
 	// TODO: rewrite current screen with latest data
-    // Log::gI().log("[refreshScr] atpMode=[%d], menuMode=[%d]", atpMode,
 	// 	menuMode);
 	erase();
 	printScr();
@@ -102,7 +101,7 @@ void Screen::toggleAtpMode()
     atpMode = (atpMode + 1) % 2;
     if (atpMode) {
         // curs_set(0);
-		Log::gI().log("[Screen] reassigning new atp");
+		LOG("[Screen] reassigning new atp");
 		atp = addTaskPanel(sc_h, sc_w); // should auto delete previous one
     } 
 	// else {
@@ -156,7 +155,7 @@ void Screen::handleEnter()
         getyx(stdscr, cur_y, cur_x);
         day *dent = selected(cur_y, cur_x);
         if (dent) {
-            Log::gI().log("[Screen::handleEnter] selected");
+            // LOG("[Screen::handleEnter] selected");
             free(dent);
         }
     }
