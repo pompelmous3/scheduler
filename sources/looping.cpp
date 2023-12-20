@@ -13,7 +13,7 @@ void loopingMove(Screen &sc)
 		mvx = 0;
 		mvy = 0;
 		ch = getch();
-		// Log::gI().log("[loopingMove] ch=[%d]",ch);
+		// LOG("[loopingMove] ch=[%d]",ch);
 
 		if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_LEFT || ch==KEY_RIGHT) {
 			sc.handleArrow(ch);

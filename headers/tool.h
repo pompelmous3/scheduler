@@ -5,6 +5,7 @@
 #include <ctime>
 #include <chrono>
 #include <optional>
+#include <map>
 
 bool initNcurses();
 bool initColors();
