@@ -101,6 +101,11 @@ void intIF::setv(int ch)
     LOG("[intIF::setv] unsupported yet");
 }
 
+void intIF::backspacev()
+{
+    LOG("[intIF::backspacev] unsupported yet");
+}
+
 void intIF::deletev()
 {
     LOG("[intIF::deletev] unsupported yet");
@@ -159,10 +164,19 @@ void strIF::setv(int ch)
     cursorIdx++;
 }
 
-void strIF::deletev()
+void strIF::backspacev()
 {
     if (typing == 1 && cursorIdx >= 1) {
         cursorIdx--;
+        opts[idx].erase(cursorIdx, 1);
+    }
+}
+
+void strIF::deletev()
+{
+    // LOG("[strIF::deletev] before, cursorIdx=[%d], opts[idx].size()=[%d]",
+    //     cursorIdx, opts[idx].size());
+    if (typing == 1 && cursorIdx < opts[idx].size()) {
         opts[idx].erase(cursorIdx, 1);
     }
 }
@@ -326,7 +340,9 @@ addTaskPanel::~addTaskPanel()
 
 void addTaskPanel::handleOp(int ch)
 {
-    if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
+    // LOG("[addTaskPanel::handleOp] ch=[%d]", ch);
+    if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT
+        || ch==KEY_END || ch==KEY_HOME) {
         if (typingMode) {
             switch (ch) {
             case KEY_LEFT:
@@ -334,6 +350,12 @@ void addTaskPanel::handleOp(int ch)
                 break;
             case KEY_RIGHT:
                 inputFields[enterPos.first][enterPos.second]->shiftCurs(1);
+                break;
+            case KEY_HOME:
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(0-width);
+                break;
+            case KEY_END:
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(width);
                 break;
             }
             return;
@@ -393,6 +415,10 @@ void addTaskPanel::handleOp(int ch)
             enterPos.second = curPos.second;
         }
     } else if (ch == KEY_BACKSPACE) { // Backspace
+        if (enterMode) {
+            inputFields[curPos.first][curPos.second]->backspacev();
+        }
+    } else if (ch == KEY_DC) {
         if (enterMode) {
             inputFields[curPos.first][curPos.second]->deletev();
         }
