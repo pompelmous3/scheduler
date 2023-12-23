@@ -29,6 +29,7 @@ public:
     std::string getname();
     virtual std::string getv() = 0;
     virtual void setv(int ch) = 0;
+    virtual void backspacev() = 0;
     virtual void deletev() = 0;
     virtual void shiftCurs(int i) = 0;
     int getTyping();
@@ -51,6 +52,7 @@ public:
     ~intIF();
     std::string getv() override;
     void setv(int ch) override;
+    void backspacev() override;
     void deletev() override;
     void shiftCurs(int i) override;
     void switchV(int i) override;
@@ -66,6 +68,7 @@ public:
     ~strIF();
     std::string getv() override;
     void setv(int ch) override;
+    void backspacev() override;
     void deletev() override;
     void shiftCurs(int i) override;
     void switchV(int i) override;
