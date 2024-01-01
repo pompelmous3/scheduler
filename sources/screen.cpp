@@ -2,7 +2,8 @@
 #include "../headers/log.h"
 
 Screen::Screen(int sc_h, int sc_w)
-	: sc_h {sc_h}, sc_w {sc_w}, menu(sc_h, sc_w), atp(sc_h, sc_w)
+	: sc_h {sc_h}, sc_w {sc_w}, menu(sc_h, sc_w), atp(sc_h, sc_w),
+	mon_idx {0}, d_month_num {0}, menuMode {0}, atpMode {0}, monthMode {0}
 {
 	getyx(stdscr, cs_y, cs_x);
 }
@@ -20,6 +21,10 @@ int Screen::getMonthsSize()
 void Screen::addMonth(Month *mp)
 {
 	months.push_back(mp); //use pointer to avoid copying a new Month instance
+	if (months.size() == 1) {
+		mp->setBrowsed(1);
+		mon_idx = 0;
+	}
 	d_month_num++;
 }
 
@@ -34,7 +39,7 @@ void Screen::printScr()
 		for (int i=0; i<d_month_num; i++) {
 			(*months[i]).printMonth();
 		}
-		curs = std::make_pair(cs_y, cs_x);
+		// curs = std::make_pair(cs_y, cs_x);
 	}
 	// move cursor after all printed
 	if (curs) {
@@ -65,74 +70,65 @@ void Screen::move_cs(int x, int y)
 	}
 }
 
-day *Screen::selected(int y, int x)
+void Screen::shiftMonth(int v)
 {
-	int d;
-	int yr;
-	int mon;
-
-	// TODO: more effecient way to check (instead of checking all months)
-	for (int i=0; i<d_month_num; i++)
-	{
-		d = (*months[i]).selected_day(y, x);
-		if (d != -1)
-		{
-			yr = (*months[i]).getYear();
-			mon = (*months[i]).getMonth();
-			day *res = new day{yr, mon, d};
-			(*months[i]).dbh.queryDateTasks(yr, mon, d);
-			return res;
-		}
+	months[mon_idx]->setBrowsed(0);
+	mon_idx += v;
+	if (mon_idx >= months.size()) {
+		mon_idx = mon_idx % months.size();
+	} else if (mon_idx < 0) {
+		mon_idx = (months.size()-1) - ((0-mon_idx)-1);
 	}
-	return nullptr;
+	months[mon_idx]->setBrowsed(1);
 }
 
 void Screen::toggleMenuMode()
 {
 	menuMode = (menuMode + 1) % 2;
-	// if (menuMode) {
-	// 	curs_set(0);
-	// } else {
-	// 	curs_set(1);
-	// }
 }
 void Screen::toggleAtpMode()
 {
     atpMode = (atpMode + 1) % 2;
     if (atpMode) {
-        // curs_set(0);
 		LOG("[Screen] reassigning new atp");
 		atp = addTaskPanel(sc_h, sc_w); // should auto delete previous one
     } 
-	// else {
-    //     curs_set(1);
-    // }
+}
+
+void Screen::toggleMonthMode()
+{
+	monthMode = (monthMode + 1) % 2;
 }
 
 void Screen::handleArrow(int ch)
 {
-	if (isMenuMode())
+	if (isMenuMode()) {
 		menu.handleOp(ch);
-	else if (isAtpMode())
+	} else if (isAtpMode()) {
 		atp.handleOp(ch);
+	} else if (isMonthMode()) {
+		months[mon_idx]->handleOp(ch);
+	}
 	else {
-		if (ch == KEY_UP || ch == KEY_DOWN) {
-			cs_y = (ch == KEY_UP) ? cs_y-1 : cs_y+1;
-		} else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
-			cs_x = (ch == KEY_LEFT) ? cs_x-1 : cs_x+1;
+		if (ch == KEY_LEFT || ch == KEY_RIGHT) {
+			int v = (ch == KEY_RIGHT)? 1 : -1;
+			shiftMonth(v);
 		}
 	}
 }
 
 void Screen::handleEsc()
 {
-    if (isAtpMode())
+    if (isAtpMode()) {
 		toggleAtpMode();
-	else if (isMenuMode())
-        toggleMenuMode();
-    else
-        toggleMenuMode();
-    
+	} else if (isMenuMode()) {
+		toggleMenuMode();
+	} else if (isMonthMode()) {
+		toggleMonthMode();
+		months[mon_idx]->setSelected(0);
+	} else {
+		toggleMenuMode();
+	}
 }
 
 void Screen::handleEnter()
@@ -150,14 +146,11 @@ void Screen::handleEnter()
         }
     } else if (isAtpMode()) { // 
 		atp.handleOp(KEY_ENTER);
-    } else { // check if date selected, update query cache
-        int cur_x, cur_y;
-        getyx(stdscr, cur_y, cur_x);
-        day *dent = selected(cur_y, cur_x);
-        if (dent) {
-            // LOG("[Screen::handleEnter] selected");
-            free(dent);
-        }
+    } else if (isMonthMode()) {
+		months[mon_idx]->handleOp(KEY_ENTER);
+	} else {
+		toggleMonthMode(); // should be turn on
+		months[mon_idx]->setSelected(1);
     }
 }
 
@@ -176,6 +169,11 @@ int Screen::isMenuMode()
 int Screen::isAtpMode()
 {
 	return atpMode;
+}
+
+bool Screen::isMonthMode()
+{
+	return monthMode;
 }
 
 void Screen::passOp(int ch)

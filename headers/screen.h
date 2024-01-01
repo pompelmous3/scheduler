@@ -7,12 +7,14 @@
 // ==== class Screen ====
 class Screen {
     std::vector<Month *> months;
-    int d_month_num = 0;
+    int mon_idx;
+    int d_month_num;
     // DBHandler dbh = DBHandler("/var/log/scheduler.db");
     int cs_x, cs_y;
     int sc_h, sc_w;
-    int menuMode = 0;
-    int atpMode = 0;
+    int menuMode;
+    int atpMode;
+    int monthMode;
     Menu menu;
     addTaskPanel atp;
     
@@ -25,15 +27,17 @@ public:
     void printScr();
     void refreshScr();
     void move_cs(int x, int y);
-    day *selected(int y, int x);
+    void shiftMonth(int v);
     void toggleMenuMode();
     void toggleAtpMode();
+    void toggleMonthMode();
     void handleArrow(int ch);
     void handleEsc();
     void handleEnter();
     void handleBS();
     int isMenuMode();
     int isAtpMode();
+    bool isMonthMode();
     void passOp(int ch);
     // TODO: send to ScreenObject
     // void doMenuOption();

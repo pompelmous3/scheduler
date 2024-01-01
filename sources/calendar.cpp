@@ -85,14 +85,11 @@ int getWeekDay(int day, int month, int year)
 	return remainder;
 }
 
-std::string getMonthStr(int month, int len)
+std::string getMonthStrPost(int month, int len)
 {
 	std::string mstr = months[month-1];
-	// int pre_len = (len - mstr.length())/2;
-	// int post_len = len - mstr.length() - pre_len;
 	int post_len = len - mstr.length() - 1;
-	// std::string res = std::string(pre_len, ' ') + mstr + std::string(post_len, ' ');
-	std::string res = mstr + " " + std::string(post_len, '-');
+	std::string res = std::string(post_len, '-');
 	return res;
 }
 
@@ -131,30 +128,28 @@ void resetTaskColor(std::string priority)
 
 // class Month methods
 Month::Month(int yr, int m, int x, int y)
+	: year {yr}, month {m}, init_x {x}, init_y {y}, browsed {false}
 {
 	/*
 		1. (x, y) is the top left point of this month
 		2. (ix, iy) is the coordinate according to the initial point (x, y)
 			for storing dmap for this month
 	*/
-	year = yr;
-	month = m;
 	start_weekday = getWeekDay(1, month, year);
-	init_x = x;
-	init_y = y;
 
 	// get total_days, total_weeks
 	int *days_months = getYearMonths(year);
 	total_days = days_months[month-1];
 	total_weeks = getTotalWeeks(total_days, start_weekday);
+	// LOG("[Month::Month] total_days=[%d], total_weeks=[%d]",
+	// 	total_days, total_weeks);
 
 	// initialize dmap (on the base of init_x, init_y)
-	dmap = new int *[total_weeks];
 	for (int i=0; i<total_weeks; i++)
-	{
-		dmap[i] = new int[PER_LINE_IN_MONTH_LEN];
-		for (int j=0; j<PER_LINE_IN_MONTH_LEN; j++)
-			dmap[i][j] = -1; // init all cells to -1
+	{ // j(wd): 0==Sun, 6==Sat
+		for (int j=0; j<7; j++) {
+			dmap[i][j] = std::vector<int>();
+		}
 	}
 	int wd = start_weekday; // copy sd for iterator
 	int ix = 0;
@@ -164,14 +159,11 @@ Month::Month(int yr, int m, int x, int y)
 		ix = wd*DATE_CELL_LEN + wd*D_DIST;
 		if (i / 10 == 0) // date = 1~9
 		{
-			// LOG("[dmap_0]setting(%d,%d)",iy, ix+2);
-			dmap[iy][ix+2] = i;
+			dmap[iy][wd].insert(dmap[iy][wd].end(), {i, ix+2});
 		}
 		else // date >= 10
 		{
-			// LOG("[dmap_0]setting(%d,%d),(%d,%d)",iy, ix+1, iy, ix+2);
-			dmap[iy][ix+1] = i;
-			dmap[iy][ix+2] = i;
+			dmap[iy][wd].insert(dmap[iy][wd].end(), {i, ix+1});
 		}
 		wd++;
 		if (wd >= 7)
@@ -180,7 +172,7 @@ Month::Month(int yr, int m, int x, int y)
 			iy++;
 		}
 	}
-
+	idx = std::make_pair(0, start_weekday);
 	free(days_months);
 
 	// set tasks_x, tasks_y
@@ -191,10 +183,6 @@ Month::Month(int yr, int m, int x, int y)
 Month::~Month()
 {
 	LOG("[~Month] destructor called, [%p]", this);
-
-	for (int i=0; i<total_weeks; i++)
-		delete[] dmap[i];
-	delete[] dmap;
 }
 
 int Month::getMonth()
@@ -207,18 +195,57 @@ int Month::getYear()
 	return year;
 }
 
-int Month::selected_day(int y, int x)
+void Month::setBrowsed(int b)
 {
-	int act_y = y-init_y-3; // 3 lines of headers
-	int act_x = x-init_x;
-	// LOG("[Month::selected_day] input=(%d,%d), act=(%d,%d)",
-	// 	y, x, act_y, act_x);
+	browsed = b;
+}
 
-	if ((act_y < 0 || act_y >= total_weeks)
-		|| (act_x < 0 || act_x >= PER_LINE_IN_MONTH_LEN))
-		return -1;
+void Month::setSelected(int s)
+{
+	selected = s;
+}
 
-	return dmap[act_y][act_x];
+void Month::shiftIdx(int ch)
+{
+	do {
+		if (ch == KEY_UP) {
+			idx.first -= 1;
+		} else if (ch == KEY_DOWN) {
+			idx.first += 1;
+		} else if (ch == KEY_RIGHT) {
+			idx.second += 1;
+		} else if (ch == KEY_LEFT) {
+			idx.second -= 1;
+		}
+
+		// check idx range
+		if (idx.first >= total_weeks) {
+			idx.first = idx.first % total_weeks;
+		} else if (idx.first < 0) {
+			idx.first = (total_weeks-1) - ((0-idx.first)-1);
+		}
+		if (idx.second >= 7) {
+			idx.second = idx.second % 7;
+		} else if (idx.second < 0) {
+			idx.second = (7-1) - ((0-idx.second)-1);
+		}
+	} while (dmap[idx.first][idx.second].size() == 0);
+	// size 0 means this entry wasn't initialized as a day
+}
+
+void Month::handleOp(int ch)
+{
+	if (! selected) {
+		LOG("[Month::handleOp] not selected, but ch=[%d] received", ch);
+		return;
+	}
+
+	if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
+		shiftIdx(ch);
+	} else if (ch == KEY_ENTER) {
+		LOG("[Month::handleOp] enter pressed, TASK Mode TODO");
+		dbh.queryDateTasks(year, month, dmap[idx.first][idx.second][0]);
+	}
 }
 
 void Month::printMonth()
@@ -233,27 +260,58 @@ void Month::printMonth()
 
 	int y = init_y;
 	int x = init_x;
-	std::string mstr = getMonthStr(month, PER_LINE_IN_MONTH_LEN);
-	mvprintw(y++, x, "%s", mstr.c_str());
+	char tmp[128];
+
+	// month string
+	sprintf(tmp, "%s", months[month-1].c_str());
+	if (browsed) {
+		mvprintwColor(y, x, months[month-1].c_str(), 11);
+	} else {
+		mvprintw(y, x, months[month-1].c_str());
+	}
+
+	// month string post part
+	std::string mpost = getMonthStrPost(month, PER_LINE_IN_MONTH_LEN);
+	mvprintw(y++, x+months[month-1].size()+1, "%s", mpost.c_str());
+
+	// headers
 	mvprintw(y++, x, "                           ");
 	mvprintw(y++, x, "Sun Mon Tue Wed Thu Fri Sat");
-	int pre_print = 0;
-	for (int i=0; i<total_weeks; i++)
-	{
-		for (int j=0; j<PER_LINE_IN_MONTH_LEN; j++)
-		{
-			// no day on this pos, or this day already printed
-			if (dmap[i][j] == -1 || dmap[i][j] == pre_print)
+
+	// days
+	for (auto const& row : dmap) {
+		// row.first == iy
+		// row.second == std::map<int, std::vector<int>>
+		for (auto const& col : row.second) {
+			// col.first == col (wd)
+			// col.second == std::vector(day, ix)
+			if (col.second.size() == 0)
 				continue;
-			char tmp[128];
-			sprintf(tmp, "%d", dmap[i][j]);
-			iter = curTaskDays.find(dmap[i][j]);
+			// LOG("[printMonth] [%d][%d]=(%d,%d)", row.first, col.first,
+			// 	col.second[0], col.second[1]);
+
+			sprintf(tmp, "%d", col.second[0]);
+			// check if scheduled
+			iter = curTaskDays.find(col.second[0]);
 			if (iter != curTaskDays.end()) { // found
-				mvprintwColor(y+i, x+j, tmp, 9);
-			} else { // not found
-				mvprintw(y+i, x+j, "%d", dmap[i][j]);
+				mvprintwColor(y+row.first, x+col.second[1], tmp, 9);
+			} else {
+				mvprintw(y+row.first, x+col.second[1], "%d", col.second[0]);
 			}
-			pre_print = dmap[i][j];
+		}
+	}
+	// days cursor (overwrite)
+	if (selected) {
+		bool found = false;
+		iter = curTaskDays.find(dmap[idx.first][idx.second][0]);
+		if (iter != curTaskDays.end()) {
+			found = true;
+		}
+		sprintf(tmp, "%d", dmap[idx.first][idx.second][0]);
+		if (found) {
+			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 15);
+		} else {
+			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 7);
 		}
 	}
 	printTasks();

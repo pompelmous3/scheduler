@@ -21,7 +21,10 @@ class Month {
     int total_weeks;
     int init_x, init_y; // starting position
     int tasks_x, tasks_y; // starting position of tasks in this month
-    int **dmap;
+    std::map <int, std::map<int, std::vector<int>>> dmap;
+    std::pair<int, int> idx;
+    bool browsed;
+    int selected;
     
 public:
     DBHandler dbh = DBHandler("/var/log/scheduler.db");
@@ -29,7 +32,10 @@ public:
     ~Month();
     int getMonth();
     int getYear();
-    int selected_day(int y, int x); // return date in the month on pos(x, y)
+    void setBrowsed(int b);
+    void setSelected(int s);
+    void shiftIdx(int ch);
+    void handleOp(int ch);
     void printMonth();
     void printTasks();
 };
@@ -42,7 +48,7 @@ void getTerminalSize(int& height, int&width);
 void printYear(int year);
 bool isLeapYear(int year);
 int getWeekDay(int day, int month, int year);
-std::string getMonthStr(int month, int len);
+std::string getMonthStrPost(int month, int len);
 int getTaskSign(std::string state);
 void setTaskColor(std::string priority);
 void resetTaskColor(std::string priority);

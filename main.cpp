@@ -30,10 +30,13 @@ int main()
 	int height, width;
 	getTerminalSize(height, width);
 	// TODO: decide how many displaying months accordingly
+
 	Month m = Month((*local_t).tm_year+1900, (*local_t).tm_mon+1, 5, 2);
+	Month n = Month((*local_t).tm_year+1900, (*local_t).tm_mon+2, 50, 2);
 	Screen sc = Screen{height, width};
 	// Screen sc(height, width);
 	sc.addMonth(&m);
+	sc.addMonth(&n);
 	sc.printScr();
 
 	loopingMove(sc);
