@@ -10,6 +10,7 @@ bool initNcurses()
 	keypad(stdscr, TRUE); // enable special keys (Ex: arrow keys)
 	start_color();
 	refresh();
+    curs_set(0);
 
 	if (initColors() == false)
         return false;
@@ -40,6 +41,10 @@ bool initColors()
 	init_pair(12, COLOR_BLACK, COLOR_CYAN);
 	init_pair(13, COLOR_BLACK, COLOR_GREEN);
 	init_pair(14, COLOR_BLACK, COLOR_YELLOW);
+
+    // others
+    init_pair(15, COLOR_YELLOW, COLOR_BLUE);
+
 	return true;
 }
 
