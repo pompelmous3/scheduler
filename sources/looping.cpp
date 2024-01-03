@@ -8,6 +8,7 @@ void loopingMove(Screen &sc)
 	*/
 	int ch;
 	int mvx, mvy;
+	int rc = 0;
 	while(1)
 	{
 		mvx = 0;
@@ -20,15 +21,17 @@ void loopingMove(Screen &sc)
 		} else if (ch == 27) {
 			sc.handleEsc();
 		} else if (ch == 13) {
-			sc.handleEnter();
+			rc = sc.handleEnter();
 		} else if (ch == 8) { // 127, \b ?
 			sc.handleBS();
 		} else {
 			sc.passOp(ch);
 		}
+		sc.handleRC(rc);
 		sc.move_cs(mvx, mvy);
 
 
 		sc.refreshScr();
+		rc = 0;
 	}
 }

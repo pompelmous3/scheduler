@@ -98,11 +98,12 @@ private:
     int getIFColor(int row, int col);
     std::optional<std::pair<int, int>> print_inputFields();
     void addTask();
+    void shift_curPos(int ch);
 
 public:
     addTaskPanel(int sc_h, int sc_w);
     ~addTaskPanel();
-    void handleOp(int ch);
+    int handleOp(int ch);
     std::optional<std::pair<int, int>> print();
     std::string getIFValue(std::string name);
 };

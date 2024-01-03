@@ -43,7 +43,7 @@ bool initColors()
 	init_pair(14, COLOR_BLACK, COLOR_YELLOW);
 
     // others
-    init_pair(15, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(15, COLOR_WHITE, COLOR_BLUE);
 
 	return true;
 }
