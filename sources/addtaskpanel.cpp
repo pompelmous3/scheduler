@@ -315,6 +315,36 @@ void addTaskPanel::addTask()
     dbh.insertTask(year, month, day, start_time, state, priority, desc);
 }
 
+void addTaskPanel::shift_curPos(int ch)
+{// be care of comparison of int and size_t
+    if (ch == KEY_UP || ch == KEY_DOWN) {
+        curPos.first = (ch == KEY_UP) ? curPos.first-1 : curPos.first+1;
+
+        // check curPos.first out of range
+        if (curPos.first >= (int)inputFields.size()) {
+            curPos.first = curPos.first % (int)inputFields.size();
+        } else if (curPos.first < 0) {
+            curPos.first = ((int)inputFields.size()-1) - (0-curPos.first-1);
+        }
+
+        // check if curPos.second out of range due to changed row
+        if (curPos.second >= (int)inputFields[curPos.first].size()) {
+            curPos.second = (int)inputFields[curPos.first].size()-1;
+        }
+
+    } else if (ch == KEY_LEFT || ch == KEY_RIGHT) {
+        curPos.second = (ch == KEY_LEFT) ? curPos.second-1 : curPos.second+1;
+        // check curPos.second out of range
+        if (curPos.second >= (int)inputFields[curPos.first].size()) {
+            curPos.second = curPos.second % (int)inputFields[curPos.first]
+                .size();
+        } else if (curPos.second < 0) {
+            curPos.second = ((int)inputFields[curPos.first].size()-1)
+                - (0-curPos.second-1);
+        }
+    }
+}
+
 addTaskPanel::addTaskPanel(int sc_h, int sc_w)
     : ScreenObject(sc_h, sc_w), enterMode {0}, typingMode {0}
 {
@@ -338,7 +368,7 @@ addTaskPanel::~addTaskPanel()
     LOG("[~addTaskPanel] called");
 }
 
-void addTaskPanel::handleOp(int ch)
+int addTaskPanel::handleOp(int ch)
 {
     // LOG("[addTaskPanel::handleOp] ch=[%d]", ch);
     if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT
@@ -358,9 +388,7 @@ void addTaskPanel::handleOp(int ch)
                 inputFields[enterPos.first][enterPos.second]->shiftCurs(width);
                 break;
             }
-            return;
-        }
-        if (enterMode) { // one of the inputFields is selected, do switch
+        } else if (enterMode) { // one of the inputFields is selected, do switch
             switch (ch) {
             case KEY_UP:
                 inputFields[enterPos.first][enterPos.second]->switchV(1);
@@ -371,40 +399,15 @@ void addTaskPanel::handleOp(int ch)
             default:
                 break;
             }
-            return;
-        }
-
-        switch(ch) { // moving between inputFields
-        case KEY_UP:
-            if (curPos.first == 0)
-                curPos.first = inputFields.size()-1;
-            else
-                curPos.first = (curPos.first - 1) % inputFields.size();
-
-            if (curPos.second >= inputFields[curPos.first].size()) {
-                curPos.second = 0;
-            }
-            break;
-        case KEY_DOWN:
-            curPos.first = (curPos.first + 1) % inputFields.size();
-            if (curPos.second >= inputFields[curPos.first].size()) {
-                curPos.second = 0;
-            }
-            break;
-        case KEY_LEFT:
-            curPos.second = (curPos.second - 1) % inputFields[curPos.first]
-                .size();
-            break;
-        case KEY_RIGHT:
-            curPos.second = (curPos.second + 1) % inputFields[curPos.first]
-                .size();
-            break;
+        } else {
+            shift_curPos(ch);
         }
     }
 
     else if (ch == KEY_ENTER) {
         if (inputFields[curPos.first][curPos.second]->getAction()) {
             addTask();
+            return 1000;
         } else {
             inputFields[curPos.first][curPos.second]->toggleen();
             enterMode = (enterMode + 1) % 2;
@@ -428,6 +431,7 @@ void addTaskPanel::handleOp(int ch)
             inputFields[curPos.first][curPos.second]->setv(ch);
         }
     }
+    return 0;
 }
 std::optional<std::pair<int, int>> addTaskPanel::print()
 {

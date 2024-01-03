@@ -131,8 +131,16 @@ void Screen::handleEsc()
 	}
 }
 
-void Screen::handleEnter()
+void Screen::handleRC(int rc)
 {
+	if (rc == 1000) {
+		toggleAtpMode();
+	}
+}
+
+int Screen::handleEnter()
+{
+	int rc = 0;
     if (isMenuMode()) {
         int opt = menu.getOptionIdx();
         switch (opt)
@@ -145,13 +153,14 @@ void Screen::handleEnter()
             break;
         }
     } else if (isAtpMode()) { // 
-		atp.handleOp(KEY_ENTER);
+		rc = atp.handleOp(KEY_ENTER);
     } else if (isMonthMode()) {
 		months[mon_idx]->handleOp(KEY_ENTER);
 	} else {
 		toggleMonthMode(); // should be turn on
 		months[mon_idx]->setSelected(1);
     }
+	return rc;
 }
 
 void Screen::handleBS()

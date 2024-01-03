@@ -311,7 +311,7 @@ void Month::printMonth()
 		if (found) {
 			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 15);
 		} else {
-			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 7);
+			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 10);
 		}
 	}
 	printTasks();

@@ -33,7 +33,8 @@ public:
     void toggleMonthMode();
     void handleArrow(int ch);
     void handleEsc();
-    void handleEnter();
+    void handleRC(int rc);
+    int handleEnter();
     void handleBS();
     int isMenuMode();
     int isAtpMode();
