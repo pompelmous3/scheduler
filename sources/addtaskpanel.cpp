@@ -132,7 +132,6 @@ strIF::strIF(int y, int x, std::string n)
 {
     if (n == "state") {
         opts.push_back(std::string("Todo"));
-        opts.push_back(std::string("In Progress"));
         opts.push_back(std::string("Done"));
     } else if (n == "priority") {
         opts.push_back(std::string("Urgent"));

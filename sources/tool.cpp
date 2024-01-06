@@ -2,6 +2,7 @@
 
 bool initNcurses()
 {
+    setlocale(LC_ALL, "");
 	initscr();
 	cbreak(); // read all input immediately rather than store in buffer
 	nonl(); // type ENTER do not change new line

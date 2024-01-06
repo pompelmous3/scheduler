@@ -49,7 +49,7 @@ void printYear(int year);
 bool isLeapYear(int year);
 int getWeekDay(int day, int month, int year);
 std::string getMonthStrPost(int month, int len);
-int getTaskSign(std::string state);
+std::string getTaskStr(std::string state, std::string task);
 void setTaskColor(std::string priority);
 void resetTaskColor(std::string priority);
 
