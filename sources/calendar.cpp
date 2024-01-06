@@ -93,15 +93,22 @@ std::string getMonthStrPost(int month, int len)
 	return res;
 }
 
-int getTaskSign(std::string state)
+std::string getTaskStr(std::string state, std::string task)
 {
-	if (state == "Todo")
-		return 88; // X
-	else if ( state == "In Progress")
-		return 62; // >
-	else if (state == "Done")
-		return 79; // O
-	return -1;
+	std::string result;
+
+	if (state == "Todo") { // ▢ u8"\u25A2"
+		result.append(u8"\u25A2 ");
+		result.append(task);
+	} else if (state == "Done") { // ✓ u8"\u2713"
+		result.append(u8"\u2713 ");
+		for (auto ch : task) {
+			result.push_back(ch);
+			result.append(u8"\u0336");
+		}
+	}
+
+	return result;
 }
 
 void setTaskColor(std::string priority)
@@ -324,15 +331,13 @@ void Month::printTasks()
 	// 	lr.size(), tasks_x, tasks_y);
 	int tx = tasks_x;
 	int ty = tasks_y;
-	int sign;
 	// mvprintw(tasks_y, tasks_x, "aaa");
 
 	attron(COLOR_PAIR(1));
 	for (int i=0; i<lr.size(); i++) {
-		sign = getTaskSign(lr[i].state);
+		std::string taskstr = getTaskStr(lr[i].state, lr[i].desc);
 		setTaskColor(lr[i].priority);
-		// LOG("desc=%s",lr[i].desc.c_str());
-		mvprintw(ty, tx, "%c %s", sign, lr[i].desc.c_str());
+		mvprintw(ty, tx, "%s", taskstr.c_str());
 		resetTaskColor(lr[i].priority);
 		ty++;
 	}
