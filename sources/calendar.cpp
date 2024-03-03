@@ -93,49 +93,13 @@ std::string getMonthStrPost(int month, int len)
 	return res;
 }
 
-std::string getTaskStr(std::string state, std::string task)
-{
-	std::string result;
-
-	if (state == "Todo") { // ▢ u8"\u25A2"
-		result.append(u8"\u25A2 ");
-		result.append(task);
-	} else if (state == "Done") { // ✓ u8"\u2713"
-		result.append(u8"\u2713 ");
-		for (auto ch : task) {
-			result.push_back(ch);
-			result.append(u8"\u0336");
-		}
-	}
-
-	return result;
-}
-
-void setTaskColor(std::string priority)
-{
-	if (priority == "Urgent")
-		attron(COLOR_PAIR(1));
-	else if (priority == "High")
-		attron(COLOR_PAIR(2));
-	else if (priority == "Normal")
-		attron(COLOR_PAIR(3));
-}
-void resetTaskColor(std::string priority)
-{
-	if (priority == "Urgent")
-		attroff(COLOR_PAIR(1));
-	else if (priority == "High")
-		attroff(COLOR_PAIR(2));
-	else if (priority == "Normal")
-		attroff(COLOR_PAIR(3));
-}
-
 
 //########################################################################
 
 // class Month methods
-Month::Month(int yr, int m, int x, int y)
-	: year {yr}, month {m}, init_x {x}, init_y {y}, browsed {false}
+Month::Month(int yr, int m, int x, int y, int sc_h, int sc_w)
+	: year {yr}, month {m}, sc_h {sc_h}, sc_w {sc_w}, init_x {x}, init_y {y},
+	browsed {false}, tp(x, y+9, 20, 20), taskMode {0}
 {
 	/*
 		1. (x, y) is the top left point of this month
@@ -240,19 +204,44 @@ void Month::shiftIdx(int ch)
 	// size 0 means this entry wasn't initialized as a day
 }
 
-void Month::handleOp(int ch)
+int Month::handleOp(int ch)
+/*
+-- return 0 means this op handled in Month, otherwise return corresponding
+ return code in return_code.h
+-- taskMode doesn't need to handle ESC, check ESC first before check taskMode
+*/
 {
+	int rc = 0;
 	if (! selected) {
 		LOG("[Month::handleOp] not selected, but ch=[%d] received", ch);
-		return;
+		return 0;
 	}
 
-	if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
-		shiftIdx(ch);
-	} else if (ch == KEY_ENTER) {
-		LOG("[Month::handleOp] enter pressed, TASK Mode TODO");
-		dbh.queryDateTasks(year, month, dmap[idx.first][idx.second][0]);
+	if (ch==KEY_M_ESC) {
+		LOG("[Month::handleOp] get KEY_M_ESC");
+		if (taskMode) {
+			tp.setDisplayIdx(false);
+			taskMode = 0;
+		} else {
+			return STOP_SC_MONTHMODE;
+		}
+		return 0;
 	}
+	if (taskMode) {
+		rc = tp.handleOp(ch);
+		return rc;
+	} else if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
+		shiftIdx(ch);
+		// update the tasks of taskPanel
+		dbh.queryDateTasks(year, month, dmap[idx.first][idx.second][0]);
+		tp.setTasks(dbh.getLastResults());
+	} else if (ch == KEY_ENTER) {
+		rc = tp.setDisplayIdx(true);
+		if (rc == 0) {
+			taskMode = 1;
+		}
+	}
+	return 0;
 }
 
 void Month::printMonth()
@@ -287,15 +276,9 @@ void Month::printMonth()
 
 	// days
 	for (auto const& row : dmap) {
-		// row.first == iy
-		// row.second == std::map<int, std::vector<int>>
 		for (auto const& col : row.second) {
-			// col.first == col (wd)
-			// col.second == std::vector(day, ix)
 			if (col.second.size() == 0)
 				continue;
-			// LOG("[printMonth] [%d][%d]=(%d,%d)", row.first, col.first,
-			// 	col.second[0], col.second[1]);
 
 			sprintf(tmp, "%d", col.second[0]);
 			// check if scheduled
@@ -321,26 +304,6 @@ void Month::printMonth()
 			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 10);
 		}
 	}
-	printTasks();
+
+	tp.print();
 }
-
-void Month::printTasks()
-{
-	std::vector <task_entry> lr = dbh.getLastResults();
-	// LOG("lr.size()=%d, tasks_x=%d, tasks_y=%d",
-	// 	lr.size(), tasks_x, tasks_y);
-	int tx = tasks_x;
-	int ty = tasks_y;
-	// mvprintw(tasks_y, tasks_x, "aaa");
-
-	attron(COLOR_PAIR(1));
-	for (int i=0; i<lr.size(); i++) {
-		std::string taskstr = getTaskStr(lr[i].state, lr[i].desc);
-		setTaskColor(lr[i].priority);
-		mvprintw(ty, tx, "%s", taskstr.c_str());
-		resetTaskColor(lr[i].priority);
-		ty++;
-	}
-	attroff(COLOR_PAIR(1));
-}
-

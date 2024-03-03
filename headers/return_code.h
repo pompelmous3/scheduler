@@ -1,0 +1,9 @@
+#ifndef RETURN_CODE_H
+#define RETURN_CODE_H
+
+#define STOP_SC_ATPMODE 1000
+#define STOP_SC_MONTHMODE 1001
+
+#define TASKPANEL_ZERO_LEN 2000
+
+#endif

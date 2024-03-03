@@ -124,8 +124,14 @@ void Screen::handleEsc()
 	} else if (isMenuMode()) {
 		toggleMenuMode();
 	} else if (isMonthMode()) {
-		toggleMonthMode();
-		months[mon_idx]->setSelected(0);
+		int rc = months[mon_idx]->handleOp(KEY_M_ESC);
+		LOG("[Screen::handleEsc] rc=[%d]", rc);
+		if (rc == 0) {
+			return;
+		} else if (rc == STOP_SC_MONTHMODE) {
+			toggleMonthMode();
+			months[mon_idx]->setSelected(0);
+		}
 	} else {
 		toggleMenuMode();
 	}
@@ -133,7 +139,7 @@ void Screen::handleEsc()
 
 void Screen::handleRC(int rc)
 {
-	if (rc == 1000) {
+	if (rc == STOP_SC_ATPMODE) {
 		toggleAtpMode();
 	}
 }

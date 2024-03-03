@@ -1,4 +1,5 @@
 #include "../headers/screenobject.h"
+#include "../headers/log.h"
 #include <curses.h>
 
 ScreenObject::ScreenObject(int sc_h, int sc_w)
@@ -9,6 +10,16 @@ ScreenObject::ScreenObject(int sc_h, int sc_w)
     init_y = (sc_h - height) / 2;
     x = init_x;
     y = init_y;
+}
+
+ScreenObject::ScreenObject(int x, int y, int h, int w)
+{
+    height = h;
+    width = w;
+    init_x = x;
+    init_y = y;
+    this->x = x;
+    this->y = y;
 }
 
 ScreenObject::~ScreenObject()

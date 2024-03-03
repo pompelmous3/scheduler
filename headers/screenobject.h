@@ -12,7 +12,8 @@ protected: // only accessible by the derived classes
     std::vector <std::string> printMap;
 
 public:
-    ScreenObject(int sc_h, int sc_w);
+    ScreenObject(int sc_h, int sc_w); // center-aligned
+    ScreenObject(int x, int y, int h, int w);
     ~ScreenObject();
     void print();
 };

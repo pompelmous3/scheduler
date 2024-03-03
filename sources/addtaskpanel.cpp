@@ -406,7 +406,7 @@ int addTaskPanel::handleOp(int ch)
     else if (ch == KEY_ENTER) {
         if (inputFields[curPos.first][curPos.second]->getAction()) {
             addTask();
-            return 1000;
+            return STOP_SC_ATPMODE;
         } else {
             inputFields[curPos.first][curPos.second]->toggleen();
             enterMode = (enterMode + 1) % 2;

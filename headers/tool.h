@@ -2,10 +2,16 @@
 #define TOOL_H
 #include <string>
 #include "curses.h"
+#include "log.h"
+#include "return_code.h"
 #include <ctime>
 #include <chrono>
 #include <optional>
 #include <map>
+
+
+#define KEY_M_ESC 10027
+
 
 bool initNcurses();
 bool initColors();
