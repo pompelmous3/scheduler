@@ -35,5 +35,6 @@ public:
     const std::vector <task_entry> getLastResults() const;
     void insertTask(int year, int month, int day, std::string start_time,
         std::string state, std::string priority, std::string desc);
+    void toggleState(int id, std::string cur_state);
 };
 #endif
