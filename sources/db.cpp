@@ -173,3 +173,40 @@ end:
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 }
+
+void DBHandler::toggleState(int id, std::string cur_state)
+{
+    std::string set_state;
+    if (cur_state == "Todo") {
+        set_state = "Done";
+    } else if (cur_state == "Done") {
+        set_state = "Todo";
+    }
+
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[toggleState] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql), "UPDATE tasks set state = ? WHERE id = ?",
+        set_state, id);
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        LOG("[toggleState] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    sqlite3_bind_text(stmt, 1, set_state.c_str(), set_state.size(), NULL);
+    sqlite3_bind_int(stmt, 2, id);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[toggleState] sqlite3_step failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}

@@ -1,7 +1,8 @@
 #include "../headers/taskpanel.h"
 
 taskPanel::taskPanel(int x, int y, int h, int w)
-    : ScreenObject(x, y, h, w), idx {0}, displayIdx {false}
+    : ScreenObject(x, y, h, w), idx {0}, displayIdx {false},
+	cur_y {0}, cur_m {0}, cur_d {0}
 {
     // printMap.push_back(std::string(width, '#'));
 }
@@ -10,13 +11,20 @@ taskPanel::~taskPanel()
 {
 }
 
-void taskPanel::setTasks(std::vector <task_entry> res)
+void taskPanel::updateTasks(int y, int m, int d)
 {
-    tasks.clear();
-	idx = 0;
-    for (int i=0; i<res.size(); i++) {
-        tasks.push_back(res[i]);
-    }
+	tasks.clear();
+	if (!(cur_y==y && cur_m==m && cur_d==d)) {
+		idx = 0; // only reset when date changed
+	}
+	cur_y = y;
+	cur_m = m;
+	cur_d = d;
+	dbh.queryDateTasks(y, m, d);
+	std::vector<task_entry> res = dbh.getLastResults();
+	for (int i=0; i<res.size(); i++) {
+		tasks.push_back(res[i]);
+	}
 }
 
 int taskPanel::setDisplayIdx(bool v)
@@ -42,6 +50,8 @@ int taskPanel::handleOp(int ch)
 		if (idx >= tasks.size()) {
 			idx = idx - tasks.size();
 		}
+	} else if (ch==KEY_ENTER) {
+		dbh.toggleState(tasks[idx].id, tasks[idx].state);
 	}
     return 0;
 }

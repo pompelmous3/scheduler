@@ -232,9 +232,7 @@ int Month::handleOp(int ch)
 		return rc;
 	} else if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
 		shiftIdx(ch);
-		// update the tasks of taskPanel
-		dbh.queryDateTasks(year, month, dmap[idx.first][idx.second][0]);
-		tp.setTasks(dbh.getLastResults());
+		// tp.updateTasks(year, month, dmap[idx.first][idx.second][0]);
 	} else if (ch == KEY_ENTER) {
 		rc = tp.setDisplayIdx(true);
 		if (rc == 0) {
@@ -305,5 +303,7 @@ void Month::printMonth()
 		}
 	}
 
+	// update tasks each frame
+	tp.updateTasks(year, month, dmap[idx.first][idx.second][0]);
 	tp.print();
 }

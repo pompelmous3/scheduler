@@ -11,11 +11,15 @@ class taskPanel : public ScreenObject
     std::vector <task_entry> tasks;
     int idx; // which task is selected now
     bool displayIdx;
+    DBHandler dbh = DBHandler("/var/log/scheduler.db");
+    int cur_y;
+    int cur_m;
+    int cur_d;
 
 public:
     taskPanel(int x, int y, int h, int w);
     ~taskPanel();
-    void setTasks(std::vector <task_entry> res);
+    void updateTasks(int y, int m, int d);
     int setDisplayIdx(bool v);
     int handleOp(int ch);
     void print();
