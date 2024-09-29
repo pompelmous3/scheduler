@@ -448,6 +448,6 @@ std::string addTaskPanel::getIFValue(std::string name)
             }
         }
     }
-    LOG("[getIFValue] cannot find [%s] in inputFields", name);
+    LOG("[getIFValue] cannot find [%s] in inputFields", name.c_str());
     return std::string("");
 }
