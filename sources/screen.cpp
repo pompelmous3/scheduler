@@ -155,6 +155,9 @@ int Screen::handleEnter()
             toggleMenuMode();
             toggleAtpMode();
             break;
+		case 1:
+			endNcurses();
+			exit(0);
         default:
             break;
         }
