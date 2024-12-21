@@ -106,7 +106,7 @@ void DBHandler::queryDateTasks(int y, int m, int d)
 
     // compile sql statement (tasks)
     snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE year=%d and "
-        "month=%d and day=%d;", y, m, d);
+        "month=%d and day=%d ORDER BY description ASC;", y, m, d);
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
