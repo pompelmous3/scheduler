@@ -6,7 +6,7 @@
 
 // ==== class Screen ====
 class Screen {
-    std::vector<Month *> months;
+    std::vector<std::shared_ptr<Month>> months;
     int mon_idx;
     int d_month_num;
     // DBHandler dbh = DBHandler("/var/log/scheduler.db");
@@ -15,15 +15,20 @@ class Screen {
     int menuMode;
     int atpMode;
     int monthMode;
-    Menu menu;
-    addTaskPanel atp;
+    std::shared_ptr<Menu> menu;
+    std::shared_ptr<addTaskPanel> atp;
+    // Menu *menu;
+    // addTaskPanel* atp;
     
     // TODO: current movable range of x and y
 public:
-    Screen(int sc_h, int sc_w);
+    // Screen(int sc_h, int sc_w);
+    Screen();
     ~Screen();
+    void looping();
+
     int getMonthsSize();
-    void addMonth(Month *m);
+    void addMonth(std::shared_ptr<Month>);
     void printScr();
     void refreshScr();
     void move_cs(int x, int y);

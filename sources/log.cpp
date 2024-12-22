@@ -33,7 +33,7 @@ Log::Log(std::string p)
 
 Log& Log::gI() // cannot and no need to specify static here
 {
-    static Log instance("/var/log/scheduler.log");
+    static Log instance("./scheduler.log");
     return instance;
 }
 

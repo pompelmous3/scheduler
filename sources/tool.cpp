@@ -12,7 +12,7 @@ bool initNcurses()
 	start_color();
 	refresh();
     curs_set(0);
-
+    set_escdelay(30);
 	if (initColors() == false)
         return false;
 	return true;
