@@ -6,7 +6,7 @@
 
 // ==== class Screen ====
 class Screen {
-    std::vector<Month *> months;
+    std::vector<std::shared_ptr<Month>> months;
     int mon_idx;
     int d_month_num;
     // DBHandler dbh = DBHandler("/var/log/scheduler.db");
@@ -26,8 +26,9 @@ public:
     Screen();
     ~Screen();
     void looping();
+
     int getMonthsSize();
-    void addMonth(Month *m);
+    void addMonth(std::shared_ptr<Month>);
     void printScr();
     void refreshScr();
     void move_cs(int x, int y);

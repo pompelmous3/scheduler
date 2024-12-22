@@ -36,8 +36,8 @@ Screen::Screen()
 		next_m = 1;
 	}
 	// TODO: decide how many displaying months accordingly
-	Month *m = new Month(cur_y, cur_m, 5, 2, h, w);
-	Month *n = new Month(next_y, next_m, 50, 2, h, w);
+	std::shared_ptr<Month> m = std::make_shared<Month>(cur_y, cur_m, 5, 2, h, w);
+	std::shared_ptr<Month> n = std::make_shared<Month>(next_y, next_m, 50, 2, h, w);
 
 	addMonth(m);
 	addMonth(n);
@@ -97,7 +97,7 @@ int Screen::getMonthsSize()
 	return months.size();
 }
 
-void Screen::addMonth(Month *mp)
+void Screen::addMonth(std::shared_ptr<Month>mp)
 {
 	months.push_back(mp); //use pointer to avoid copying a new Month instance
 	if (months.size() == 1) {
@@ -116,7 +116,7 @@ void Screen::printScr()
 		menu->print();
 	} else {
 		for (int i=0; i<d_month_num; i++) {
-			(*months[i]).printMonth();
+			months[i]->printMonth();
 		}
 		// curs = std::make_pair(cs_y, cs_x);
 	}
