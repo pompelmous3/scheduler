@@ -32,7 +32,7 @@ class Month {
     int selected;
     
 public:
-    DBHandler dbh = DBHandler("/var/log/scheduler.db");
+    DBHandler dbh = DBHandler("./scheduler.db");
     Month(int yr, int m, int x, int y, int sc_h, int sc_w);
     ~Month();
     int getMonth();
