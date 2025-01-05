@@ -226,7 +226,7 @@ int Month::handleOp(int ch)
 		shiftIdx(ch);
 		rc = SC_UPDATE_DATE_2_SUBM;
 	} else if (ch == KEY_ENTER) {
-		// TODO: need to tell SC to change control to dailytasks
+		// TODO: need to tell SC to change control to dateSpecificTasks
 	}
 	return rc;
 }

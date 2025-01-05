@@ -29,9 +29,9 @@ Screen::Screen()
 	calendar = std::make_shared<Calendar>(top_y+1, left_x+1,
 		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1);
 	submods.push_back(calendar);
-	dailytasks = std::make_shared<taskPanel>(cal_end_y+3, left_x+5,
+	dateSpecificTasks = std::make_shared<taskPanel>(cal_end_y+3, left_x+5,
 		bottom_y-1-(cal_end_y+3), mid_x-(left_x+5));
-	submods.push_back(dailytasks);
+	submods.push_back(dateSpecificTasks);
 
 	// First time print before any input
 	printScr();
@@ -131,7 +131,7 @@ void Screen::printScr()
 {
 	printFrame();
 	calendar->print();
-	dailytasks->print();
+	dateSpecificTasks->print();
 }
 
 void Screen::refreshScr()
@@ -156,17 +156,17 @@ void Screen::handleRC(int rc)
 	// LOG("[Screen::handleRC] rc=[%d]", rc);
 	if (rc==START_DELEGESC) {
 		delegESC = true;
-		if (mode==0) update_dailytasks();
+		if (mode==0) update_dateSpecificTasks();
 	}
 	else if (rc==STOP_DELEGESC) delegESC = false;
 	else if (rc == STOP_SC_ATPMODE) {
 		// toggleAtpMode();
 	} else if (rc==SC_UPDATE_DATE_2_SUBM) {
-		update_dailytasks();
+		update_dateSpecificTasks();
 	}
 }
 
-void Screen::update_dailytasks() {
+void Screen::update_dateSpecificTasks() {
 	std::vector<int> date = calendar->getDate();
-	dailytasks->updateTasks(date[0],date[1],date[2]);
+	dateSpecificTasks->updateTasks(date[0],date[1],date[2]);
 }

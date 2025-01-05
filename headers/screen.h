@@ -23,7 +23,7 @@ class Screen {
     bool delegESC;
 
     std::shared_ptr<Calendar> calendar;
-    std::shared_ptr<taskPanel> dailytasks;
+    std::shared_ptr<taskPanel> dateSpecificTasks;
     // std::shared_ptr<Menu> menu;
     // std::shared_ptr<addTaskPanel> atp;
     
@@ -41,7 +41,7 @@ public:
 
     int handleOp(int ch);
     void handleRC(int rc);
-    void update_dailytasks();
+    void update_dateSpecificTasks();
 };
 
 #endif
