@@ -3,55 +3,37 @@
 #include "db.h"
 #include "menu.h"
 #include "tool.h"
+#include "month.h"
 #include "taskpanel.h"
+#include "submodule.h"
 #include <string> // need include here so we can use std::string
 #include <vector>
 
-typedef struct {
-    int y;
-    int m;
-    int d;
-} day;
 
-// ==== class Month ====
-class Month {
-    int year;
-    int month;
-    int start_weekday;
-    int total_days;
-    int total_weeks;
-    int sc_h, sc_w;
-    int init_x, init_y; // starting position
-    int tasks_x, tasks_y; // starting position of tasks in this month
-    std::map <int, std::map<int, std::vector<int>>> dmap;
-    // dmap[y_idx][week_day(not actual x position)] = {date, x_idx}
-    taskPanel tp;
-    int taskMode;
-    std::pair<int, int> idx;
-    bool browsed;
-    int selected;
-    
+#define CAL_PADDING 1
+#define MIN_CAL_W 30
+#define MIN_CAL_H 11
+
+
+class Calendar : public SubModule {
+    int ini_x, ini_y;
+    int h;
+    int w;
+    int max_mon_cnt;
+    std::vector<std::shared_ptr<Month>> mons;
+    int mon_idx;
+    bool delegToMon; // If op need to delegate to mons (mons activated)
+
 public:
-    DBHandler dbh = DBHandler("./scheduler.db");
-    Month(int yr, int m, int x, int y, int sc_h, int sc_w);
-    ~Month();
-    int getMonth();
-    int getYear();
-    void setBrowsed(int b);
-    void setSelected(int s);
-    void shiftIdx(int ch);
-    int handleOp(int ch);
-    void printMonth();
+    Calendar(int, int, int, int);
+    ~Calendar();
+    void addMonth(std::shared_ptr<Month>);
+    void shiftMonth(int);
+    std::vector<int> getDate();
+    int handleOp(int ch) override;
+    void handleRC(int& rc);
+    void print() override;
+
 };
-
-// ==== other functions ====
-
-int *getYearMonths(int year);
-int getTotalWeeks(int td, int sd);
-void getTerminalSize(int& height, int&width);
-void printYear(int year);
-bool isLeapYear(int year);
-int getWeekDay(int day, int month, int year);
-std::string getMonthStrPost(int month, int len);
 
 #endif

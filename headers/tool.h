@@ -11,13 +11,16 @@
 #include <memory>
 
 
-#define KEY_M_ESC 10027
+#define KEY_M_ESC 27
 
 
 bool initNcurses();
 bool initColors();
 void mvprintwColor(int y, int x, const char* str, int color);
 void endNcurses();
+bool isArrow(int ch);
+bool isEnter(int ch);
+bool isESC(int ch);
 
 // time related
 

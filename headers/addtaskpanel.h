@@ -88,7 +88,7 @@ private:
     std::vector<std::vector<std::shared_ptr<inputField>>> inputFields;
     // inputFields[y][x] means the inputField which is at y row and x column
 
-    DBHandler dbh = DBHandler("/var/log/scheduler.db");
+    DBHandler dbh = DBHandler("./scheduler.db");
     std::pair<int, int> curPos; // current inputField pos
     std::pair<int, int> enterPos; // entering inputField pos
     // int selected; // if selected, the curPos need to print in another color

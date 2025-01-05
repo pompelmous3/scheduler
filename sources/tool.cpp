@@ -61,6 +61,18 @@ void endNcurses()
 	endwin();
 }
 
+bool isArrow(int ch) {
+    return (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_LEFT || ch==KEY_RIGHT);
+}
+
+bool isEnter(int ch) {
+    return (ch==KEY_ENTER || ch==13);
+}
+
+bool isESC(int ch) {
+    return (ch==KEY_M_ESC);
+}
+
 std::tm* curTimeCompnt()
 {
 	auto now = std::chrono::system_clock::now();

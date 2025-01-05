@@ -1,9 +1,10 @@
 #include "../headers/taskpanel.h"
 
-taskPanel::taskPanel(int x, int y, int h, int w)
-    : ScreenObject(x, y, h, w), idx {0}, displayIdx {false},
+taskPanel::taskPanel(int y, int x, int h, int w)
+    : idx {0}, displayIdx {false}, init_x(x), init_y(y),
 	cur_y {0}, cur_m {0}, cur_d {0}
 {
+	LOG("[taskPanel::taskPanel] initialized");
     // printMap.push_back(std::string(width, '#'));
 }
 

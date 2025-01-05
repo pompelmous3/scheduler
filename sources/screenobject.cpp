@@ -12,7 +12,7 @@ ScreenObject::ScreenObject(int sc_h, int sc_w)
     y = init_y;
 }
 
-ScreenObject::ScreenObject(int x, int y, int h, int w)
+ScreenObject::ScreenObject(int y, int x, int h, int w)
 {
     height = h;
     width = w;
