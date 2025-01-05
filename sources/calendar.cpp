@@ -58,11 +58,31 @@ void Calendar::addMonth(std::shared_ptr<Month>m) {
 
 void Calendar::shiftMonth(int v) {
 	mons[mon_idx]->setBrowsed(0);
-	mon_idx += v;
-	if (mon_idx>=(int)mons.size()) {
-		mon_idx = mon_idx % mons.size();
-	} else if (mon_idx < 0) {
-		mon_idx = (mons.size()-1) - ((0-mon_idx)-1);
+	if ((mon_idx==0 && v<0) || (mon_idx==mons.size()-1 && v>0)) {
+		/*
+		Here we already sure we need to remove/adding month and shift.
+		we can simply use (v<0)/(v>0) to distinguish the direction.
+		*/
+		std::vector<int> pre_date = (v>0?mons.back():mons.front())->getDate();
+		std::vector<int> pre_pos = (v>0?mons.back():mons.front())->getPos();
+		int adding_yr = pre_date[0];
+		int adding_mon = pre_date[1]+v;
+		if (adding_mon>12) {
+			adding_yr++;
+			adding_mon %= 12;
+		} else if (adding_mon<=0) {
+			adding_yr--;
+			adding_mon = (adding_mon+12);
+		}
+		mons.erase((v>0)? mons.begin() : mons.end()-1);
+		for (auto& m : mons) m->shiftPos(-v);
+		std::shared_ptr<Month> mn = std::make_shared<Month>(adding_yr,
+			adding_mon, pre_pos[0], pre_pos[1]);
+		// addMonth(mn);
+		mons.insert((v>0)? mons.end() : mons.begin(), mn);
+	}
+	else {
+		mon_idx += v;
 	}
 	mons[mon_idx]->setBrowsed(1);
 }

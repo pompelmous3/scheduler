@@ -3,9 +3,9 @@
 #include <unistd.h> // for STDOUT_FILENO
 #include <sys/ioctl.h> // ioctl() and TIOCGWINSZ
 
-std::string months[12] = {"January", "February", "March", "April", "May",
-						"June",	"July", "August", "September", "October",
-						"November", "December"};
+std::string months[12] = {"Jan", "Feb", "Mar", "Apr", "May",
+						"Jun",	"Jul", "Aug", "Sep", "Oct",
+						"Nov", "Dec"};
 const int days_norm[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 // for calculate day in a week
 const int century_code[4] = {6, 4, 2, 0};
@@ -74,7 +74,7 @@ int getWeekDay(int day, int month, int year)
 std::string getMonthStrPost(int month, int len)
 {
 	std::string mstr = months[month-1];
-	int post_len = len - mstr.length() - 1;
+	int post_len = len - (4+1 + mstr.length()+1);
 	std::string res = std::string(post_len, '-');
 	return res;
 }
@@ -154,6 +154,10 @@ std::vector<int> Month::getDate() {
 	return {year, month, cur_day};
 }
 
+std::vector<int> Month::getPos() {
+	return {init_y, init_x};
+}
+
 void Month::setBrowsed(int b)
 {
 	browsed = b;
@@ -164,6 +168,10 @@ void Month::setSelected(bool s)
 	selected = s;
 }
 
+void Month::shiftPos(int v)
+{
+	init_x += (MON_WIDTH + MON_MARGIN)*v;
+}
 void Month::shiftIdx(int ch)
 {
 	do {
@@ -230,6 +238,9 @@ void Month::print()
 		Screen::refreshScr() => Screen::printScr()
 	*/
 
+	// TODO: make addTaskPanel to trigger an update of scheduled days
+	//		in Month?
+
 	std::map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
 	LOG("[Month::print] curTaskDays.size()=[%d]", curTaskDays.size());
 	std::map<int, int>::iterator iter;
@@ -239,16 +250,16 @@ void Month::print()
 	char tmp[128];
 
 	// month string
-	sprintf(tmp, "%s", months[month-1].c_str());
+	int mon_str_sz = sprintf(tmp, "%d %s", year, months[month-1].c_str());
 	if (browsed) {
-		mvprintwColor(y, x, months[month-1].c_str(), 11);
+		mvprintwColor(y, x, tmp, 11);
 	} else {
-		mvprintw(y, x, months[month-1].c_str());
+		mvprintw(y, x, tmp);
 	}
 
 	// month string post part
 	std::string mpost = getMonthStrPost(month, MON_WIDTH);
-	mvprintw(y++, x+months[month-1].size()+1, "%s", mpost.c_str());
+	mvprintw(y++, x+mon_str_sz+1, "%s", mpost.c_str());
 
 	// headers
 	mvprintw(y++, x, "                           ");

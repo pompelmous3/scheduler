@@ -52,8 +52,10 @@ public:
     int getMonth();
     int getYear();
     std::vector<int> getDate();
+    std::vector<int> getPos();
     void setBrowsed(int b);
     void setSelected(bool s);
+    void shiftPos(int v);
     void shiftIdx(int ch);
     int handleOp(int ch);
     void print();
