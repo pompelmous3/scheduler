@@ -1,277 +1,78 @@
-#include "../headers/addtaskpanel.h"
-#include "../headers/log.h"
+#include "taskmanager.h"
+#include "log.h"
 #include <curses.h>
-#include<iostream>
-
-inputField::inputField(int y, int x, std::string n)
-    : sc_y {y}, sc_x {x}, cursorIdx {0}, name {n},
-      strValue{std::string("")}, entering {0}, typing {0},
-      forAction {false}
-{
-    // LOG("[inputField::inputField]");
-}
-
-inputField::~inputField()
-{}
-
-int inputField::gety()
-{
-    return sc_y;
-}
-
-int inputField::getx()
-{
-    return sc_x;
-}
-
-std::string inputField::getname()
-{
-    return name;
-}
-
-int inputField::getTyping()
-{
-    return typing;
-}
-
-int inputField::getCursorIdx()
-{
-    return cursorIdx;
-}
-
-int inputField::geten()
-{
-    return entering;
-}
-
-bool inputField::getAction()
-{
-    return forAction;
-}
-
-void inputField::toggleen()
-{
-    entering = (entering + 1) % 2;
-    if (entering == 0 && typing == 1) {
-        typing = 0;
-    }
-}
-
-intIF::intIF(int y, int x, std::string n, int val)
-    : inputField(y, x, n), value {val}
-{
-    // TODO: set upper and lower limit
-    if (strcmp(n.c_str(), "year") == 0) {
-        fixedLen = 4;
-        upperBnd = 9999;
-        lowerBnd = 0;
-    } else if (strcmp(n.c_str(), "month") == 0) {
-        fixedLen = 2;
-        upperBnd = 12;
-        lowerBnd = 1;
-    } else if (strcmp(n.c_str(), "day") == 0) {
-        fixedLen = 2;
-        upperBnd = 31;
-        lowerBnd = 1;
-    } else if (strcmp(n.c_str(), "hour") == 0) {
-        fixedLen = 2;
-        upperBnd = 23;
-        lowerBnd = 0;
-    } else if (strcmp(n.c_str(), "min") == 0) {
-        fixedLen = 2;
-        upperBnd = 59;
-        lowerBnd = 0;
-    } else {
-        LOG("[intIF::intIF] unknown init name=[%s]", n.c_str());
-        fixedLen = 2;
-    }
-}
-intIF::~intIF()
-{}
-
-std::string intIF::getv()
-{
-    std::string numStr = std::to_string(value);
-    strValue = rjust(numStr, fixedLen, '0');
-    return strValue;
-}
-
-void intIF::setv(int ch)
-{
-    LOG("[intIF::setv] unsupported yet");
-}
-
-void intIF::backspacev()
-{
-    LOG("[intIF::backspacev] unsupported yet");
-}
-
-void intIF::deletev()
-{
-    LOG("[intIF::deletev] unsupported yet");
-}
-
-void intIF::shiftCurs(int i)
-{
-    LOG("[intIF::shiftCurs] unsupported yet");
-}
-
-void intIF::switchV(int i)
-{
-    value += i;
-    if (value > upperBnd) {
-        value = lowerBnd + (value - upperBnd - 1);
-    } else if (value < lowerBnd) {
-        value = upperBnd - (lowerBnd - value - 1);
-    }
-}
+#include <iostream>
 
 
-strIF::strIF(int y, int x, std::string n)
-    : inputField(y, x, n), idx {0}
-{
-    if (n == "state") {
-        opts.push_back(std::string("Todo"));
-        opts.push_back(std::string("Done"));
-    } else if (n == "priority") {
-        opts.push_back(std::string("Urgent"));
-        opts.push_back(std::string("High"));
-        opts.push_back(std::string("Normal"));
-    } else if (n == "description") {
-        opts.push_back(std::string("description"));
-    } else if (n == "enter") {
-        opts.push_back(std::string("ENTER"));
-        forAction = 1;
-    }
-}
-strIF::~strIF()
-{}
-
-std::string strIF::getv()
-{
-    strValue = opts[idx];
-    return strValue;
-}
-
-void strIF::setv(int ch)
-{
-    if (typing == 0) {
-        cursorIdx = 0;
-        typing = 1;
-    }
-    opts[idx].insert(cursorIdx, 1, ch);
-    cursorIdx++;
-}
-
-void strIF::backspacev()
-{
-    if (typing == 1 && cursorIdx >= 1) {
-        cursorIdx--;
-        opts[idx].erase(cursorIdx, 1);
-    }
-}
-
-void strIF::deletev()
-{
-    // LOG("[strIF::deletev] before, cursorIdx=[%d], opts[idx].size()=[%d]",
-    //     cursorIdx, opts[idx].size());
-    if (typing == 1 && cursorIdx < opts[idx].size()) {
-        opts[idx].erase(cursorIdx, 1);
-    }
-}
-
-void strIF::shiftCurs(int i)
-{
-    cursorIdx += i;
-    if (cursorIdx < 0) {
-        cursorIdx = 0;
-    }
-    if (cursorIdx > opts[idx].size()) {
-        cursorIdx = opts[idx].size();
-    }
-
-}
-
-void strIF::switchV(int i)
-{
-    int optSize = static_cast<int>(opts.size());
-    idx = idx + i;
-    if (idx >= optSize) {
-        idx = idx % optSize;
-    } else if (idx < 0) {
-        idx = (optSize - 1) - ((0-idx)-1);
-    }
-}
-
-void addTaskPanel::init_inputFields()
+void taskManager::init_inputFields()
 {
     std::tm* curT = curTimeCompnt();
     // line 1: date (year, month, day)
     std::vector<std::shared_ptr<inputField>> lineOne;
-    std::shared_ptr<intIF> year = std::make_shared<intIF>(init_y+3, init_x+15,
+    std::shared_ptr<intIF> year = std::make_shared<intIF>(y+2, x+14,
         std::string("year"), curT->tm_year+1900);
     lineOne.push_back(std::move(year));
-    std::shared_ptr<intIF> month = std::make_shared<intIF>(init_y+3, init_x+20,
+    std::shared_ptr<intIF> month = std::make_shared<intIF>(y+2, x+19,
         std::string("month"), curT->tm_mon+1);
     lineOne.push_back(std::move(month));
-    std::shared_ptr<intIF> day = std::make_shared<intIF>(init_y+3, init_x+23,
+    std::shared_ptr<intIF> day = std::make_shared<intIF>(y+2, x+22,
         std::string("day"), curT->tm_mday);
     lineOne.push_back(std::move(day));
     inputFields.push_back(std::move(lineOne));
 
     // line 2: start_time (hour, min)
     std::vector<std::shared_ptr<inputField>> lineTwo;
-    std::shared_ptr<intIF> hour = std::make_shared<intIF>(init_y+4, init_x+15,
+    std::shared_ptr<intIF> hour = std::make_shared<intIF>(y+3, x+14,
         std::string("hour"), curT->tm_hour);
     lineTwo.push_back(std::move(hour));
-    std::shared_ptr<intIF> min = std::make_shared<intIF>(init_y+4, init_x+18,
+    std::shared_ptr<intIF> min = std::make_shared<intIF>(y+3, x+17,
         std::string("min"), curT->tm_min);
     lineTwo.push_back(std::move(min));
     inputFields.push_back(lineTwo);
 
     // line 3: state (default: TODO)
     std::vector<std::shared_ptr<inputField>> lineThree;
-    std::shared_ptr<strIF> state = std::make_shared<strIF>(init_y+5, init_x+15,
+    std::shared_ptr<strIF> state = std::make_shared<strIF>(y+4, x+14,
         std::string("state"));
     lineThree.push_back(std::move(state));
     inputFields.push_back(lineThree);
 
     // line 4: priority (default: Normal)
     std::vector<std::shared_ptr<inputField>> lineFour;
-    std::shared_ptr<strIF> priority = std::make_shared<strIF>(init_y+6, init_x
-        +15, std::string("priority"));
+    std::shared_ptr<strIF> priority = std::make_shared<strIF>(y+5, x
+        +14, std::string("priority"));
     lineFour.push_back(std::move(priority));
     inputFields.push_back(lineFour);
 
     // line 5: description
     std::vector<std::shared_ptr<inputField>> lineFive;
-    std::shared_ptr<strIF> description = std::make_shared<strIF>(init_y+7,
-        init_x+15, std::string("description"));
+    std::shared_ptr<strIF> description = std::make_shared<strIF>(y+6,
+        x+14, std::string("description"));
     lineFive.push_back(std::move(description));
     inputFields.push_back(lineFive);
 
     // line 7:
     std::vector<std::shared_ptr<inputField>> lineSeven;
-    std::shared_ptr<strIF> enter = std::make_shared<strIF>(init_y+9,
-        init_x+2+(width-4)/2-2, std::string("enter"));
+    std::shared_ptr<strIF> enter = std::make_shared<strIF>(y+8,
+        x+2+(w-4)/2-2, std::string("enter"));
     lineSeven.push_back(std::move(enter));
     inputFields.push_back(lineSeven);
 
     curPos = std::make_pair(0, 0);
 }
 
-int addTaskPanel::getIFColor(int row, int col)
+int taskManager::getIFColor(int row, int col)
 {
     if (curPos.first == row && curPos.second == col) {
         if (inputFields[curPos.first][curPos.second]->geten()) {
-            return 8;
+            return 100;
         }
-        return 14;
+        return 106;
     }
-    return 2;
+    return 8;
 }
 
-std::optional<std::pair<int, int>> addTaskPanel::print_inputFields()
+std::optional<std::pair<int, int>> taskManager::print_inputFields()
 {
     int color;
     int cur_y = 0;
@@ -299,7 +100,7 @@ std::optional<std::pair<int, int>> addTaskPanel::print_inputFields()
     }
 }
 
-void addTaskPanel::addTask()
+void taskManager::addTask()
 {
     int year = std::stoi(getIFValue(std::string("year")));
     int month = std::stoi(getIFValue(std::string("month")));
@@ -314,7 +115,7 @@ void addTaskPanel::addTask()
     dbh.insertTask(year, month, day, start_time, state, priority, desc);
 }
 
-void addTaskPanel::shift_curPos(int ch)
+void taskManager::shift_curPos(int ch)
 {// be care of comparison of int and size_t
     if (ch == KEY_UP || ch == KEY_DOWN) {
         curPos.first = (ch == KEY_UP) ? curPos.first-1 : curPos.first+1;
@@ -344,32 +145,45 @@ void addTaskPanel::shift_curPos(int ch)
     }
 }
 
-addTaskPanel::addTaskPanel(int sc_h, int sc_w)
-    : ScreenObject(sc_h, sc_w), enterMode {0}, typingMode {0}
+taskManager::taskManager(int y, int x, int h, int w)
+    : h(h),w(w),enterMode {0}, typingMode {0}
 {
-    printMap.push_back(std::string(width, '#'));
-    printMap.push_back(specialWrapCenterText("Add a task", width, '#'));
-    printMap.push_back(std::string(width, '#'));
-    printMap.push_back(specialLJust(" Date:            /  /  ", width, '#'));
-    printMap.push_back(specialLJust(" start_time:    :  ", width, '#'));
-    printMap.push_back(specialLJust(" state:     ", width, '#'));
-    printMap.push_back(specialLJust(" priority:     ", width, '#'));
-    printMap.push_back(specialLJust(" description:     ", width, '#'));
-    printMap.push_back(std::string(width, '#'));
-    printMap.push_back(specialWrapCenterText("", width, '#'));
-    printMap.push_back(std::string(width, '#'));
+    this->y = y;
+    this->x = x;
+    this->title = "Task Manager";
+    LOG("[taskManager::taskManager] after set: (%d, %d)", y, x);
+    // printMap.push_back(std::string(w, '#'));
+    // printMap.push_back(specialWrapCenterText("Add a task", w, '#'));
+    // printMap.push_back(std::string(w, '#'));
+    // printMap.push_back(specialLJust(" Date:            /  /  ", w, '#'));
+    // printMap.push_back(specialLJust(" start_time:    :  ", w, '#'));
+    // printMap.push_back(specialLJust(" state:     ", w, '#'));
+    // printMap.push_back(specialLJust(" priority:     ", w, '#'));
+    // printMap.push_back(specialLJust(" description:     ", w, '#'));
+    // printMap.push_back(std::string(w, '#'));
+    // printMap.push_back(specialWrapCenterText("", w, '#'));
+    // printMap.push_back(std::string(w, '#'));
+
+
+    printMap.push_back(" Date:            /  /  ");
+    printMap.push_back(" start_time:    :  ");
+    printMap.push_back(" state:     ");
+    printMap.push_back(" priority:     ");
+    printMap.push_back(" description:     ");
+    // printMap.push_back(specialWrapCenterText("", w, '#'));
 
     init_inputFields();
+    LOG("[taskManager::taskManager] after init_inputFields: (%d, %d)", y, x);
 }
 
-addTaskPanel::~addTaskPanel()
+taskManager::~taskManager()
 {
-    LOG("[~addTaskPanel] called");
+    LOG("[~taskManager] called");
 }
 
-int addTaskPanel::handleOp(int ch)
+int taskManager::handleOp(int ch)
 {
-    // LOG("[addTaskPanel::handleOp] ch=[%d]", ch);
+    // LOG("[taskManager::handleOp] ch=[%d]", ch);
     if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT
         || ch==KEY_END || ch==KEY_HOME) {
         if (typingMode) {
@@ -381,10 +195,10 @@ int addTaskPanel::handleOp(int ch)
                 inputFields[enterPos.first][enterPos.second]->shiftCurs(1);
                 break;
             case KEY_HOME:
-                inputFields[enterPos.first][enterPos.second]->shiftCurs(0-width);
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(0-w);
                 break;
             case KEY_END:
-                inputFields[enterPos.first][enterPos.second]->shiftCurs(width);
+                inputFields[enterPos.first][enterPos.second]->shiftCurs(w);
                 break;
             }
         } else if (enterMode) { // one of the inputFields is selected, do switch
@@ -432,14 +246,22 @@ int addTaskPanel::handleOp(int ch)
     }
     return 0;
 }
-std::optional<std::pair<int, int>> addTaskPanel::print()
+void taskManager::print()
 {
-    ScreenObject::print();
+    SubModule::print();
+    mvprintw(y, x+1+title.size(), " / Expense Manager");
+
+    LOG("[taskManager::print] init (%d, %d)", y, x);
+
+    int py = y+2;
+    for (int i=0; i<printMap.size(); i++) {
+        mvprintw(py++, x, printMap[i].c_str());
+    }
     std::optional<std::pair<int, int>> curs = print_inputFields();
-    return curs;
+    // return curs;
 }
 
-std::string addTaskPanel::getIFValue(std::string name)
+std::string taskManager::getIFValue(std::string name)
 {
     for (int row=0; row<inputFields.size(); row++) {
         for (int col=0; col<inputFields[row].size(); col++) {

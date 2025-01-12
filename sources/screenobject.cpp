@@ -1,5 +1,5 @@
-#include "../headers/screenobject.h"
-#include "../headers/log.h"
+#include "screenobject.h"
+#include "log.h"
 #include <curses.h>
 
 ScreenObject::ScreenObject(int sc_h, int sc_w)

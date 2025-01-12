@@ -1,7 +1,8 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 #include "calendar.h"
-#include "addtaskpanel.h"
+#include "taskmanager.h"
+#include "expensemanager.h"
 #include "tool.h"
 #include "submodule.h"
 
@@ -13,19 +14,23 @@
 class Screen {
     int cs_x, cs_y;
     int sc_h, sc_w;
+    int fr_h, fr_w; // usable frame height/weight
     int top_y, bottom_y;
     int left_x, right_x;
     int mid_x;
     int cal_end_y;
+    int mng_top, mng_bottom; // top,bottom of task/expense_manager
 
     int mode;
     std::vector<std::shared_ptr<SubModule>> submods;
+    int tm_em; // 0: print tm; 1: print em
     bool delegESC;
 
     std::shared_ptr<Calendar> calendar;
     std::shared_ptr<taskPanel> dateSpecificTasks;
     // std::shared_ptr<Menu> menu;
-    // std::shared_ptr<addTaskPanel> atp;
+    std::shared_ptr<taskManager> tm;
+    std::shared_ptr<expenseManager> em;
     
     // TODO: current movable range of x and y
 public:

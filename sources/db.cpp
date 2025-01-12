@@ -1,5 +1,5 @@
-#include "../headers/db.h"
-#include "../headers/log.h"
+#include "db.h"
+#include "log.h"
 #include <cstdlib>
 
 // static int callback(void *data, int argc, char **argv, char **azColName){

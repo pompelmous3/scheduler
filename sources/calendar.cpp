@@ -1,14 +1,17 @@
-#include "../headers/calendar.h"
-#include "../headers/log.h"
+#include "calendar.h"
+#include "log.h"
 #include <iostream>
 #include <curses.h>
 
 
 // ########################## Calendar ##########################
 Calendar::Calendar(int y, int x, int h, int w)
-  : ini_x(x), ini_y(y), h(h), w(w), mon_idx(0), max_mon_cnt(0),
+  : h(h), w(w), mon_idx(0), max_mon_cnt(0),
     delegToMon(false)
 {
+	this->y = y;
+	this->x = x;
+	this->title = "Calendar";
 	std::chrono::system_clock::time_point now = 
 		std::chrono::system_clock::now();
 	time_t tt = std::chrono::system_clock::to_time_t(now);
@@ -18,8 +21,8 @@ Calendar::Calendar(int y, int x, int h, int w)
 	cur_yr = (*local_t).tm_year+1900;
 	cur_mon = (*local_t).tm_mon+1;
 	int mon_y, mon_x;
-	mon_y = ini_y + CAL_PADDING;
-	mon_x = ini_x + CAL_PADDING;
+	mon_y = y + CAL_PADDING + 1; // 1 line for title
+	mon_x = x + CAL_PADDING;
 
 	/*
 	## n = max_mon_cnt
@@ -31,7 +34,7 @@ Calendar::Calendar(int y, int x, int h, int w)
 	max_mon_cnt = (w-2*CAL_PADDING+MON_MARGIN) / (MON_WIDTH+MON_MARGIN);
 
 	// make months center-aligned
-	mon_x = ini_x + (w - max_mon_cnt*MON_WIDTH - (max_mon_cnt-1)*MON_MARGIN)/2;
+	mon_x = x + (w - max_mon_cnt*MON_WIDTH - (max_mon_cnt-1)*MON_MARGIN)/2;
 	for (int i=0; i<max_mon_cnt; i++) {
 		std::shared_ptr<Month> mn = std::make_shared<Month>(cur_yr, cur_mon,
 			mon_y, mon_x);
@@ -125,7 +128,9 @@ void Calendar::handleRC(int& rc) {
 }
 
 void Calendar::print() {
+	SubModule::print();
 	// mons.size() == max_mon_cnt
+	LOG("[Calendar::print] (%d, %d)", y, x);
 	for (int i=0; i<mons.size(); i++) {
 		mons[i]->print();
 	}

@@ -16,7 +16,6 @@
 
 
 class Calendar : public SubModule {
-    int ini_x, ini_y;
     int h;
     int w;
     int max_mon_cnt;
@@ -26,7 +25,7 @@ class Calendar : public SubModule {
 
 public:
     Calendar(int, int, int, int);
-    ~Calendar();
+    ~Calendar() override;
     void addMonth(std::shared_ptr<Month>);
     void shiftMonth(int);
     std::vector<int> getDate();

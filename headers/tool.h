@@ -1,7 +1,9 @@
 #ifndef TOOL_H
 #define TOOL_H
 #include <string>
+#include <vector>
 #include "curses.h"
+#include "string.h"
 #include "log.h"
 #include "return_code.h"
 #include <ctime>
@@ -10,11 +12,14 @@
 #include <map>
 #include <memory>
 
-
+// defs
 #define KEY_M_ESC 27
+#define KEY_TAB 9
 
+#define MNG_HEIGHT 10
 
 bool initNcurses();
+void m_init_color(int, int, int, int);
 bool initColors();
 void mvprintwColor(int y, int x, const char* str, int color);
 void endNcurses();

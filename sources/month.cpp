@@ -1,4 +1,4 @@
-#include "../headers/month.h"
+#include "month.h"
 
 #include <unistd.h> // for STDOUT_FILENO
 #include <sys/ioctl.h> // ioctl() and TIOCGWINSZ
@@ -238,11 +238,11 @@ void Month::print()
 		Screen::refreshScr() => Screen::printScr()
 	*/
 
-	// TODO: make addTaskPanel to trigger an update of scheduled days
+	// TODO: make taskManager to trigger an update of scheduled days
 	//		in Month?
 
 	std::map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
-	LOG("[Month::print] curTaskDays.size()=[%d]", curTaskDays.size());
+	// LOG("[Month::print] curTaskDays.size()=[%d]", curTaskDays.size());
 	std::map<int, int>::iterator iter;
 
 	int y = init_y;
@@ -252,7 +252,7 @@ void Month::print()
 	// month string
 	int mon_str_sz = sprintf(tmp, "%d %s", year, months[month-1].c_str());
 	if (browsed) {
-		mvprintwColor(y, x, tmp, 11);
+		mvprintwColor(y, x, tmp, 103);
 	} else {
 		mvprintw(y, x, tmp);
 	}
@@ -275,7 +275,7 @@ void Month::print()
 			// check if scheduled
 			iter = curTaskDays.find(col.second[0]);
 			if (iter != curTaskDays.end()) { // found
-				mvprintwColor(y+row.first, x+col.second[1], tmp, 9);
+				mvprintwColor(y+row.first, x+col.second[1], tmp, 101);
 			} else {
 				mvprintw(y+row.first, x+col.second[1], "%d", col.second[0]);
 			}
@@ -290,9 +290,9 @@ void Month::print()
 		}
 		sprintf(tmp, "%d", dmap[idx.first][idx.second][0]);
 		if (found) {
-			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 15);
+			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 200);
 		} else {
-			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 10);
+			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 102);
 		}
 	}
 }

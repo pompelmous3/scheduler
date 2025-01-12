@@ -1,9 +1,11 @@
-#include "../headers/taskpanel.h"
+#include "taskpanel.h"
 
-taskPanel::taskPanel(int y, int x, int h, int w)
-    : idx {0}, displayIdx {false}, init_x(x), init_y(y),
-	cur_y {0}, cur_m {0}, cur_d {0}
+taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
+    : idx {0}, displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0}
 {
+	this->y = y;
+	this->x = x;
+	this->title = t;
 	LOG("[taskPanel::taskPanel] initialized");
     // printMap.push_back(std::string(width, '#'));
 }
@@ -59,8 +61,9 @@ int taskPanel::handleOp(int ch)
 
 void taskPanel::print()
 {
-    int tx = init_x;
-    int ty = init_y;
+	SubModule::print();
+    int tx = this->x;
+    int ty = this->y+2; // 1st line for title
 
     for (int i=0; i<tasks.size(); i++) {
         std::string taskstr = getTaskStr(tasks[i].state, tasks[i].desc);
@@ -92,13 +95,14 @@ std::string taskPanel::getTaskStr(std::string state, std::string task)
 
 void taskPanel::setTaskColor(std::string priority, bool selected)
 {
+	LOG("[taskPanel::setTaskColor] selected=[%d], displayIdx=[%d]", selected, displayIdx);
 	if (selected && displayIdx) {
 		if (priority == "Urgent")
-			attron(COLOR_PAIR(8));
+			attron(COLOR_PAIR(100));
 		else if (priority == "High")
-			attron(COLOR_PAIR(9));
+			attron(COLOR_PAIR(101));
 		else if (priority == "Normal")
-			attron(COLOR_PAIR(10));
+			attron(COLOR_PAIR(102));
 	} else {
 		if (priority == "Urgent")
 			attron(COLOR_PAIR(1));
@@ -113,11 +117,11 @@ void taskPanel::resetTaskColor(std::string priority, bool selected)
 {
 	if (selected && displayIdx) {
 		if (priority == "Urgent")
-			attroff(COLOR_PAIR(8));
+			attroff(COLOR_PAIR(100));
 		else if (priority == "High")
-			attroff(COLOR_PAIR(9));
+			attroff(COLOR_PAIR(101));
 		else if (priority == "Normal")
-			attroff(COLOR_PAIR(10));
+			attroff(COLOR_PAIR(102));
 	} else {
 		if (priority == "Urgent")
 			attroff(COLOR_PAIR(1));

@@ -1,12 +1,6 @@
-#ifndef ADDTASKPANEL_H
-#define ADDTASKPANEL_H
-#include "db.h"
-#include "screenobject.h"
+#ifndef INPUTFIELD_H
+#define INPUTFIELD_H
 #include "tool.h"
-#include "string.h"
-#include <string>
-#include <vector>
-#include <memory>
 
 class inputField
 {
@@ -72,40 +66,6 @@ public:
     void deletev() override;
     void shiftCurs(int i) override;
     void switchV(int i) override;
-};
-
-// TODO: change inputField to class
-// 1. when entering, inputField can use UP/DOWN to modify value 
-//      if value is number-like
-// 2. when entering, inputField can read typed string from screen
-// 3. if entering in some inputField,
-
-
-class addTaskPanel : public ScreenObject
-{
-private:
-    // std::vector <std::vector<inputField>> inputFields;
-    std::vector<std::vector<std::shared_ptr<inputField>>> inputFields;
-    // inputFields[y][x] means the inputField which is at y row and x column
-
-    DBHandler dbh = DBHandler("./scheduler.db");
-    std::pair<int, int> curPos; // current inputField pos
-    std::pair<int, int> enterPos; // entering inputField pos
-    // int selected; // if selected, the curPos need to print in another color
-    int enterMode;
-    int typingMode;
-    void init_inputFields();
-    int getIFColor(int row, int col);
-    std::optional<std::pair<int, int>> print_inputFields();
-    void addTask();
-    void shift_curPos(int ch);
-
-public:
-    addTaskPanel(int sc_h, int sc_w);
-    ~addTaskPanel();
-    int handleOp(int ch);
-    std::optional<std::pair<int, int>> print();
-    std::string getIFValue(std::string name);
 };
 
 #endif
