@@ -1,5 +1,6 @@
 #include "month.h"
-
+#include "tool.h"
+#include "return_code.h"
 #include <unistd.h> // for STDOUT_FILENO
 #include <sys/ioctl.h> // ioctl() and TIOCGWINSZ
 
@@ -13,13 +14,13 @@ const int month_code[12] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
 std::string weekday[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 
-int *getYearMonths(int year)
+std::vector<int> getYearMonths(int year)
 {
-	int *days_of_months = (int *)malloc(sizeof(int)*12);
+	std::vector<int> days_of_months(12, 0);
 	for (int i=0; i<12; i++)
 		days_of_months[i] = days_norm[i];
 	if (year%4 == 0)
-		days_of_months[1] += 1;
+		days_of_months[1] += 1; // Feb
 	return days_of_months;
 }
 
@@ -96,7 +97,7 @@ Month::Month(int yr, int m, int y, int x)
 	start_weekday = getWeekDay(1, month, year);
 
 	// get total_days, total_weeks
-	int *days_months = getYearMonths(year);
+	std::vector<int> days_months = getYearMonths(year);
 	total_days = days_months[month-1];
 	total_weeks = getTotalWeeks(total_days, start_weekday);
 	// LOG("[Month::Month] total_days=[%d], total_weeks=[%d]",
@@ -132,7 +133,6 @@ Month::Month(int yr, int m, int y, int x)
 	}
 	idx = std::make_pair(0, start_weekday);
 	cur_day = dmap[idx.first][idx.second][0];
-	free(days_months);
 }
 
 Month::~Month()

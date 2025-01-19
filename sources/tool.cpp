@@ -1,4 +1,5 @@
 #include "tool.h"
+#include "log.h"
 
 bool initNcurses()
 {
@@ -33,13 +34,17 @@ bool initColors()
         printf("[initColors] Do not support colors, return..\n");
         return false;
     }
-    LOG("[initColors] COLORS=[%d]", COLORS); // cap for init_color
-    LOG("[initColors] COLOR_PAIRS=[%d]", COLOR_PAIRS); // cap for init_pair
+    // LOG("[initColors] COLORS=[%d]", COLORS); // cap for init_color
+    // LOG("[initColors] COLOR_PAIRS=[%d]", COLOR_PAIRS); // cap for init_pair
 
     // define new colors (settings maybe cached by terminal)
-    m_init_color(150, 0,100,255); // blue
-    m_init_color(151, 170,190,255); // sky blue
-    m_init_color(152,80,232,138); // green
+    m_init_color(150,   0, 100, 255); // blue
+    m_init_color(151, 170, 190, 255); // sky blue
+    m_init_color(152,   0, 255, 255); // cyaan
+    m_init_color(153, 160, 160, 160); // gray
+    m_init_color(154, 255, 255, 120); // light yellow
+    m_init_color(155, 255, 102, 102); // light red
+    m_init_color(156, 255, 102, 178); // dark red
 
     // init_pair(num, fore, back)
 	// diff foreground colors
@@ -53,6 +58,8 @@ bool initColors()
     init_pair(8, 150, COLOR_BLACK);
     init_pair(9, 151, COLOR_BLACK);
     init_pair(10, 152, COLOR_BLACK);
+    // init_pair(11, 153)
+    init_pair(14, 156, COLOR_BLACK);
 
 	// diff background colors (start from 100)
 	init_pair(100, COLOR_BLACK, COLOR_RED);
@@ -62,6 +69,9 @@ bool initColors()
 	init_pair(104, COLOR_BLACK, COLOR_CYAN);
 	init_pair(105, COLOR_BLACK, COLOR_GREEN);
 	init_pair(106, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(107, COLOR_BLACK, 154); // BG light yellow
+    init_pair(108, COLOR_BLACK, 153); // BG light gray
+    init_pair(109, COLOR_BLACK, 155); // BG light red
 
     // others
     init_pair(200, COLOR_WHITE, COLOR_BLUE);
@@ -69,10 +79,14 @@ bool initColors()
 	return true;
 }
 
-void mvprintwColor(int y, int x, const char* str, int color)
+void mvprintwColor(int y, int x, const char* str, int color, bool bold)
 {
 	attron(COLOR_PAIR(color));
+    if (bold) attron(A_BOLD);
+
 	mvprintw(y, x, str);
+
+    if (bold) attroff(A_BOLD);
 	attroff(COLOR_PAIR(color));
 }
 
@@ -158,4 +172,10 @@ std::string specialLJust(const std::string& text, int length, char ch)
     ret.append(ljust(text, length-2, ' '));
     ret.append("#");
     return ret;
+}
+
+std::string toStr(int n, int len) {
+    std::ostringstream oss;
+    oss << std::setw(len) << std::setfill('0') << n;
+    return oss.str();
 }

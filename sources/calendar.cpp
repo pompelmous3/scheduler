@@ -1,5 +1,6 @@
 #include "calendar.h"
 #include "log.h"
+#include "return_code.h"
 #include <iostream>
 #include <curses.h>
 
@@ -130,7 +131,7 @@ void Calendar::handleRC(int& rc) {
 void Calendar::print() {
 	SubModule::print();
 	// mons.size() == max_mon_cnt
-	LOG("[Calendar::print] (%d, %d)", y, x);
+	// LOG("[Calendar::print] (%d, %d)", y, x);
 	for (int i=0; i<mons.size(); i++) {
 		mons[i]->print();
 	}

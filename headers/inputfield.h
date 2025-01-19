@@ -5,67 +5,38 @@
 class inputField
 {
 protected:
-    int sc_y, sc_x;
-    int cursorIdx;
+    int y, x;
+    // int h, w; // only desc need this?
     std::string name;
-    std::string strValue;
-    int entering;
-    int typing;
-    bool forAction;
+    bool hovered;
+    bool selected; // 
+    int valIdx;
+    std::vector<std::string> vals;
+    std::string dfval; // only acptTyping inputFields will use this
+    bool acptTyping;
+    int cursorIdx;
 
+    // for switching value
+    void switchV(int i);
+
+    // for modifying value
+    int handleDescOp(int ch);
+    void insCh(int ch);
+    void bsCh();
+    void delCh();
+    void shiftCurs(int i);
 public:
-    inputField(int y, int x, std::string n);
+    inputField(int y, int x, std::string n, std::string df="");
     ~inputField();
-    virtual void switchV(int i) = 0;
-    // void readInput();
+
     int gety();
     int getx();
     std::string getname();
-    virtual std::string getv() = 0;
-    virtual void setv(int ch) = 0;
-    virtual void backspacev() = 0;
-    virtual void deletev() = 0;
-    virtual void shiftCurs(int i) = 0;
-    int getTyping();
-    int getCursorIdx();
-    int geten();
-    bool getAction();
-    void toggleen();
-};
-
-class intIF : public inputField
-{
-    int value;
-    int fixedLen;
-    int upperBnd;
-    int lowerBnd;
-
-    // TODO: set upper/lower bound
-public:
-    intIF(int y, int x, std::string n, int val);
-    ~intIF();
-    std::string getv() override;
-    void setv(int ch) override;
-    void backspacev() override;
-    void deletev() override;
-    void shiftCurs(int i) override;
-    void switchV(int i) override;
-};
-
-class strIF : public inputField
-{
-    // std::string value;
-    int idx;
-    std::vector<std::string> opts;
-public:
-    strIF(int y, int x, std::string n);
-    ~strIF();
-    std::string getv() override;
-    void setv(int ch) override;
-    void backspacev() override;
-    void deletev() override;
-    void shiftCurs(int i) override;
-    void switchV(int i) override;
+    void setHovered(bool v);
+    void setSelected(bool v);
+    int handleOp(int ch);
+    std::string getVal();
+    void print();
 };
 
 #endif

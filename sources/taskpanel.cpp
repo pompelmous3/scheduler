@@ -1,4 +1,5 @@
 #include "taskpanel.h"
+#include "return_code.h"
 
 taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
     : idx {0}, displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0}
@@ -6,7 +7,7 @@ taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
 	this->y = y;
 	this->x = x;
 	this->title = t;
-	LOG("[taskPanel::taskPanel] initialized");
+	// LOG("[taskPanel::taskPanel] initialized");
     // printMap.push_back(std::string(width, '#'));
 }
 

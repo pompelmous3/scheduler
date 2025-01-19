@@ -21,5 +21,5 @@ int expenseManager::handleOp(int ch)
 
 void expenseManager::print() {
     SubModule::print();
-    mvprintw(y, x+1, "Task Manager /");
+    mvprintwColor(y, x+1, "Task Manager /", 3);
 }

@@ -1,6 +1,7 @@
 #ifndef SUBMODULE_H
 #define SUBMODULE_H
 #include "tool.h"
+#include "log.h"
 class SubModule {
 
 public:

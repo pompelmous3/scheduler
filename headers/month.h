@@ -2,6 +2,7 @@
 #define MONTH_H
 
 #include "tool.h"
+#include <map>
 #include "taskpanel.h"
 
 #define MON_WIDTH 27 // 7*3 + 6*1(d=1)
@@ -12,13 +13,13 @@
 
 
 // ==== other functions ====
-int *getYearMonths(int year);
+std::vector<int> getYearMonths(int year);
 int getTotalWeeks(int td, int sd);
 void getTerminalSize(int& height, int&width);
 bool isLeapYear(int year);
 int getWeekDay(int day, int month, int year);
 std::string getMonthStrPost(int month, int len);
-
+extern const int days_norm[12];
 
 // ==== day ====
 typedef struct {

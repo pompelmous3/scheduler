@@ -1,9 +1,10 @@
 #ifndef DB_H
 #define DB_H
-#include "tool.h"
+// #include "tool.h"
 #include <sqlite3.h>
 #include <string>
 #include <vector>
+#include <map>
 
 typedef struct {
     int id;

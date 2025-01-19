@@ -1,6 +1,7 @@
 #include "screen.h"
 #include "calendar.h"
 #include "log.h"
+#include "return_code.h"
 
 #include <chrono>
 #include <ctime>
@@ -12,7 +13,7 @@ Screen::Screen()
 	// initialize screen height, width
 	int h, w;
 	getTerminalSize(h, w);
-	LOG("[Screen::Screen] (h,w)=(%d,%d)", h, w);
+	// LOG("[Screen::Screen] (h,w)=(%d,%d)", h, w);
 	// TODO: if w/h is smaller then MIN, exit?
 
 	sc_h = h;
