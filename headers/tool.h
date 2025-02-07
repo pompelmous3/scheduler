@@ -8,10 +8,12 @@
 #include <chrono>
 #include <optional>
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <thread>
 
 // defs
 #define KEY_M_ESC 27

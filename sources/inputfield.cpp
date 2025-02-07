@@ -9,42 +9,52 @@ inputField::inputField(int y, int x, std::string n, std::string curv)
     valIdx(0), vals(0), dfval(""), acptTyping(false), cursorIdx(0)
 {
 
-    if (strcmp(n.c_str(), "year") == 0) {
+    if (n=="type") {
+        vals.push_back("Date-Specific");
+        vals.push_back("General (No Date)");
+        vals.push_back("Routine Task");
+    } else if (n=="year") {
         for (int i=std::stoi(curv)-10; i<=std::stoi(curv)+200; i++) {
             vals.push_back(toStr(i,4));
         }
-    } else if (strcmp(n.c_str(), "month")==0) {
+    } else if (n=="month") {
         for (int i=1; i<=12; i++) vals.push_back(toStr(i,2));
-    } else if (strcmp(n.c_str(), "day")==0) {
+    } else if (n=="day") {
         // the first 2 chars are "total days" of this month
         // the 3,4th chars are current day
         for (int i=1; i<=std::stoi(curv.substr(0,2)); i++) {
             vals.push_back(toStr(i,2));
         }
         curv.erase(0, 2);
-    } else if (strcmp(n.c_str(), "hour")==0) {
+    } else if (n=="hour") {
         for (int i=0; i<=23; i++) vals.push_back(toStr(i,2));
-    } else if (strcmp(n.c_str(), "min")==0) {
+    } else if (n=="min") {
         for (int i=0; i<=45; i+=15) vals.push_back(toStr(i,2));
-    } else if (strcmp(n.c_str(), "priority")==0) {
-        vals.push_back("Don't care");
-        vals.push_back("Later");
-        vals.push_back("NOW!");
-    } else if (strcmp(n.c_str(), "category")==0) {
+    } else if (n=="repeat") {
+        vals.push_back("Mon");
+        vals.push_back("Tue");
+        vals.push_back("Wed");
+        vals.push_back("Thu");
+        vals.push_back("Fri");
+        vals.push_back("Sat");
+        vals.push_back("Sun");
+    } else if (n=="category") {
         // TODO: get stored categories
-        vals.push_back("None");
         vals.push_back("Personal");
         vals.push_back("Work");
-        vals.push_back("Leetcode");
         vals.push_back("Workout");
-    } else if (strcmp(n.c_str(), "addCategory")==0) {
-        dfval = "<new category>";
-        acptTyping = true;
-    } else if (strcmp(n.c_str(), "desc")==0) {
+    } else if (n=="priority") {
+        vals.push_back("Don't care");
+        vals.push_back("Soon");
+        vals.push_back("NOW!");
+    } else if (n=="state") {
+        vals.push_back("TODO");
+        vals.push_back("DONE");
+    } else if (n=="desc") {
         dfval = "<type description>";
-        vals.push_back(dfval);
+        vals.push_back("");
         acptTyping = true;
-    } else if (strcmp(n.c_str(), "enter")==0) {
+    } else if (n=="enter") {
         vals.push_back("ENTER");
     }
 
@@ -63,8 +73,12 @@ int inputField::gety() {return y;}
 int inputField::getx() {return x;}
 std::string inputField::getname() {return name;}
 void inputField::setHovered(bool v) {hovered = v;}
-void inputField::setSelected(bool v) {
+int inputField::setSelected(bool v) {
+    int res = 0;
+    if (name=="enter") return TM_ENTER_PRESS;
+
     selected = v;
+    return res;
     // TODO: check desc buffer
 }
 
@@ -80,8 +94,8 @@ int inputField::handleOp(int ch) {
         return handleDescOp(ch);
     } else {
         // only switch vals
-        if (ch==KEY_UP) switchV(1);
-        else if (ch==KEY_DOWN) switchV(-1);
+        if (ch==KEY_UP) res=switchV(1);
+        else if (ch==KEY_DOWN) res=switchV(-1);
     }
     return res;
 }
@@ -90,40 +104,68 @@ std::string inputField::getVal()
 {
     return vals[valIdx];
 }
+std::string inputField::getDV(){
+    std::string val = getVal();
+    if (name=="desc")
+        return ((val=="")?dfval:val);
+    return val;
+}
 void inputField::print() {
     if (selected) {
         mvprintwColor(y, x, getVal().c_str(), 109);
         if (acptTyping) { // only print cursor when selected
-            mvprintwColor(y, x+cursorIdx, " ", 108);
+            // TODO: handle (y,x) for cursorIdx in diff line
+            std::string cursCh;
+            if (vals[valIdx].empty() || cursorIdx >= vals[valIdx].size())
+                cursCh = " ";
+            else
+                cursCh=vals[valIdx].substr(cursorIdx, 1).c_str();
+            mvprintwColor(y, x+cursorIdx, cursCh.c_str(), 108);
         }
     } else if (hovered) {
-        mvprintwColor(y, x, getVal().c_str(), 107);
+        mvprintwColor(y, x, getDV().c_str(), 107);
     } else {
-        mvprintwColor(y, x, getVal().c_str(), 9);
+        mvprintwColor(y, x, getDV().c_str(), 9);
     }
 }
 
 
 // ######################## private functions ########################
-void inputField::switchV(int i) {
-    LOG("[inputField::switchV] valIdx before: %d", valIdx);
+int inputField::switchV(int i) {
+    // LOG("[inputField::switchV] valIdx before: %d", valIdx);
     if (i>0) valIdx = (valIdx+i) % vals.size();
     else valIdx = (valIdx+i+vals.size()) % vals.size();
-    LOG("[inputField::switchV] valIdx after: %d", valIdx);
+    // LOG("[inputField::switchV] valIdx after: %d", valIdx);
+
+    if (name=="type") return (i>0)?TM_TYPE_INC:TM_TYPE_DEC;
+    return 0;
 }
 
 int inputField::handleDescOp(int ch) {
     int res = 0;
+    LOG("[IF::handleDescOp] ch=[%d]", ch);
+    if (ch==KEY_BACKSPACE) bsCh();
+    else if (ch==KEY_DL) delch();
+    else if (isArrow(ch)) {
+        if (ch==KEY_LEFT) shiftCurs(-1);
+        else if (ch==KEY_RIGHT) shiftCurs(1);
+    } else if (ch==KEY_END) shiftCurs(vals[valIdx].size());
+    else if (ch==KEY_HOME) shiftCurs(-vals[valIdx].size());
+    else insCh(ch);
 
     return res;
 }
 void inputField::insCh(int ch) {
     vals[valIdx].insert(cursorIdx, 1, ch);
+    shiftCurs(1);
 }
 void inputField::bsCh()
 {
-    cursorIdx--;
-    vals[valIdx].erase(cursorIdx, 1);
+    // cursorIdx--;
+    if(cursorIdx>0) {
+        shiftCurs(-1);
+        vals[valIdx].erase(cursorIdx, 1);
+    }
 }
 
 void inputField::delCh()

@@ -9,7 +9,7 @@ public:
     virtual ~SubModule() = default;
     virtual int handleOp(int) = 0;
     virtual void print();
-    void set_hovered(bool);
+    virtual void set_hovered(bool);
 
     int y, x;
     std::string title;

@@ -62,6 +62,22 @@ Screen::~Screen()
 	LOG("[~Screen] destructor called");
 }
 
+void Screen::setMode(int m) {
+	LOG("[SC::setMode] m = [%d]", m);
+	submods[mode]->set_hovered(false);
+	mode = m;
+	if (mode<0) mode+=submods.size();
+	mode %= submods.size();
+
+	submods[mode]->set_hovered(true);
+	
+	// taskPanel
+	std::shared_ptr<taskPanel> taskPtr = std::dynamic_pointer_cast<taskPanel>(submods[mode]);
+	if (taskPtr) {
+		taskPtr->setDisplayIdx(true);
+	}
+	
+}
 void Screen::looping() {
 	int ch;
 	int mvx, mvy;
@@ -82,6 +98,14 @@ void Screen::looping() {
 		refreshScr();
 		rc = 0;
 	}
+}
+
+void Screen::timer_run() {
+	/*
+	1. get current date cy/cm/cd
+	2. compare
+	*/
+	std::tm* curT = curTimeCompnt();
 }
 
 void Screen::printFrame() {
@@ -178,9 +202,10 @@ void Screen::refreshScr()
 
 int Screen::handleOp(int ch) {
 	if (ch==KEY_TAB || ch==KEY_BTAB) { // TAB only for Screen switching modes
-		submods[mode]->set_hovered(false);
-		mode = (mode+(ch==KEY_TAB?1:-1))%(submods.size());
-		submods[mode]->set_hovered(true);
+		setMode(mode + ((ch==KEY_TAB)?1:-1));
+		// submods[mode]->set_hovered(false);
+		// mode = (mode+(ch==KEY_TAB?1:-1))%(submods.size());
+		// submods[mode]->set_hovered(true);
 		if (submods[mode]==em) tm_em=1;
 		if (submods[mode]==tm) tm_em=0;
 	} else if (!delegESC && isESC(ch)) {
@@ -205,6 +230,11 @@ void Screen::handleRC(int rc)
 		// toggleAtpMode();
 	} else if (rc==SC_UPDATE_DATE_2_SUBM) {
 		update_dateSpecificTasks();
+	} else if (rc==SC_SWITCH_2_DS) {
+		int n_mode = std::distance(submods.begin(),
+			std::find(submods.begin(), submods.end(), dateSpecificTasks));
+		LOG("[SC::handleRC] setting mode to [%d]", n_mode);
+		setMode(n_mode);
 	}
 }
 

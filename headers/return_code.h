@@ -6,8 +6,12 @@
 #define CAL_STOP_MON 12
 
 #define TM_STOP_IF 50
+#define TM_TYPE_INC 51
+#define TM_TYPE_DEC 52
+#define TM_ENTER_PRESS 53
 
 #define SC_UPDATE_DATE_2_SUBM 100
+#define SC_SWITCH_2_DS 101
 #define STOP_SC_ATPMODE 1000
 #define STOP_SC_MONTHMODE 1001
 

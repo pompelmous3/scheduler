@@ -10,7 +10,7 @@
 // class taskPanel : public ScreenObject
 class taskPanel : public SubModule
 {
-    std::vector <task_entry> tasks;
+    std::vector<task_entry> tasks;
     int idx; // which task is selected now
     bool displayIdx; // taskpanel activated, need to highlight selected task
     DBHandler dbh = DBHandler("./scheduler.db");

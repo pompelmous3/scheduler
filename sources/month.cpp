@@ -132,7 +132,7 @@ Month::Month(int yr, int m, int y, int x)
 		}
 	}
 	idx = std::make_pair(0, start_weekday);
-	cur_day = dmap[idx.first][idx.second][0];
+	cs_day = dmap[idx.first][idx.second][0];
 }
 
 Month::~Month()
@@ -151,7 +151,7 @@ int Month::getYear()
 }
 
 std::vector<int> Month::getDate() {
-	return {year, month, cur_day};
+	return {year, month, cs_day};
 }
 
 std::vector<int> Month::getPos() {
@@ -198,7 +198,7 @@ void Month::shiftIdx(int ch)
 		}
 	} while (dmap[idx.first][idx.second].size() == 0);
 	// size 0 means this entry wasn't initialized as a day
-	cur_day = dmap[idx.first][idx.second][0];
+	cs_day = dmap[idx.first][idx.second][0];
 }
 
 int Month::handleOp(int ch)
@@ -208,7 +208,7 @@ int Month::handleOp(int ch)
 */
 {
 	int rc = 0;
-	// LOG("[Month::handleOp] ch=[%d]", ch);
+	LOG("[Month::handleOp] ch=[%d]", ch);
 	if (! selected) {
 		LOG("[Month::handleOp] not selected, but ch=[%d] received", ch);
 		// if (ch==KEY_ENTER) setSelected(true);
@@ -225,8 +225,10 @@ int Month::handleOp(int ch)
 	if (ch==KEY_UP || ch==KEY_DOWN || ch==KEY_RIGHT || ch==KEY_LEFT) {
 		shiftIdx(ch);
 		rc = SC_UPDATE_DATE_2_SUBM;
-	} else if (ch == KEY_ENTER) {
+	} else if (isEnter(ch)) {
 		// TODO: need to tell SC to change control to dateSpecificTasks
+		rc = SC_SWITCH_2_DS;
+		LOG("[Month::handleOp] no imp");
 	}
 	return rc;
 }
@@ -241,9 +243,9 @@ void Month::print()
 	// TODO: make taskManager to trigger an update of scheduled days
 	//		in Month?
 
-	std::map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
+	std::unordered_map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
 	// LOG("[Month::print] curTaskDays.size()=[%d]", curTaskDays.size());
-	std::map<int, int>::iterator iter;
+	std::unordered_map<int, int>::iterator iter;
 
 	int y = init_y;
 	int x = init_x;
@@ -275,7 +277,8 @@ void Month::print()
 			// check if scheduled
 			iter = curTaskDays.find(col.second[0]);
 			if (iter != curTaskDays.end()) { // found
-				mvprintwColor(y+row.first, x+col.second[1], tmp, 101);
+				// mvprintwColor(y+row.first, x+col.second[1], tmp, 101);
+				mvprintwColor(y+row.first, x+col.second[1], tmp, 8);
 			} else {
 				mvprintw(y+row.first, x+col.second[1], "%d", col.second[0]);
 			}

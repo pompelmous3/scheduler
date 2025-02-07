@@ -17,7 +17,7 @@ protected:
     int cursorIdx;
 
     // for switching value
-    void switchV(int i);
+    int switchV(int i);
 
     // for modifying value
     int handleDescOp(int ch);
@@ -33,9 +33,10 @@ public:
     int getx();
     std::string getname();
     void setHovered(bool v);
-    void setSelected(bool v);
+    int setSelected(bool v);
     int handleOp(int ch);
     std::string getVal();
+    std::string getDV(); // display val
     void print();
 };
 

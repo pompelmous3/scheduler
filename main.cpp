@@ -18,6 +18,7 @@ int main()
 	}
 
 	Screen sc = Screen();
+	
 	sc.looping();
 	// sc.printScr();
 

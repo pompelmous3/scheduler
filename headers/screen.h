@@ -31,13 +31,16 @@ class Screen {
     // std::shared_ptr<Menu> menu;
     std::shared_ptr<taskManager> tm;
     std::shared_ptr<expenseManager> em;
-    
+
+    std::thread timer_thrd;
     // TODO: current movable range of x and y
 public:
     // Screen(int sc_h, int sc_w);
     Screen();
     ~Screen();
+    void setMode(int);
     void looping();
+    void timer_run();
 
 
     void printFrame();

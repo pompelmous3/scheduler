@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 typedef struct {
     int id;
@@ -12,8 +12,11 @@ typedef struct {
     int m;
     int d;
     std::string start_time;
-    std::string state; // Todo(▢), Done(✓)
+    std::string last_time;
+    std::string repeat;
+    std::string cat;
     std::string priority; // Urgent(red), High(blue), Normal(white)
+    std::string state; // Todo(▢), Done(✓)
     std::string desc;
 } task_entry;
 
@@ -31,11 +34,13 @@ class DBHandler {
 public:
     DBHandler(const char *p);
     ~DBHandler();
-    std::map<int, int> getScheduledDays(int y, int m);
+    std::unordered_map<int, int> getScheduledDays(int y, int m);
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
-    void insertTask(int year, int month, int day, std::string start_time,
-        std::string state, std::string priority, std::string desc);
-    void toggleState(int id, std::string cur_state);
+    void insertTask(std::string year, std::string month,
+        std::string day, std::string start_time, std::string last_time,
+        std::string repeat, std::string cat, std::string priority,
+        std::string state, std::string desc);
+    std::string toggleState(int id, std::string cur_state);
 };
 #endif

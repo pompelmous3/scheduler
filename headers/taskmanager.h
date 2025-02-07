@@ -13,21 +13,28 @@
 class taskManager : public SubModule
 {
 private:
-    std::vector<std::vector<std::shared_ptr<inputField>>> fields;
-    // inputFields[y][x] means the inputField which is at y row and x column
+    // std::vector<std::vector<std::shared_ptr<inputField>>> fields;
+    std::shared_ptr<inputField> type;
+    int typenum; // for indexing in fields?
+    std::vector<std::vector<std::vector<std::shared_ptr<inputField>>>> fields;
+
+    /*
+    fields[i][y][x] means the 2D inputField vectors for type i
+    i=0: date specific tasks
+    i=1: general tasks
+    i=2: routine tasks
+    */
 
     DBHandler dbh = DBHandler("./scheduler.db");
-    int ifx, ify;
+    int ifx, ify; // (-1,0) means type, else is index in fields[i]
     // int selected; // if selected, the curPos need to print in another color
     int h,w;
-    // int enterMode;
-    // int typingMode;
-    std::vector <std::string> printMap;
+    std::vector<std::vector<std::string>> printMap;
     bool inIF;
     void init_fields();
     // int getIFColor(int row, int col);
     // std::optional<std::pair<int, int>> print_inputFields();
-    void addTask();
+    void writeTask();
     void shift_IFidx(int ch);
 
 public:

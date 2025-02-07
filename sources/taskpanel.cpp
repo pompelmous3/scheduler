@@ -33,10 +33,8 @@ void taskPanel::updateTasks(int y, int m, int d)
 
 int taskPanel::setDisplayIdx(bool v)
 {
-	if (v == true) {
-		if (tasks.size() == 0) {
-			return TASKPANEL_ZERO_LEN;
-		}
+	if (v && tasks.size() == 0) {
+		return TASKPANEL_ZERO_LEN;
 	}
 	displayIdx = v;
 	return 0;
@@ -44,6 +42,7 @@ int taskPanel::setDisplayIdx(bool v)
 
 int taskPanel::handleOp(int ch)
 {
+	int rc = 0;
 	if (ch==KEY_UP) {
 		idx -= 1;
 		if (idx < 0) {
@@ -54,16 +53,16 @@ int taskPanel::handleOp(int ch)
 		if (idx >= tasks.size()) {
 			idx = idx - tasks.size();
 		}
-	} else if (ch==KEY_ENTER) {
-		dbh.toggleState(tasks[idx].id, tasks[idx].state);
+	} else if (isEnter(ch)) {
+		tasks[idx].state = dbh.toggleState(tasks[idx].id, tasks[idx].state);
 	}
-    return 0;
+    return rc;
 }
 
 void taskPanel::print()
 {
 	SubModule::print();
-    int tx = this->x;
+    int tx = this->x+5;
     int ty = this->y+2; // 1st line for title
 
     for (int i=0; i<tasks.size(); i++) {
@@ -80,11 +79,15 @@ std::string taskPanel::getTaskStr(std::string state, std::string task)
 {
 	std::string result;
 
-	if (state == "Todo") { // ▢ u8"\u25A2"
+	if (state == "TODO") { // ▢ u8"\u25A2"
 		result.append(u8"\u25A2 ");
+		// result.append(u8"\u2B1C ");
+		// result.append(u8"\u25FB ");
 		result.append(task);
-	} else if (state == "Done") { // ✓ u8"\u2713"
+	} else if (state == "DONE") { // ✓ u8"\u2713"
 		result.append(u8"\u2713 ");
+		// result.append(u8"\u2705 ");
+		// result.append(u8"\u2611 ");
 		for (auto ch : task) {
 			result.push_back(ch);
 			result.append(u8"\u0336");
@@ -96,20 +99,20 @@ std::string taskPanel::getTaskStr(std::string state, std::string task)
 
 void taskPanel::setTaskColor(std::string priority, bool selected)
 {
-	LOG("[taskPanel::setTaskColor] selected=[%d], displayIdx=[%d]", selected, displayIdx);
+	// LOG("[taskPanel::setTaskColor] selected=[%d], displayIdx=[%d]", selected, displayIdx);
 	if (selected && displayIdx) {
-		if (priority == "Urgent")
+		if (priority == "NOW!")
 			attron(COLOR_PAIR(100));
-		else if (priority == "High")
+		else if (priority == "Soon")
 			attron(COLOR_PAIR(101));
-		else if (priority == "Normal")
+		else if (priority == "Don't care")
 			attron(COLOR_PAIR(102));
 	} else {
-		if (priority == "Urgent")
+		if (priority == "NOW!")
 			attron(COLOR_PAIR(1));
-		else if (priority == "High")
+		else if (priority == "Soon")
 			attron(COLOR_PAIR(2));
-		else if (priority == "Normal")
+		else if (priority == "Don't care")
 			attron(COLOR_PAIR(3));
 	}
 }
@@ -117,18 +120,18 @@ void taskPanel::setTaskColor(std::string priority, bool selected)
 void taskPanel::resetTaskColor(std::string priority, bool selected)
 {
 	if (selected && displayIdx) {
-		if (priority == "Urgent")
+		if (priority == "NOW!")
 			attroff(COLOR_PAIR(100));
-		else if (priority == "High")
+		else if (priority == "Soon")
 			attroff(COLOR_PAIR(101));
-		else if (priority == "Normal")
+		else if (priority == "Don't care")
 			attroff(COLOR_PAIR(102));
 	} else {
-		if (priority == "Urgent")
+		if (priority == "NOW!")
 			attroff(COLOR_PAIR(1));
-		else if (priority == "High")
+		else if (priority == "Soon")
 			attroff(COLOR_PAIR(2));
-		else if (priority == "Normal")
+		else if (priority == "Don't care")
 			attroff(COLOR_PAIR(3));
 	}
 }

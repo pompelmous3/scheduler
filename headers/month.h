@@ -39,7 +39,7 @@ class Month {
     int init_x, init_y; // starting position
     std::map <int, std::map<int, std::vector<int>>> dmap;
     // dmap[y_idx][week_day(not actual x position)] = {date, x_idx}
-    int cur_day;
+    int cs_day;
     // taskPanel tp;
     // int taskMode;
     std::pair<int, int> idx;
