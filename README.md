@@ -10,4 +10,3 @@ cd scheduler
 make
 ./scheduler
 
-demo video: 
