@@ -35,6 +35,8 @@ public:
     void setHovered(bool v);
     int setSelected(bool v);
     int handleOp(int ch);
+    void setValRange(int newRange); // only for "day"
+    int setVal(std::string);
     std::string getVal();
     std::string getDV(); // display val
     void print();

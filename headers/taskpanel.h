@@ -21,7 +21,8 @@ class taskPanel : public SubModule
 public:
     taskPanel(int y, int x, int h, int w, std::string);
     ~taskPanel() override;
-    void updateTasks(int y, int m, int d);
+    void updateTasks(int y=-1, int m=-1, int d=-1);
+    int get_cur_taskid();
     int setDisplayIdx(bool v);
     int handleOp(int ch);
     void print();

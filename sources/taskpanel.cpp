@@ -18,17 +18,27 @@ taskPanel::~taskPanel()
 void taskPanel::updateTasks(int y, int m, int d)
 {
 	tasks.clear();
-	if (!(cur_y==y && cur_m==m && cur_d==d)) {
+
+	// if y==-1, date not set, remains the same
+	if (y!=-1 && (cur_y!=y || cur_m!=m || cur_d!=d)) {
+		cur_y = y;
+		cur_m = m;
+		cur_d = d;
 		idx = 0; // only reset when date changed
 	}
-	cur_y = y;
-	cur_m = m;
-	cur_d = d;
-	dbh.queryDateTasks(y, m, d);
+	dbh.queryDateTasks(cur_y, cur_m, cur_d);
 	std::vector<task_entry> res = dbh.getLastResults();
 	for (int i=0; i<res.size(); i++) {
 		tasks.push_back(res[i]);
 	}
+
+	// after updated, current date's tasks cnt might change
+	idx %= tasks.size();
+}
+
+int taskPanel::get_cur_taskid()
+{
+	return tasks[idx].id;
 }
 
 int taskPanel::setDisplayIdx(bool v)
@@ -55,6 +65,9 @@ int taskPanel::handleOp(int ch)
 		}
 	} else if (isEnter(ch)) {
 		tasks[idx].state = dbh.toggleState(tasks[idx].id, tasks[idx].state);
+	} else if (isCtrlE(ch)) {
+		LOG("[taskPanel::handleOp] is ctrl E");
+		rc = TP_EDIT_REQ;
 	}
     return rc;
 }

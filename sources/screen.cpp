@@ -7,7 +7,7 @@
 #include <ctime>
 
 Screen::Screen()
-	: mode(0), tm_em(0), delegESC(false)
+	: mode(0), tm_em(0), delegESC(false), lockTab(false)
 {
 
 	// initialize screen height, width
@@ -76,6 +76,10 @@ void Screen::setMode(int m) {
 	if (taskPtr) {
 		taskPtr->setDisplayIdx(true);
 	}
+
+	// if new mode is tm/em, set tm_em/tm_em
+	if (submods[mode]==em) tm_em=1;
+	if (submods[mode]==tm) tm_em=0;
 	
 }
 void Screen::looping() {
@@ -95,6 +99,7 @@ void Screen::looping() {
 
 		rc = handleOp(ch);
 		handleRC(rc);
+		LOG("[SC::looping] after handleRC, going to refresh");
 		refreshScr();
 		rc = 0;
 	}
@@ -201,13 +206,8 @@ void Screen::refreshScr()
 }
 
 int Screen::handleOp(int ch) {
-	if (ch==KEY_TAB || ch==KEY_BTAB) { // TAB only for Screen switching modes
+	if (!lockTab && (ch==KEY_TAB || ch==KEY_BTAB)) { // TAB only for Screen switching modes
 		setMode(mode + ((ch==KEY_TAB)?1:-1));
-		// submods[mode]->set_hovered(false);
-		// mode = (mode+(ch==KEY_TAB?1:-1))%(submods.size());
-		// submods[mode]->set_hovered(true);
-		if (submods[mode]==em) tm_em=1;
-		if (submods[mode]==tm) tm_em=0;
 	} else if (!delegESC && isESC(ch)) {
 		LOG("[Screen::handleOp] opening setting panel");
 		//TODO: setting panel?
@@ -226,16 +226,31 @@ void Screen::handleRC(int rc)
 		if (mode==0) update_dateSpecificTasks();
 	}
 	else if (rc==STOP_DELEGESC) delegESC = false;
-	else if (rc == STOP_SC_ATPMODE) {
-		// toggleAtpMode();
-	} else if (rc==SC_UPDATE_DATE_2_SUBM) {
+	else if (rc==SC_UPDATE_DATE_2_SUBM) {
 		update_dateSpecificTasks();
 	} else if (rc==SC_SWITCH_2_DS) {
 		int n_mode = std::distance(submods.begin(),
 			std::find(submods.begin(), submods.end(), dateSpecificTasks));
 		LOG("[SC::handleRC] setting mode to [%d]", n_mode);
 		setMode(n_mode);
+	} else if (rc==TM_WRITE_TASK) {
+		update_dateSpecificTasks();
+	} else if (rc==TP_EDIT_REQ) {
+		// use mode to distinguish which taskPanel is sending rc
+		int tid = std::dynamic_pointer_cast<taskPanel>(submods[mode])->get_cur_taskid();
+		LOG("[SC::handleRC] editing tid=[%d]", tid);
+		tm->putTask(tid);
+		tm->setEdit(true, tid);
+		// set mode to tm
+		setMode(std::distance(submods.begin(), 
+			std::find(submods.begin(), submods.end(), tm)));
+		// STOP tab until edit done
+		lockTab = true;
+	} else if (rc==SC_UNLOCK_TAB) {
+		lockTab = false;
+		update_dateSpecificTasks();
 	}
+
 }
 
 void Screen::update_dateSpecificTasks() {

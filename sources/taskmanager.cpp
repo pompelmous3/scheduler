@@ -35,64 +35,67 @@ void taskManager::init_fields()
     */
     // ################ line 1 ################
     std::vector<std::shared_ptr<inputField>> lineOne;
-    std::shared_ptr<inputField> year = std::make_shared<inputField>(
+    yearField = std::make_shared<inputField>(
         y+3,
         x+12,
         std::string("year"),
         toStr(cyr, 4)
     );
-    lineOne.push_back(std::move(year));
+    // lineOne.push_back(std::move(yearField));
+    lineOne.push_back(yearField);
 
-    std::shared_ptr<inputField> month = std::make_shared<inputField>(
+    monthField = std::make_shared<inputField>(
         y+3,
         x+17,
         std::string("month"),
         toStr(cm, 2)
     );
-    lineOne.push_back(std::move(month));
+    // lineOne.push_back(std::move(monthField));
+    lineOne.push_back(monthField);
 
-    std::shared_ptr<inputField> day = std::make_shared<inputField>(
+    dayField = std::make_shared<inputField>(
         y+3,
         x+20,
         std::string("day"),
         toStr(dofm[cm-1],2)+toStr(cd, 2)
     );
-    lineOne.push_back(std::move(day));
+    // lineOne.push_back(std::move(dayField));
+    lineOne.push_back(dayField);
     // fields.push_back(std::move(lineOne));
 
-    std::shared_ptr<inputField> hour = std::make_shared<inputField>(
+    hourField = std::make_shared<inputField>(
         y+3,
         x+32,
         std::string("hour"),
         toStr(ch, 2)
     );
-    lineOne.push_back(std::move(hour));
+    lineOne.push_back(hourField);
 
-    std::shared_ptr<inputField> min = std::make_shared<inputField>(
+    minField = std::make_shared<inputField>(
         y+3,
         x+35,
         std::string("min"),
         toStr(cmin, 2)
     );
-    lineOne.push_back(std::move(min));
+    lineOne.push_back(minField);
     fields[0].push_back(lineOne);
-    std::shared_ptr<inputField> repeat = std::make_shared<inputField>(
+    repeatField = std::make_shared<inputField>(
         y+3,
         x+54,
         std::string("repeat")
     );
-    lineOne.push_back(std::move(repeat));
+    lineOne.push_back(repeatField);
     fields[2].push_back(lineOne);
 
 
     // ################ line 2  ################
     std::vector<std::shared_ptr<inputField>> lineTwo;
-    std::shared_ptr<inputField> category = std::make_shared<inputField>(
+    categoryField = std::make_shared<inputField>(
         y+4,
         x+12,
         std::string("category")
     );
-    lineTwo.push_back(std::move(category));
+    lineTwo.push_back(categoryField);
     // TODO: add "new category" field
     fields[0].push_back(lineTwo);
     fields[1].push_back(lineTwo);
@@ -100,42 +103,42 @@ void taskManager::init_fields()
 
     // ################ line 3 ################
     std::vector<std::shared_ptr<inputField>> lineThree;
-    std::shared_ptr<inputField> priority = std::make_shared<inputField>(
+    priorityField = std::make_shared<inputField>(
         y+5,
         x+12,
         std::string("priority")
     );
-    lineThree.push_back(std::move(priority));
-    std::shared_ptr<inputField> state = std::make_shared<inputField>(
+    lineThree.push_back(priorityField);
+    stateField = std::make_shared<inputField>(
         y+5,
         x+32,
         std::string("state")
     );
-    lineThree.push_back(std::move(state));
+    lineThree.push_back(stateField);
     fields[0].push_back(lineThree);
     fields[1].push_back(lineThree);
     fields[2].push_back(lineThree);
 
     // ################ line 4 ################
     std::vector<std::shared_ptr<inputField>> lineFour;
-    std::shared_ptr<inputField> desc = std::make_shared<inputField>(
+    descField = std::make_shared<inputField>(
         y+6,
         x+12,
         std::string("desc")
     );
-    lineFour.push_back(std::move(desc));
+    lineFour.push_back(descField);
     fields[0].push_back(lineFour);
     fields[1].push_back(lineFour);
     fields[2].push_back(lineFour);
 
     // ################ line 6 ################
     std::vector<std::shared_ptr<inputField>> lineSix;
-    std::shared_ptr<inputField> enter = std::make_shared<inputField>(
+    enterField = std::make_shared<inputField>(
         y+8,
         x+2+(w-4)/2-2,
         std::string("enter")
     );
-    lineSix.push_back(std::move(enter));
+    lineSix.push_back(enterField);
     fields[0].push_back(lineSix);
     fields[1].push_back(lineSix);
     fields[2].push_back(lineSix);
@@ -173,8 +176,13 @@ void taskManager::writeTask()
 
     if (desc.empty()) return;
     // initially just set last_time = ""
-    dbh.insertTask(year, month, day, start_time, "", repeat, cat,
-        priority, state, desc);
+    if (editing) {
+        dbh.updateTask(year, month, day, start_time, tk.last_time,
+            repeat, cat, priority, state, desc, editing_tid);
+    } else {
+        dbh.insertTask(year, month, day, start_time, "", repeat, cat,
+            priority, state, desc);
+    }
 }
 
 void taskManager::shift_IFidx(int ch)
@@ -231,7 +239,8 @@ void taskManager::shift_IFidx(int ch)
 }
 
 taskManager::taskManager(int y, int x, int h, int w)
-    : h(h),w(w),inIF(false), printMap(3), fields(3), typenum(0)
+    : h(h),w(w),inIF(false), printMap(3), fields(3), typenum(0),
+    editing(false)
 {
     this->y = y;
     this->x = x;
@@ -281,7 +290,8 @@ int taskManager::handleOp(int ch)
     handleRC(res);
     return res;
 }
-void taskManager::handleRC(int res) {
+void taskManager::handleRC(int& res) {
+    LOG("[TM:handleRC] res=[%d]", res);
     if (res==TM_STOP_IF) {
         if (ifx==-1) type->setSelected(false);
         else fields[typenum][ifx][ify]->setSelected(false);
@@ -290,8 +300,22 @@ void taskManager::handleRC(int res) {
         typenum = (typenum+1)%3;
     } else if (res==TM_TYPE_DEC) {
         typenum = (typenum-1+3)%3;
-    } else if (res==TM_ENTER_PRESS) {
+    } else if (res==TM_WRITE_TASK) {
         writeTask();
+        shift_IFidx(KEY_DOWN);
+        // if editing, turn off and unlock Screen Tab
+        if (editing) {
+            editing = false;
+            res = SC_UNLOCK_TAB;
+        }
+    } else if (res==TM_UPDATE_IF_DAY_RANGE) {
+        // int IF_year = std::stoi(getIFValue("year"));
+        // int IF_mon = std::stoi(getIFValue("month"));
+        int IF_year = std::stoi(yearField->getVal());
+        int IF_mon = std::stoi(monthField->getVal());
+        int day_range = getYearMonths(IF_year)[IF_mon-1];
+        LOG("[TM::handleRC] new day_range=[%d]", day_range);
+        dayField->setValRange(day_range);
     }
 }
 void taskManager::print()
@@ -299,7 +323,8 @@ void taskManager::print()
     SubModule::print();
     mvprintwColor(y, x+1+title.size(), " / Expense Manager", 3);
 
-    // LOG("[taskManager::print] init (%d, %d)", y, x);
+    if (editing)
+        mvprintw(y+1, x+1, "-- Editing --");
 
     type->print();
     int py = y+2;
@@ -311,6 +336,31 @@ void taskManager::print()
     for (auto line : fields[typenum]) {
         for (auto field : line) field->print();
     }
+}
+
+void taskManager::putTask(int tid) {
+    tk = dbh.getTask(tid);
+    // TODO: after inputfield.h support setVal, set tk fields
+    int res = 0;
+    res = yearField->setVal(toStr(tk.y,4));
+    res |= monthField->setVal(toStr(tk.m,2));
+    LOG("[TM::putTask] res=[%d]", res);
+    handleRC(res); // check if need to reset range of day
+    dayField->setVal(toStr(tk.d,2));
+    hourField->setVal(tk.start_time.substr(0,2));
+    minField->setVal(tk.start_time.substr(3,2));
+    repeatField->setVal(tk.repeat);
+    categoryField->setVal(tk.cat);
+    priorityField->setVal(tk.priority);
+    stateField->setVal(tk.state);
+    descField->setVal(tk.desc);
+
+}
+
+void taskManager::setEdit(bool v, int tid)
+{
+    editing = v;
+    editing_tid = tid;
 }
 
 std::string taskManager::getIFValue(std::string name)

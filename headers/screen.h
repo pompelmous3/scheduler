@@ -25,6 +25,7 @@ class Screen {
     std::vector<std::shared_ptr<SubModule>> submods;
     int tm_em; // 0: print tm; 1: print em
     bool delegESC;
+    bool lockTab;
 
     std::shared_ptr<Calendar> calendar;
     std::shared_ptr<taskPanel> dateSpecificTasks;

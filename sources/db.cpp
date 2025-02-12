@@ -168,6 +168,44 @@ const std::vector <task_entry> DBHandler::getLastResults() const
     return (std::vector <task_entry> &) lastResults;
 }
 
+task_entry DBHandler::getTask(int tid) {
+    task_entry res;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[getTask] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement (tasks)
+    snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE id=%d", tid);
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // 
+    if ((rc=sqlite3_step(stmt)) == SQLITE_ROW) {
+        res.id = sqlite3_column_int(stmt, 0);
+        res.y = sqlite3_column_int(stmt, 1);
+        res.m = sqlite3_column_int(stmt, 2);
+        res.d = sqlite3_column_int(stmt, 3);
+        res.start_time = (const char*)sqlite3_column_text(stmt, 4);
+        res.last_time = (const char*)sqlite3_column_text(stmt, 5);
+        res.repeat = (const char*)sqlite3_column_text(stmt, 6);
+        res.cat = (const char*)sqlite3_column_text(stmt, 7);
+        res.priority = (const char*)sqlite3_column_text(stmt, 8);
+        res.state = (const char*)sqlite3_column_text(stmt, 9);
+        res.desc = (const char*)sqlite3_column_text(stmt, 10);
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return res;
+}
+
 void DBHandler::insertTask(std::string year, std::string month,
     std::string day, std::string start_time, std::string last_time,
     std::string repeat, std::string cat, std::string priority,
@@ -208,6 +246,52 @@ void DBHandler::insertTask(std::string year, std::string month,
         goto end;
     }
 
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+void DBHandler::updateTask(std::string year, std::string month,
+    std::string day, std::string start_time, std::string last_time,
+    std::string repeat, std::string cat, std::string priority,
+    std::string state, std::string desc, int tid)
+{
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql), "UPDATE tasks SET year=?,month=?,day=?,"
+    "start_time=?,last_time=?,repeat=?,category=?,priority=?,state=?,"
+    "description=? WHERE id=?");
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[insertTask] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    if (year.empty()) sqlite3_bind_null(stmt, 1);
+    else sqlite3_bind_int(stmt, 1, std::stoi(year));
+    if (month.empty()) sqlite3_bind_null(stmt, 2);
+    else sqlite3_bind_int(stmt, 2, std::stoi(month));
+    if (day.empty()) sqlite3_bind_null(stmt, 3);
+    else sqlite3_bind_int(stmt, 3, std::stoi(day));
+    sqlite3_bind_text(stmt, 4, start_time.c_str(), start_time.size(), NULL);
+    sqlite3_bind_text(stmt, 5, last_time.c_str(), last_time.size(), NULL);
+    sqlite3_bind_text(stmt, 6, repeat.c_str(), repeat.size(), NULL);
+    sqlite3_bind_text(stmt, 7, cat.c_str(), cat.size(), NULL);
+    sqlite3_bind_text(stmt, 8, priority.c_str(), priority.size(), NULL);
+    sqlite3_bind_text(stmt, 9, state.c_str(), state.size(), NULL);
+    sqlite3_bind_text(stmt, 10, desc.c_str(), desc.size(), NULL);
+    sqlite3_bind_int(stmt, 11, tid);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[insertTask] sqlite3_step failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+    LOG("[DBH::updateTask] DONE successfully");
 end:
     sqlite3_finalize(stmt);
     sqlite3_close(db);

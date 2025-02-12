@@ -37,10 +37,15 @@ public:
     std::unordered_map<int, int> getScheduledDays(int y, int m);
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
+    task_entry getTask(int tid);
     void insertTask(std::string year, std::string month,
         std::string day, std::string start_time, std::string last_time,
         std::string repeat, std::string cat, std::string priority,
         std::string state, std::string desc);
+    void updateTask(std::string year, std::string month,
+        std::string day, std::string start_time, std::string last_time,
+        std::string repeat, std::string cat, std::string priority,
+        std::string state, std::string desc, int tid);
     std::string toggleState(int id, std::string cur_state);
 };
 #endif

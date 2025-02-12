@@ -39,7 +39,7 @@ inputField::inputField(int y, int x, std::string n, std::string curv)
         vals.push_back("Sat");
         vals.push_back("Sun");
     } else if (n=="category") {
-        // TODO: get stored categories
+        // TODO: check if there are stored categories
         vals.push_back("Personal");
         vals.push_back("Work");
         vals.push_back("Workout");
@@ -75,7 +75,7 @@ std::string inputField::getname() {return name;}
 void inputField::setHovered(bool v) {hovered = v;}
 int inputField::setSelected(bool v) {
     int res = 0;
-    if (name=="enter") return TM_ENTER_PRESS;
+    if (name=="enter") return TM_WRITE_TASK;
 
     selected = v;
     return res;
@@ -96,12 +96,47 @@ int inputField::handleOp(int ch) {
         // only switch vals
         if (ch==KEY_UP) res=switchV(1);
         else if (ch==KEY_DOWN) res=switchV(-1);
+
+        if (name=="year" || name=="month") res=TM_UPDATE_IF_DAY_RANGE;
     }
+    return res;
+}
+
+void inputField::setValRange(int newRange)
+{
+    if (name != "day") return;
+    while (vals.size()>newRange) {
+        vals.pop_back();
+    }
+    while (vals.size()<newRange) {
+        vals.push_back(std::to_string(vals.size()+1));
+    }
+
+    // newRange may make valIdx out of range
+    if (valIdx>vals.size()) valIdx=vals.size()-1;
+}
+
+int inputField::setVal(std::string v)
+{
+    int res = 0;
+    if (name=="desc") {
+        vals[valIdx] = v;
+    } else {
+        for (int i=0; i<vals.size(); i++) {
+            if (vals[i]==v) {
+                valIdx = i;
+                break;
+            }
+        }
+    }
+    if (name=="year" || name=="month") res=TM_UPDATE_IF_DAY_RANGE;
     return res;
 }
 
 std::string inputField::getVal()
 {
+    // LOG("[IF::getVal] name=[%s], vals.size()=[%d], valIdx=[%d]",
+        // name.c_str(), vals.size(), valIdx);
     return vals[valIdx];
 }
 std::string inputField::getDV(){
@@ -112,7 +147,7 @@ std::string inputField::getDV(){
 }
 void inputField::print() {
     if (selected) {
-        mvprintwColor(y, x, getVal().c_str(), 109);
+        mvprintwColor(y, x, getVal().c_str(), 100);
         if (acptTyping) { // only print cursor when selected
             // TODO: handle (y,x) for cursorIdx in diff line
             std::string cursCh;
@@ -125,7 +160,8 @@ void inputField::print() {
     } else if (hovered) {
         mvprintwColor(y, x, getDV().c_str(), 107);
     } else {
-        mvprintwColor(y, x, getDV().c_str(), 9);
+        // mvprintwColor(y, x, getDV().c_str(), 9);
+        mvprintwColor(y, x, getDV().c_str(), 10);
     }
 }
 
@@ -144,8 +180,8 @@ int inputField::switchV(int i) {
 int inputField::handleDescOp(int ch) {
     int res = 0;
     LOG("[IF::handleDescOp] ch=[%d]", ch);
-    if (ch==KEY_BACKSPACE) bsCh();
-    else if (ch==KEY_DL) delch();
+    if (isBS(ch)) bsCh();
+    else if (isDEL(ch)) delCh();
     else if (isArrow(ch)) {
         if (ch==KEY_LEFT) shiftCurs(-1);
         else if (ch==KEY_RIGHT) shiftCurs(1);
@@ -170,7 +206,9 @@ void inputField::bsCh()
 
 void inputField::delCh()
 {
-    vals[valIdx].erase(cursorIdx, 1);
+    if (cursorIdx<vals[valIdx].size()) {
+        vals[valIdx].erase(cursorIdx, 1);
+    }
 }
 
 void inputField::shiftCurs(int i)

@@ -40,16 +40,19 @@ bool initColors()
     // define new colors (settings maybe cached by terminal)
     m_init_color(150,   0, 100, 255); // blue
     m_init_color(151, 170, 190, 255); // sky blue
-    m_init_color(152,   0, 255, 255); // cyaan
+    m_init_color(152,   0, 200, 255); // darker cyan
     m_init_color(153, 160, 160, 160); // gray
     m_init_color(154, 255, 255, 120); // light yellow
     m_init_color(155, 255, 102, 102); // light red
     m_init_color(156, 255, 102, 178); // dark red
+    m_init_color(157, 255, 0, 127); // peach red
+    m_init_color(158, 255, 200, 120); // lighter yellow
+    m_init_color(159, 60, 60, 100); // gray
 
     // init_pair(num, fore, back)
 	// diff foreground colors
-	init_pair(1, COLOR_RED, COLOR_BLACK);
-	init_pair(2, COLOR_BLUE, COLOR_BLACK);
+	init_pair(1, 155, COLOR_BLACK);
+	init_pair(2, 150, COLOR_BLACK);
 	init_pair(3, COLOR_WHITE, COLOR_BLACK);
 	init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
 	init_pair(5, COLOR_CYAN, COLOR_BLACK);
@@ -58,12 +61,14 @@ bool initColors()
     init_pair(8, 150, COLOR_BLACK);
     init_pair(9, 151, COLOR_BLACK);
     init_pair(10, 152, COLOR_BLACK);
-    // init_pair(11, 153)
+    init_pair(11, 154, COLOR_BLACK);
+    init_pair(12, 158, COLOR_BLACK);
     init_pair(14, 156, COLOR_BLACK);
+    init_pair(15, 157, COLOR_BLACK);
 
 	// diff background colors (start from 100)
-	init_pair(100, COLOR_BLACK, COLOR_RED);
-	init_pair(101, COLOR_WHITE, COLOR_BLUE);
+	init_pair(100, COLOR_BLACK, 155);
+	init_pair(101, COLOR_BLACK, 150);
 	init_pair(102, COLOR_BLACK, COLOR_WHITE);
 	init_pair(103, COLOR_BLACK, COLOR_MAGENTA);
 	init_pair(104, COLOR_BLACK, COLOR_CYAN);
@@ -71,10 +76,9 @@ bool initColors()
 	init_pair(106, COLOR_BLACK, COLOR_YELLOW);
     init_pair(107, COLOR_BLACK, 154); // BG light yellow
     init_pair(108, COLOR_BLACK, 153); // BG light gray
-    init_pair(109, COLOR_BLACK, 155); // BG light red
-
     // others
     init_pair(200, COLOR_WHITE, COLOR_BLUE);
+    init_pair(201, 158, 159);
 
 	return true;
 }
@@ -105,6 +109,18 @@ bool isEnter(int ch) {
 
 bool isESC(int ch) {
     return (ch==KEY_M_ESC);
+}
+
+bool isBS(int ch) {
+    return (ch==KEY_BACKSPACE || ch==263);
+}
+
+bool isDEL(int ch) {
+    return (ch==KEY_DC || ch==330);
+}
+
+bool isCtrlE(int ch) {
+    return (ch==5);
 }
 
 std::tm* curTimeCompnt()

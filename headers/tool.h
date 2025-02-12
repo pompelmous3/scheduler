@@ -26,10 +26,14 @@ void m_init_color(int, int, int, int);
 bool initColors();
 void mvprintwColor(int y, int x, const char* str, int color, bool bold=false);
 void endNcurses();
+
+// KEYs
 bool isArrow(int ch);
 bool isEnter(int ch);
 bool isESC(int ch);
-
+bool isBS(int ch);
+bool isDEL(int ch);
+bool isCtrlE(int ch);
 // time related
 
 

@@ -208,7 +208,7 @@ int Month::handleOp(int ch)
 */
 {
 	int rc = 0;
-	LOG("[Month::handleOp] ch=[%d]", ch);
+	// LOG("[Month::handleOp] ch=[%d]", ch);
 	if (! selected) {
 		LOG("[Month::handleOp] not selected, but ch=[%d] received", ch);
 		// if (ch==KEY_ENTER) setSelected(true);
@@ -253,8 +253,11 @@ void Month::print()
 
 	// month string
 	int mon_str_sz = sprintf(tmp, "%d %s", year, months[month-1].c_str());
-	if (browsed) {
-		mvprintwColor(y, x, tmp, 103);
+	if (selected) {
+		mvprintwColor(y, x, tmp, 201);
+	} else if (browsed) {
+		// mvprintwColor(y, x, tmp, 103);
+		mvprintwColor(y, x, tmp, 12);
 	} else {
 		mvprintw(y, x, tmp);
 	}

@@ -7,7 +7,7 @@ SubModule::SubModule()
 };
 
 void SubModule::print() {
-    mvprintwColor(y, x+1, title.c_str(), hovered?10:3, true);
+    mvprintwColor(y, x+1, title.c_str(), hovered?15:3, true);
 }
 
 void SubModule::set_hovered(bool h) {
