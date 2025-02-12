@@ -1,52 +1,56 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 #include "calendar.h"
-#include "addtaskpanel.h"
+#include "taskmanager.h"
+#include "expensemanager.h"
 #include "tool.h"
+#include "submodule.h"
+
+#define SC_PADDING_Y 1
+#define SC_PADDING_X 2
+// TODO: define MIN WIDTH/HEIGHT
 
 // ==== class Screen ====
 class Screen {
-    std::vector<std::shared_ptr<Month>> months;
-    int mon_idx;
-    int d_month_num;
-    // DBHandler dbh = DBHandler("/var/log/scheduler.db");
     int cs_x, cs_y;
     int sc_h, sc_w;
-    int menuMode;
-    int atpMode;
-    int monthMode;
-    std::shared_ptr<Menu> menu;
-    std::shared_ptr<addTaskPanel> atp;
-    // Menu *menu;
-    // addTaskPanel* atp;
-    
+    int fr_h, fr_w; // usable frame height/weight
+    int top_y, bottom_y;
+    int left_x, right_x;
+    int mid_x;
+    int cal_end_y;
+    int mng_top, mng_bottom; // top,bottom of task/expense_manager
+
+    int mode;
+    std::vector<std::shared_ptr<SubModule>> submods;
+    int tm_em; // 0: print tm; 1: print em
+    bool delegESC;
+    bool lockTab;
+
+    std::shared_ptr<Calendar> calendar;
+    std::shared_ptr<taskPanel> dateSpecificTasks;
+    // std::shared_ptr<Menu> menu;
+    std::shared_ptr<taskManager> tm;
+    std::shared_ptr<expenseManager> em;
+
+    std::thread timer_thrd;
     // TODO: current movable range of x and y
 public:
     // Screen(int sc_h, int sc_w);
     Screen();
     ~Screen();
+    void setMode(int);
     void looping();
+    void timer_run();
 
-    int getMonthsSize();
-    void addMonth(std::shared_ptr<Month>);
+
+    void printFrame();
     void printScr();
     void refreshScr();
-    void move_cs(int x, int y);
-    void shiftMonth(int v);
-    void toggleMenuMode();
-    void toggleAtpMode();
-    void toggleMonthMode();
-    void handleArrow(int ch);
-    void handleEsc();
+
+    int handleOp(int ch);
     void handleRC(int rc);
-    int handleEnter();
-    void handleBS();
-    int isMenuMode();
-    int isAtpMode();
-    bool isMonthMode();
-    void passOp(int ch);
-    // TODO: send to ScreenObject
-    // void doMenuOption();
+    void update_dateSpecificTasks();
 };
 
 #endif

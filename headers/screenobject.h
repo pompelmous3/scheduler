@@ -13,7 +13,7 @@ protected: // only accessible by the derived classes
 
 public:
     ScreenObject(int sc_h, int sc_w); // center-aligned
-    ScreenObject(int x, int y, int h, int w);
+    ScreenObject(int y, int x, int h, int w);
     ~ScreenObject();
     void print();
 };

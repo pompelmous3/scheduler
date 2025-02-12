@@ -1,10 +1,22 @@
 
 CXX = g++
-CXXFLAGS = -std=c++17 -g
+CXXFLAGS = -std=c++17 -ggdb -Iheaders
 LDFLAGS = -lncursesw -lsqlite3
-SOURCES = ./sources/calendar.cpp ./sources/log.cpp ./sources/db.cpp ./sources/tool.cpp \
-          ./sources/screen.cpp ./sources/screenobject.cpp ./sources/taskpanel.cpp \
-          ./sources/menu.cpp ./sources/addtaskpanel.cpp ./sources/looping.cpp main.cpp
+SOURCES = \
+	./sources/calendar.cpp \
+	./sources/month.cpp \
+	./sources/log.cpp \
+	./sources/db.cpp \
+	./sources/tool.cpp \
+    ./sources/screen.cpp \
+	./sources/screenobject.cpp \
+	./sources/taskpanel.cpp \
+    ./sources/menu.cpp \
+	./sources/taskmanager.cpp \
+	./sources/expensemanager.cpp \
+	./sources/inputfield.cpp \
+	./sources/submodule.cpp \
+	./main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = scheduler
 

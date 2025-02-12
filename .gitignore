@@ -1,3 +1,5 @@
 *.o
 scheduler
 scheduler.log
+scheduler.db
+

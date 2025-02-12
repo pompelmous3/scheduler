@@ -1,6 +1,6 @@
-#include "../headers/menu.h"
-#include "../headers/tool.h"
-#include "../headers/log.h"
+#include "menu.h"
+#include "tool.h"
+#include "log.h"
 
 Menu::Menu(int sc_h, int sc_w)
     : ScreenObject(sc_h, sc_w)

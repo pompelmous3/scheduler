@@ -4,10 +4,8 @@
 #include <chrono>
 #include <ctime>
 #include "./headers/log.h"
-#include "./headers/calendar.h"
-#include "./headers/looping.h"
 #include "./headers/tool.h"
-#include "./headers/addtaskpanel.h"
+#include "./headers/screen.h"
 
 // using namespace std;
 
@@ -20,6 +18,7 @@ int main()
 	}
 
 	Screen sc = Screen();
+	
 	sc.looping();
 	// sc.printScr();
 

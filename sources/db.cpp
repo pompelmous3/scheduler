@@ -1,5 +1,6 @@
-#include "../headers/db.h"
-#include "../headers/log.h"
+#include "db.h"
+#include "log.h"
+#include "tool.h"
 #include <cstdlib>
 
 // static int callback(void *data, int argc, char **argv, char **azColName){
@@ -22,31 +23,57 @@ DBHandler::DBHandler(const char *p)
         // TODO: throw exception
     }
 
-    // create table
+    // create table "tasks"
     snprintf(sql, sizeof(sql), "%s",
         "CREATE TABLE If not exists tasks("
         "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "year INT NOT NULL,"
-        "month INT NOT NULL,"
-        "day INT NOT NULL,"
+        "year INT,"
+        "month INT,"
+        "day INT,"
         "start_time TEXT,"
-        "state TEXT NOT NULL,"
+        "last_time TEXT,"
+        "repeat TEXT,"
+        "category TEXT,"
         "priority TEXT NOT NULL,"
+        "state TEXT NOT NULL,"
         "description TEXT NOT NULL);");
     rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
     // close connection
     if (rc) {
-        LOG("[DBHandler] create table err: %s", sqlite3_errmsg(db));
+        LOG("[DBHandler] create table tasks err: %s", sqlite3_errmsg(db));
         // free the memory obtained from sqlite3_malloc()
         sqlite3_free(zErrMsg);
         // TODO: throw exception?
     }
+
+    // create table "task_cats"
+    snprintf(sql, sizeof(sql), "%s",
+        "CREATE TABLE if not exists task_cats("
+        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL);");
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    if (rc) {
+        LOG("[DBHandler] create table task_cats err: %s", sqlite3_errmsg(db));
+        sqlite3_free(zErrMsg);
+    }
+
+    // create table "exp_cats"
+    snprintf(sql, sizeof(sql), "%s",
+        "CREATE TABLE if not exists exp_cats("
+        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL);");
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    if (rc) {
+        LOG("[DBHandler] create table exp_cats err: %s", sqlite3_errmsg(db));
+        sqlite3_free(zErrMsg);
+    }
+
     sqlite3_close(db);
 
 
     // insert test entries
     snprintf(sql, sizeof(sql), "%s", "INSERT INTO "
-    "tasks (year, month, day, start_time, state, priority, description) "
+    "tasks (year, month, day, start_time, last_time, state, priority, description) "
     "values (2023, 9, 24, '', 'Todo', 'Urgent', 'buy eggs')");
 }
 
@@ -57,9 +84,9 @@ DBHandler::~DBHandler()
         free(zErrMsg);
 }
 
-std::map<int, int> DBHandler::getScheduledDays(int y, int m)
+std::unordered_map<int, int> DBHandler::getScheduledDays(int y, int m)
 {
-    std::map<int, int> res;
+    std::unordered_map<int, int> res;
     sqlite3_stmt *stmt;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
@@ -120,10 +147,13 @@ void DBHandler::queryDateTasks(int y, int m, int d)
         int m = sqlite3_column_int(stmt, 2);
         int d = sqlite3_column_int(stmt, 3);
         std::string start_time = (const char*)sqlite3_column_text(stmt, 4);
-        std::string state = (const char*)sqlite3_column_text(stmt, 5);
-        std::string priority = (const char*)sqlite3_column_text(stmt, 6);
-        std::string desc = (const char*)sqlite3_column_text(stmt, 7);
-        task_entry entry = { id, y, m, d, start_time, state, priority, desc};
+        std::string last_time = (const char*)sqlite3_column_text(stmt, 5);
+        std::string repeat = (const char*)sqlite3_column_text(stmt, 6);
+        std::string cat = (const char*)sqlite3_column_text(stmt, 7);
+        std::string priority = (const char*)sqlite3_column_text(stmt, 8);
+        std::string state = (const char*)sqlite3_column_text(stmt, 9);
+        std::string desc = (const char*)sqlite3_column_text(stmt, 10);
+        task_entry entry = {id,y,m,d,start_time,last_time,repeat,cat,priority,state,desc};
         lastResults.push_back(entry);
     }
 
@@ -138,8 +168,48 @@ const std::vector <task_entry> DBHandler::getLastResults() const
     return (std::vector <task_entry> &) lastResults;
 }
 
-void DBHandler::insertTask(int year, int month, int day, std::string start_time,
-    std::string state, std::string priority, std::string desc)
+task_entry DBHandler::getTask(int tid) {
+    task_entry res;
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[getTask] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement (tasks)
+    snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE id=%d", tid);
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // 
+    if ((rc=sqlite3_step(stmt)) == SQLITE_ROW) {
+        res.id = sqlite3_column_int(stmt, 0);
+        res.y = sqlite3_column_int(stmt, 1);
+        res.m = sqlite3_column_int(stmt, 2);
+        res.d = sqlite3_column_int(stmt, 3);
+        res.start_time = (const char*)sqlite3_column_text(stmt, 4);
+        res.last_time = (const char*)sqlite3_column_text(stmt, 5);
+        res.repeat = (const char*)sqlite3_column_text(stmt, 6);
+        res.cat = (const char*)sqlite3_column_text(stmt, 7);
+        res.priority = (const char*)sqlite3_column_text(stmt, 8);
+        res.state = (const char*)sqlite3_column_text(stmt, 9);
+        res.desc = (const char*)sqlite3_column_text(stmt, 10);
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return res;
+}
+
+void DBHandler::insertTask(std::string year, std::string month,
+    std::string day, std::string start_time, std::string last_time,
+    std::string repeat, std::string cat, std::string priority,
+    std::string state, std::string desc)
 {
     sqlite3_stmt *stmt;
     rc = sqlite3_open(path.c_str(), &db);
@@ -148,21 +218,28 @@ void DBHandler::insertTask(int year, int month, int day, std::string start_time,
         goto end;
     }
 
-    snprintf(sql, sizeof(sql), "INSERT INTO tasks(year, month, day, start_time"
-        ", state, priority, description) values (?, ?, ?, ?, ?, ?, ?)");
+    snprintf(sql, sizeof(sql), "INSERT INTO tasks(year,month,day,start_time,"
+        "last_time,repeat,category,priority,state,description)"
+        "values (?,?,?,?,?,?,?,?,?,?)");
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         LOG("[insertTask] prep failed: %s", sqlite3_errmsg(db));
         goto end;
     }
 
-    sqlite3_bind_int(stmt, 1, year);
-    sqlite3_bind_int(stmt, 2, month);
-    sqlite3_bind_int(stmt, 3, day);
+    if (year.empty()) sqlite3_bind_null(stmt, 1);
+    else sqlite3_bind_int(stmt, 1, std::stoi(year));
+    if (month.empty()) sqlite3_bind_null(stmt, 2);
+    else sqlite3_bind_int(stmt, 2, std::stoi(month));
+    if (day.empty()) sqlite3_bind_null(stmt, 3);
+    else sqlite3_bind_int(stmt, 3, std::stoi(day));
     sqlite3_bind_text(stmt, 4, start_time.c_str(), start_time.size(), NULL);
-    sqlite3_bind_text(stmt, 5, state.c_str(), state.size(), NULL);
-    sqlite3_bind_text(stmt, 6, priority.c_str(), priority.size(), NULL);
-    sqlite3_bind_text(stmt, 7, desc.c_str(), desc.size(), NULL);
+    sqlite3_bind_text(stmt, 5, last_time.c_str(), last_time.size(), NULL);
+    sqlite3_bind_text(stmt, 6, repeat.c_str(), repeat.size(), NULL);
+    sqlite3_bind_text(stmt, 7, cat.c_str(), cat.size(), NULL);
+    sqlite3_bind_text(stmt, 8, priority.c_str(), priority.size(), NULL);
+    sqlite3_bind_text(stmt, 9, state.c_str(), state.size(), NULL);
+    sqlite3_bind_text(stmt, 10, desc.c_str(), desc.size(), NULL);
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         LOG("[insertTask] sqlite3_step failed: %s", sqlite3_errmsg(db));
@@ -174,13 +251,60 @@ end:
     sqlite3_close(db);
 }
 
-void DBHandler::toggleState(int id, std::string cur_state)
+void DBHandler::updateTask(std::string year, std::string month,
+    std::string day, std::string start_time, std::string last_time,
+    std::string repeat, std::string cat, std::string priority,
+    std::string state, std::string desc, int tid)
 {
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql), "UPDATE tasks SET year=?,month=?,day=?,"
+    "start_time=?,last_time=?,repeat=?,category=?,priority=?,state=?,"
+    "description=? WHERE id=?");
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[insertTask] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    if (year.empty()) sqlite3_bind_null(stmt, 1);
+    else sqlite3_bind_int(stmt, 1, std::stoi(year));
+    if (month.empty()) sqlite3_bind_null(stmt, 2);
+    else sqlite3_bind_int(stmt, 2, std::stoi(month));
+    if (day.empty()) sqlite3_bind_null(stmt, 3);
+    else sqlite3_bind_int(stmt, 3, std::stoi(day));
+    sqlite3_bind_text(stmt, 4, start_time.c_str(), start_time.size(), NULL);
+    sqlite3_bind_text(stmt, 5, last_time.c_str(), last_time.size(), NULL);
+    sqlite3_bind_text(stmt, 6, repeat.c_str(), repeat.size(), NULL);
+    sqlite3_bind_text(stmt, 7, cat.c_str(), cat.size(), NULL);
+    sqlite3_bind_text(stmt, 8, priority.c_str(), priority.size(), NULL);
+    sqlite3_bind_text(stmt, 9, state.c_str(), state.size(), NULL);
+    sqlite3_bind_text(stmt, 10, desc.c_str(), desc.size(), NULL);
+    sqlite3_bind_int(stmt, 11, tid);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[insertTask] sqlite3_step failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+    LOG("[DBH::updateTask] DONE successfully");
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+std::string DBHandler::toggleState(int id, std::string cur_state)
+{
+    LOG("[DBH::toggleState] id=[%d], cur_state=[%s]", id, cur_state.c_str());
     std::string set_state;
-    if (cur_state == "Todo") {
-        set_state = "Done";
-    } else if (cur_state == "Done") {
-        set_state = "Todo";
+    if (cur_state == "TODO") {
+        set_state = "DONE";
+    } else if (cur_state == "DONE") {
+        set_state = "TODO";
     }
 
     sqlite3_stmt *stmt;
@@ -209,4 +333,5 @@ void DBHandler::toggleState(int id, std::string cur_state)
 end:
     sqlite3_finalize(stmt);
     sqlite3_close(db);
+    return set_state;
 }
