@@ -37,7 +37,7 @@ Screen::Screen()
 		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1);
 	submods.push_back(calendar);
 	dateSpecificTasks = std::make_shared<taskPanel>(cal_end_y+2, left_x+1,
-		bottom_y-1-(cal_end_y+3), mid_x-(left_x+5), std::string("Date Specific Tasks"));
+		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Specific Tasks"));
 	submods.push_back(dateSpecificTasks);
 	tm = std::make_shared<taskManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
 		right_x-mid_x-1);
@@ -99,7 +99,7 @@ void Screen::looping() {
 
 		rc = handleOp(ch);
 		handleRC(rc);
-		LOG("[SC::looping] after handleRC, going to refresh");
+		// LOG("[SC::looping] after handleRC, going to refresh");
 		refreshScr();
 		rc = 0;
 	}
