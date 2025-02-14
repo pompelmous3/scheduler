@@ -2,13 +2,17 @@
 #include "return_code.h"
 
 taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
-    : idx {0}, displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0}
+    : idx(0), st_idx(0), displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0},
+	h(h), w(w)
 {
 	this->y = y;
 	this->x = x;
 	this->title = t;
 	// LOG("[taskPanel::taskPanel] initialized");
     // printMap.push_back(std::string(width, '#'));
+	tasks_h = h-2;
+	tasks_w = w-PFX_SPACE-CKBX_SZ;
+	LOG("[TP::TP] tasks: h[%d], w[%d]", tasks_h, tasks_w);
 }
 
 taskPanel::~taskPanel()
@@ -75,39 +79,92 @@ int taskPanel::handleOp(int ch)
 void taskPanel::print()
 {
 	SubModule::print();
-    int tx = this->x+5;
+    int tx = this->x+PFX_SPACE; // 5 spaces before check box
     int ty = this->y+2; // 1st line for title
 
-    for (int i=0; i<tasks.size(); i++) {
-        std::string taskstr = getTaskStr(tasks[i].state, tasks[i].desc);
-        setTaskColor(tasks[i].priority, (idx == i) ? true:false);
-        mvprintw(ty, tx, "%s", taskstr.c_str());
-        resetTaskColor(tasks[i].priority, (idx == i) ? true:false);
-        ty++;
-    }
-}
+	// calculate tasks number can fit in taskPanel
+	LOG("[TP::print] tasks: h[%d], w[%d]", tasks_h, tasks_w);
+	LOG("[TP::print] tasks_h=[%d], tasks_w=[%d], idx=[%d]", tasks_h, tasks_w, idx);
 
-
-std::string taskPanel::getTaskStr(std::string state, std::string task)
-{
-	std::string result;
-
-	if (state == "TODO") { // ▢ u8"\u25A2"
-		result.append(u8"\u25A2 ");
-		// result.append(u8"\u2B1C ");
-		// result.append(u8"\u25FB ");
-		result.append(task);
-	} else if (state == "DONE") { // ✓ u8"\u2713"
-		result.append(u8"\u2713 ");
-		// result.append(u8"\u2705 ");
-		// result.append(u8"\u2611 ");
-		for (auto ch : task) {
-			result.push_back(ch);
-			result.append(u8"\u0336");
+	/*
+	==== determine printing tasks range ====
+	# the desc.size we are using for calculating lcnt should equal to 
+		total size of printed "ln" later so that actual used line cnt
+		could match.
+	*/
+	if (idx<st_idx) {
+		st_idx = idx;
+	} else if (idx>st_idx) { // make sure idx is in the printing range
+		int rh = h-2;
+		int ridx = idx+1; // checking start at (ridx-1)==(idx)
+		while (true) {
+			if (ridx==0) break;
+			// ridx--;
+			int lcnt = (tasks[ridx-1].desc.size()/tasks_w) + ((tasks[ridx-1].desc.size()%tasks_w)?1:0);
+			LOG("[TP::print] checking ridx=[%d], lcnt=[%d]", ridx-1, lcnt);
+			if (rh-lcnt >= 0) { // we can add this task
+				rh -= lcnt;
+				ridx--;
+			} else {
+				break;
+			}
 		}
+		/*
+		- when end, ridx should be the frontest task idx we can print
+			while tasks[idx] is included
+		*/
+		LOG("[TP::print] ridx=[%d]", ridx);
+		if (ridx > st_idx) st_idx=ridx;
 	}
+	
+	
 
-	return result;
+    // for (int i=0; i<tasks.size(); i++) {
+	for (int i=st_idx; i<tasks.size(); i++) {
+		int lcnt = (tasks[i].desc.size()/tasks_w) + ((tasks[i].desc.size()%tasks_w)?1:0);
+		LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));
+		if (((ty+lcnt) - (this->y+2)) > tasks_h) {
+			LOG("[TP::print] i=[%d], breaking", i);
+			break;
+		}
+
+		setTaskColor(tasks[i].priority, (idx == i) ? true:false);
+		// print state symbol
+		if (tasks[i].state == "TODO") {
+			mvprintw(ty, tx, u8"\u25A2 ");
+		} else { // DONE
+			mvprintw(ty, tx, u8"\u2713 ");
+		}
+
+		// print tasks[i].desc
+		std::vector<std::string> words = splitBySpace(tasks[i].desc);
+		int widx = 0;
+		std::string ln;
+		int lnsz = 0;
+		std::string token;
+		while (widx<words.size()) {
+			token = (widx<words.size()-1)?(words[widx]+" "):(words[widx]);
+
+			if (lnsz+token.size()>tasks_w) {
+				mvprintw(ty++, tx+CKBX_SZ, ln.c_str());
+				ln.clear();
+				lnsz = 0;
+			}
+			// append new token
+			if (tasks[i].state == "TODO") {
+				ln.append(token);
+			} else {
+				for (auto& ch:token){
+					ln.push_back(ch);
+					ln.append(u8"\u0336");
+				}
+			}
+			lnsz += token.size();
+			widx++;
+		}
+		mvprintw(ty++, tx+CKBX_SZ, ln.c_str());
+        resetTaskColor(tasks[i].priority, (idx == i) ? true:false);
+    }
 }
 
 void taskPanel::setTaskColor(std::string priority, bool selected)

@@ -195,3 +195,14 @@ std::string toStr(int n, int len) {
     oss << std::setw(len) << std::setfill('0') << n;
     return oss.str();
 }
+
+std::vector<std::string> splitBySpace(const std::string& str)
+{
+    std::vector<std::string> result;
+    std::istringstream iss(str);
+    std::string word;
+    while (std::getline(iss, word, ' ')) {
+        if (!word.empty()) result.push_back(word);
+    }
+    return result;
+}

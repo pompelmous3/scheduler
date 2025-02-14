@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <memory>
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <thread>
@@ -45,4 +46,5 @@ std::string ljust(const std::string& text, int length, char ch);
 std::string rjust(const std::string& text, int length, char ch);
 std::string specialLJust(const std::string& text, int length, char ch);
 std::string toStr(int n, int len);
+std::vector<std::string> splitBySpace(const std::string& str);
 #endif
