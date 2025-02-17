@@ -1,7 +1,7 @@
 
 CXX = g++
-CXXFLAGS = -std=c++17 -ggdb -Iheaders
-LDFLAGS = -lncursesw -lsqlite3
+CXXFLAGS += -std=c++17 -ggdb -Iheaders
+LDFLAGS += -lncursesw -lsqlite3
 SOURCES = \
 	./sources/calendar.cpp \
 	./sources/month.cpp \
