@@ -14,6 +14,7 @@ SOURCES = \
     ./sources/menu.cpp \
 	./sources/taskmanager.cpp \
 	./sources/expensemanager.cpp \
+	./sources/displayfield.cpp \
 	./sources/inputfield.cpp \
 	./sources/categorymanager.cpp \
 	./sources/submodule.cpp \

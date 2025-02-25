@@ -23,7 +23,7 @@ void taskManager::init_fields()
     if (cm>12) {cm=1; cyr+=1;}
     
 
-    type = std::make_shared<inputField>(
+    type = std::make_shared<displayField>(
         y+2,
         x+12,
         std::string("type")
@@ -34,8 +34,8 @@ void taskManager::init_fields()
     fields, so we can still access those fields later.
     */
     // ################ line 1 ################
-    std::vector<std::shared_ptr<inputField>> lineOne;
-    yearField = std::make_shared<inputField>(
+    std::vector<std::shared_ptr<displayField>> lineOne;
+    yearField = std::make_shared<displayField>(
         y+3,
         x+12,
         std::string("year"),
@@ -44,7 +44,7 @@ void taskManager::init_fields()
     // lineOne.push_back(std::move(yearField));
     lineOne.push_back(yearField);
 
-    monthField = std::make_shared<inputField>(
+    monthField = std::make_shared<displayField>(
         y+3,
         x+17,
         std::string("month"),
@@ -53,7 +53,7 @@ void taskManager::init_fields()
     // lineOne.push_back(std::move(monthField));
     lineOne.push_back(monthField);
 
-    dayField = std::make_shared<inputField>(
+    dayField = std::make_shared<displayField>(
         y+3,
         x+20,
         std::string("day"),
@@ -63,7 +63,7 @@ void taskManager::init_fields()
     lineOne.push_back(dayField);
     // fields.push_back(std::move(lineOne));
 
-    hourField = std::make_shared<inputField>(
+    hourField = std::make_shared<displayField>(
         y+3,
         x+32,
         std::string("hour"),
@@ -71,7 +71,7 @@ void taskManager::init_fields()
     );
     lineOne.push_back(hourField);
 
-    minField = std::make_shared<inputField>(
+    minField = std::make_shared<displayField>(
         y+3,
         x+35,
         std::string("min"),
@@ -79,7 +79,7 @@ void taskManager::init_fields()
     );
     lineOne.push_back(minField);
     fields[0].push_back(lineOne);
-    repeatField = std::make_shared<inputField>(
+    repeatField = std::make_shared<displayField>(
         y+3,
         x+54,
         std::string("repeat")
@@ -89,8 +89,8 @@ void taskManager::init_fields()
 
 
     // ################ line 2  ################
-    std::vector<std::shared_ptr<inputField>> lineTwo;
-    categoryField = std::make_shared<inputField>(
+    std::vector<std::shared_ptr<displayField>> lineTwo;
+    categoryField = std::make_shared<displayField>(
         y+4,
         x+12,
         std::string("category")
@@ -102,14 +102,14 @@ void taskManager::init_fields()
     fields[2].push_back(lineTwo);
 
     // ################ line 3 ################
-    std::vector<std::shared_ptr<inputField>> lineThree;
-    priorityField = std::make_shared<inputField>(
+    std::vector<std::shared_ptr<displayField>> lineThree;
+    priorityField = std::make_shared<displayField>(
         y+5,
         x+12,
         std::string("priority")
     );
     lineThree.push_back(priorityField);
-    stateField = std::make_shared<inputField>(
+    stateField = std::make_shared<displayField>(
         y+5,
         x+32,
         std::string("state")
@@ -120,7 +120,7 @@ void taskManager::init_fields()
     fields[2].push_back(lineThree);
 
     // ################ line 4 ################
-    std::vector<std::shared_ptr<inputField>> lineFour;
+    std::vector<std::shared_ptr<displayField>> lineFour;
     descField = std::make_shared<inputField>(
         y+6,
         x+12,
@@ -132,8 +132,8 @@ void taskManager::init_fields()
     fields[2].push_back(lineFour);
 
     // ################ line 6 ################
-    std::vector<std::shared_ptr<inputField>> lineSix;
-    enterField = std::make_shared<inputField>(
+    std::vector<std::shared_ptr<displayField>> lineSix;
+    enterField = std::make_shared<displayField>(
         y+8,
         x+2+(w-4)/2-2,
         std::string("enter")
@@ -340,7 +340,7 @@ void taskManager::print()
 
 void taskManager::putTask(int tid) {
     tk = dbh.getTask(tid);
-    // TODO: after inputfield.h support setVal, set tk fields
+
     int res = 0;
     res = yearField->setVal(toStr(tk.y,4));
     res |= monthField->setVal(toStr(tk.m,2));

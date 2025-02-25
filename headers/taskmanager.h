@@ -3,6 +3,7 @@
 #include "db.h"
 #include "screenobject.h"
 #include "submodule.h"
+#include "displayfield.h"
 #include "inputfield.h"
 #include "tool.h"
 #include <string>
@@ -13,21 +14,22 @@
 class taskManager : public SubModule
 {
 private:
-    // std::vector<std::vector<std::shared_ptr<inputField>>> fields;
-    std::shared_ptr<inputField> type;
+    // std::vector<std::vector<std::shared_ptr<displayField>>> fields;
+    std::shared_ptr<displayField> type;
     int typenum; // for indexing in fields?
-    std::vector<std::vector<std::vector<std::shared_ptr<inputField>>>> fields;
-    std::shared_ptr<inputField> yearField;
-    std::shared_ptr<inputField> monthField;
-    std::shared_ptr<inputField> dayField;
-    std::shared_ptr<inputField> hourField;
-    std::shared_ptr<inputField> minField;
-    std::shared_ptr<inputField> repeatField;
-    std::shared_ptr<inputField> categoryField;
-    std::shared_ptr<inputField> priorityField;
-    std::shared_ptr<inputField> stateField;
+    // storing objects' pointer, shouldn't have slicing problem
+    std::vector<std::vector<std::vector<std::shared_ptr<displayField>>>> fields;
+    std::shared_ptr<displayField> yearField;
+    std::shared_ptr<displayField> monthField;
+    std::shared_ptr<displayField> dayField;
+    std::shared_ptr<displayField> hourField;
+    std::shared_ptr<displayField> minField;
+    std::shared_ptr<displayField> repeatField;
+    std::shared_ptr<displayField> categoryField;
+    std::shared_ptr<displayField> priorityField;
+    std::shared_ptr<displayField> stateField;
     std::shared_ptr<inputField> descField;
-    std::shared_ptr<inputField> enterField;
+    std::shared_ptr<displayField> enterField;
 
     /*
     fields[i][y][x] means the 2D inputField vectors for type i
@@ -48,7 +50,6 @@ private:
     bool inIF;
     void init_fields();
     // int getIFColor(int row, int col);
-    // std::optional<std::pair<int, int>> print_inputFields();
     void writeTask();
     void shift_IFidx(int ch);
 

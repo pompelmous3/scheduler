@@ -2,6 +2,7 @@
 #define CATEGORYMANAGER_H
 #include "submodule.h"
 #include "inputfield.h"
+#include "displayfield.h"
 #include "tool.h"
 #include "db.h"
 

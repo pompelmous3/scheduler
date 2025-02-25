@@ -46,8 +46,10 @@ void categoryManager::handleRC(int rc)
         */
         std::string ncat = new_cat->getVal();
         LOG("[CM::handleRC] inserting new cat =[%s]", ncat.c_str());
-        dbh.insertCat(ncat);
-        new_cat->setVal("");
+        if (ncat != "") {
+            dbh.insertCat(ncat);
+            new_cat->setVal("");
+        }
     }
 }
 
