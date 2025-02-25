@@ -12,7 +12,7 @@ taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
     // printMap.push_back(std::string(width, '#'));
 	tasks_h = h-2;
 	tasks_w = w-PFX_SPACE-CKBX_SZ;
-	LOG("[TP::TP] tasks: h[%d], w[%d]", tasks_h, tasks_w);
+	// LOG("[TP::TP] tasks: h[%d], w[%d]", tasks_h, tasks_w);
 }
 
 taskPanel::~taskPanel()
@@ -68,6 +68,10 @@ int taskPanel::handleOp(int ch)
 			idx = idx - tasks.size();
 		}
 	} else if (isEnter(ch)) {
+		if (idx>=tasks.size()) {
+			LOG("[TP::handleOp] isEnter, but idx>=tasks.size()");
+			return rc;
+		}
 		tasks[idx].state = dbh.toggleState(tasks[idx].id, tasks[idx].state);
 	} else if (isCtrlE(ch)) {
 		LOG("[taskPanel::handleOp] is ctrl E");
@@ -83,8 +87,8 @@ void taskPanel::print()
     int ty = this->y+2; // 1st line for title
 
 	// calculate tasks number can fit in taskPanel
-	LOG("[TP::print] tasks: h[%d], w[%d]", tasks_h, tasks_w);
-	LOG("[TP::print] tasks_h=[%d], tasks_w=[%d], idx=[%d]", tasks_h, tasks_w, idx);
+	// LOG("[TP::print] tasks: h[%d], w[%d]", tasks_h, tasks_w);
+	// LOG("[TP::print] tasks_h=[%d], tasks_w=[%d], idx=[%d]", tasks_h, tasks_w, idx);
 
 	/*
 	==== determine printing tasks range ====
@@ -119,7 +123,7 @@ void taskPanel::print()
 	
 	
 
-    // for (int i=0; i<tasks.size(); i++) {
+    // print tasks in the range determined above
 	for (int i=st_idx; i<tasks.size(); i++) {
 		int lcnt = (tasks[i].desc.size()/tasks_w) + ((tasks[i].desc.size()%tasks_w)?1:0);
 		LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));

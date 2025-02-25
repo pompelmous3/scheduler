@@ -3,6 +3,7 @@
 #include "calendar.h"
 #include "taskmanager.h"
 #include "expensemanager.h"
+#include "categorymanager.h"
 #include "tool.h"
 #include "submodule.h"
 
@@ -15,11 +16,12 @@ class Screen {
     int cs_x, cs_y;
     int sc_h, sc_w;
     int fr_h, fr_w; // usable frame height/weight
+
     int top_y, bottom_y;
     int left_x, right_x;
     int mid_x;
     int cal_end_y;
-    int mng_top, mng_bottom; // top,bottom of task/expense_manager
+    int mng_top, tm_bottom; // top,bottom of task/expense_manager
 
     int mode;
     std::vector<std::shared_ptr<SubModule>> submods;
@@ -32,7 +34,9 @@ class Screen {
     // std::shared_ptr<Menu> menu;
     std::shared_ptr<taskManager> tm;
     std::shared_ptr<expenseManager> em;
+    std::shared_ptr<categoryManager> cm;
 
+    DBHandler dbh = DBHandler("./scheduler.db");
     std::thread timer_thrd;
     // TODO: current movable range of x and y
 public:

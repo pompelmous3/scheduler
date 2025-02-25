@@ -292,7 +292,7 @@ int taskManager::handleOp(int ch)
 }
 void taskManager::handleRC(int& res) {
     LOG("[TM:handleRC] res=[%d]", res);
-    if (res==TM_STOP_IF) {
+    if (res==MNGR_STOP_IF) {
         if (ifx==-1) type->setSelected(false);
         else fields[typenum][ifx][ify]->setSelected(false);
         inIF = false;
@@ -321,7 +321,7 @@ void taskManager::handleRC(int& res) {
 void taskManager::print()
 {
     SubModule::print();
-    mvprintwColor(y, x+1+title.size(), " / Expense Manager", 3);
+    // mvprintwColor(y, x+1+title.size(), " / Expense Manager", 3);
 
     if (editing)
         mvprintw(y+1, x+1, "-- Editing --");

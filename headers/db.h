@@ -20,6 +20,12 @@ typedef struct {
     std::string desc;
 } task_entry;
 
+typedef struct {
+    int id;
+    std::string cname;
+    int active;
+} task_cat;
+
 class DBHandler {
     sqlite3 *db;
     char *zErrMsg = 0;
@@ -38,6 +44,7 @@ public:
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
     task_entry getTask(int tid);
+    void initTables();
     void insertTask(std::string year, std::string month,
         std::string day, std::string start_time, std::string last_time,
         std::string repeat, std::string cat, std::string priority,
@@ -47,5 +54,9 @@ public:
         std::string repeat, std::string cat, std::string priority,
         std::string state, std::string desc, int tid);
     std::string toggleState(int id, std::string cur_state);
+
+    // for task_cats table
+    std::vector<task_cat> queryTaskCats();
+    void insertCat(std::string ncat);
 };
 #endif

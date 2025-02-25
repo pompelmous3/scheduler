@@ -87,7 +87,7 @@ std::string getMonthStrPost(int month, int len)
 // class Month methods
 Month::Month(int yr, int m, int y, int x)
 	: year {yr}, month {m}, init_x {x}, init_y {y},
-	browsed {false}
+	browsed {false}, selected {false}
 {
 	/*
 		1. (x, y) is the top left point of this month

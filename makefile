@@ -15,6 +15,7 @@ SOURCES = \
 	./sources/taskmanager.cpp \
 	./sources/expensemanager.cpp \
 	./sources/inputfield.cpp \
+	./sources/categorymanager.cpp \
 	./sources/submodule.cpp \
 	./main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)

@@ -7,7 +7,7 @@
 
 #define TP_EDIT_REQ 40
  
-#define TM_STOP_IF 50
+#define MNGR_STOP_IF 50
 #define TM_TYPE_INC 51
 #define TM_TYPE_DEC 52
 #define TM_WRITE_TASK 53

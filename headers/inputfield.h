@@ -20,7 +20,7 @@ protected:
     int switchV(int i);
 
     // for modifying value
-    int handleDescOp(int ch);
+    int handleTypingOp(int ch);
     void insCh(int ch);
     void bsCh();
     void delCh();

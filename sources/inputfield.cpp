@@ -58,6 +58,13 @@ inputField::inputField(int y, int x, std::string n, std::string curv)
         vals.push_back("ENTER");
     }
 
+    // new_cat
+    else if (n=="new_cat") {
+        dfval = "<category>";
+        vals.push_back("");
+        acptTyping = true;
+    }
+
     std::vector<std::string>::iterator it = vals.begin();
     if (!curv.empty()) it=std::find(vals.begin(), vals.end(), curv);
     else it=vals.begin();
@@ -85,13 +92,13 @@ int inputField::setSelected(bool v) {
 int inputField::handleOp(int ch) {
     int res = 0;
     if (isEnter(ch)) {
-        return TM_STOP_IF;
+        return MNGR_STOP_IF;
     }
 
     // TODO: for user to add category
     // if (name=="desc" || (name=="category" && valIdx==vals.size()-1)) {
-    if (name=="desc") {
-        return handleDescOp(ch);
+    if (acptTyping) {
+        return handleTypingOp(ch);
     } else {
         // only switch vals
         if (ch==KEY_UP) res=switchV(1);
@@ -119,7 +126,7 @@ void inputField::setValRange(int newRange)
 int inputField::setVal(std::string v)
 {
     int res = 0;
-    if (name=="desc") {
+    if (acptTyping) {
         vals[valIdx] = v;
     } else {
         for (int i=0; i<vals.size(); i++) {
@@ -141,7 +148,12 @@ std::string inputField::getVal()
 }
 std::string inputField::getDV(){
     std::string val = getVal();
-    if (name=="desc")
+    // if (name=="desc")
+    /*
+    acptTyping IFs will only have 1 entry in vals, if that entry is empty "",
+    display the dfval. (which should be a prompt)
+    */
+    if (acptTyping)
         return ((val=="")?dfval:val);
     return val;
 }
@@ -177,9 +189,9 @@ int inputField::switchV(int i) {
     return 0;
 }
 
-int inputField::handleDescOp(int ch) {
+int inputField::handleTypingOp(int ch) {
     int res = 0;
-    LOG("[IF::handleDescOp] ch=[%d]", ch);
+    LOG("[IF::handleTypingOp] ch=[%d]", ch);
     if (isBS(ch)) bsCh();
     else if (isDEL(ch)) delCh();
     else if (isArrow(ch)) {

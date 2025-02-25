@@ -38,16 +38,18 @@ bool initColors()
     // LOG("[initColors] COLOR_PAIRS=[%d]", COLOR_PAIRS); // cap for init_pair
 
     // define new colors (settings maybe cached by terminal)
-    m_init_color(150,   0, 100, 255); // blue
+    m_init_color(150,   0, 100, 255); // blue_100
     m_init_color(151, 170, 190, 255); // sky blue
     m_init_color(152,   0, 200, 255); // darker cyan
-    m_init_color(153, 160, 160, 160); // gray
+    m_init_color(153, 160, 160, 160); // gray_16
     m_init_color(154, 255, 255, 120); // light yellow
     m_init_color(155, 255, 102, 102); // light red
     m_init_color(156, 255, 102, 178); // dark red
     m_init_color(157, 255, 0, 127); // peach red
     m_init_color(158, 255, 200, 120); // lighter yellow
-    m_init_color(159, 60, 60, 100); // gray
+    m_init_color(159,  60,  60, 100); // gray
+    m_init_color(160, 160,  75,  50); // brown
+    m_init_color(161, 140, 140, 140); // gray_
 
     // init_pair(num, fore, back)
 	// diff foreground colors
@@ -69,7 +71,7 @@ bool initColors()
 	// diff background colors (start from 100)
 	init_pair(100, COLOR_BLACK, 155);
 	init_pair(101, COLOR_BLACK, 150);
-	init_pair(102, COLOR_BLACK, COLOR_WHITE);
+	init_pair(102, COLOR_BLACK, 161);
 	init_pair(103, COLOR_BLACK, COLOR_MAGENTA);
 	init_pair(104, COLOR_BLACK, COLOR_CYAN);
 	init_pair(105, COLOR_BLACK, COLOR_GREEN);
@@ -77,8 +79,10 @@ bool initColors()
     init_pair(107, COLOR_BLACK, 154); // BG light yellow
     init_pair(108, COLOR_BLACK, 153); // BG light gray
     // others
-    init_pair(200, COLOR_WHITE, COLOR_BLUE);
+    init_pair(200, COLOR_BLACK, 150); // taskDay, hovered
+    // init_pair(200, COLOR_BLACK, 160); // current day, hovered
     init_pair(201, 158, 159);
+    // init_pair(200, COLOR_BLACK, 160); // current day, hovered
 
 	return true;
 }
