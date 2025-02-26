@@ -47,8 +47,9 @@ class Month {
     bool selected; // this month is selected
     
 public:
-    DBHandler dbh = DBHandler("./scheduler.db");
-    Month(int yr, int m, int y, int x);
+    // DBHandler dbh = DBHandler("./scheduler.db");
+    std::shared_ptr<DBHandler> dbh;
+    Month(int yr, int m, int y, int x, std::shared_ptr<DBHandler>);
     ~Month();
     int getMonth();
     int getYear();

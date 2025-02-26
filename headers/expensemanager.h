@@ -2,12 +2,13 @@
 #define EXPENSEMANAGER_H
 #include "tool.h"
 #include "submodule.h"
+#include "displayfield.h"
 #include "inputfield.h"
 
 class expenseManager : public SubModule
 {
 private:
-    std::vector<std::vector<std::shared_ptr<inputField>>> fields;
+    std::vector<std::vector<std::shared_ptr<displayField>>> fields;
     int h, w;
 public:
     expenseManager(int y, int x, int h, int w);

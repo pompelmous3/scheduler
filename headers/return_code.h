@@ -7,11 +7,13 @@
 
 #define TP_EDIT_REQ 40
  
-#define TM_STOP_IF 50
+#define MNGR_STOP_IF 50
 #define TM_TYPE_INC 51
 #define TM_TYPE_DEC 52
 #define TM_WRITE_TASK 53
 #define TM_UPDATE_IF_DAY_RANGE 54
+
+#define CAT_UPDATED 60
 
 #define SC_UPDATE_DATE_2_SUBM 100
 #define SC_SWITCH_2_DS 101

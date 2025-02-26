@@ -85,9 +85,9 @@ std::string getMonthStrPost(int month, int len)
 //########################################################################
 
 // class Month methods
-Month::Month(int yr, int m, int y, int x)
+Month::Month(int yr, int m, int y, int x, std::shared_ptr<DBHandler> dbh)
 	: year {yr}, month {m}, init_x {x}, init_y {y},
-	browsed {false}
+	browsed {false}, selected {false}
 {
 	/*
 		1. (x, y) is the top left point of this month
@@ -133,6 +133,8 @@ Month::Month(int yr, int m, int y, int x)
 	}
 	idx = std::make_pair(0, start_weekday);
 	cs_day = dmap[idx.first][idx.second][0];
+
+	this->dbh = dbh;
 }
 
 Month::~Month()
@@ -243,7 +245,7 @@ void Month::print()
 	// TODO: make taskManager to trigger an update of scheduled days
 	//		in Month?
 
-	std::unordered_map<int, int> curTaskDays = dbh.getScheduledDays(year, month);
+	std::unordered_map<int, int> curTaskDays = dbh->getScheduledDays(year, month);
 	// LOG("[Month::print] curTaskDays.size()=[%d]", curTaskDays.size());
 	std::unordered_map<int, int>::iterator iter;
 

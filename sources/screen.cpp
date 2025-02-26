@@ -9,6 +9,8 @@
 Screen::Screen()
 	: mode(0), tm_em(0), delegESC(false), lockTab(false)
 {
+	// single instance, shared across multiple (sub)modules
+	dbh = std::make_shared<DBHandler>("./scheduler.db");
 
 	// initialize screen height, width
 	int h, w;
@@ -28,23 +30,28 @@ Screen::Screen()
 	mid_x = sc_w/2;
 	cal_end_y = SC_PADDING_Y+1+MIN_CAL_H;
 
-	mng_top = top_y + (fr_h/8*3);
-	mng_bottom = mng_top + MNG_HEIGHT + 1;
+	// mng_top = top_y + (fr_h/8*3);
+	mng_top = bottom_y -1 -MNG_HEIGHT -1 -MNG_HEIGHT;
+	tm_bottom = mng_top + MNG_HEIGHT + 1;
 
 
 	// initialize submodules
 	calendar = std::make_shared<Calendar>(top_y+1, left_x+1,
-		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1);
+		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1, dbh);
 	submods.push_back(calendar);
 	dateSpecificTasks = std::make_shared<taskPanel>(cal_end_y+2, left_x+1,
-		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Specific Tasks"));
+		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Tasks"),
+		dbh);
 	submods.push_back(dateSpecificTasks);
 	tm = std::make_shared<taskManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
-		right_x-mid_x-1);
+		right_x-mid_x-1, dbh);
 	submods.push_back(tm);
-	em = std::make_shared<expenseManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
-		right_x-mid_x-1);
-	submods.push_back(em);
+	// em = std::make_shared<expenseManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
+	// 	right_x-mid_x-1);
+	// submods.push_back(em);
+	cm = std::make_shared<categoryManager>(tm_bottom+1, mid_x+1, MNG_HEIGHT,
+		right_x-mid_x-1, dbh);
+	submods.push_back(cm);
 
 
 	submods[mode]->set_hovered(true);
@@ -78,8 +85,8 @@ void Screen::setMode(int m) {
 	}
 
 	// if new mode is tm/em, set tm_em/tm_em
-	if (submods[mode]==em) tm_em=1;
-	if (submods[mode]==tm) tm_em=0;
+	// if (submods[mode]==em) tm_em=1;
+	// if (submods[mode]==tm) tm_em=0;
 	
 }
 void Screen::looping() {
@@ -183,10 +190,10 @@ void Screen::printFrame() {
 
 	// bottom of task/expense manager
 	for (int xsft=mid_x; xsft<=right_x; xsft++) {
-		mvprintw(mng_bottom, xsft, x_char.c_str());
+		mvprintw(tm_bottom, xsft, x_char.c_str());
 	}
-	mvprintw(mng_bottom, mid_x, mrt_char.c_str());
-	mvprintw(mng_bottom, right_x, mlft_char.c_str());
+	mvprintw(tm_bottom, mid_x, mrt_char.c_str());
+	mvprintw(tm_bottom, right_x, mlft_char.c_str());
 }
 
 void Screen::printScr()
@@ -194,8 +201,12 @@ void Screen::printScr()
 	printFrame();
 	calendar->print();
 	dateSpecificTasks->print();
-	if (!tm_em) tm->print();
-	else em->print();
+	tm->print();
+	cm->print();
+
+	// switch tm/em
+	// if (!tm_em) tm->print();
+	// else em->print();
 }
 
 void Screen::refreshScr()
@@ -249,6 +260,15 @@ void Screen::handleRC(int rc)
 	} else if (rc==SC_UNLOCK_TAB) {
 		lockTab = false;
 		update_dateSpecificTasks();
+	} else if (rc==CAT_UPDATED) {
+		/*
+		1. No need to update month scheduledDays because already updated
+			at every print.
+		2. update dateSpecificTasks
+		3. update TM->categoryField
+		*/
+		update_dateSpecificTasks();
+		tm->updateCatIF();
 	}
 
 }

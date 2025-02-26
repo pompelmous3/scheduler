@@ -1,18 +1,19 @@
 #include "taskpanel.h"
 #include "return_code.h"
 
-taskPanel::taskPanel(int y, int x, int h, int w, std::string t)
+taskPanel::taskPanel(int y, int x, int h, int w, std::string t,
+	std::shared_ptr<DBHandler> dbh)
     : idx(0), st_idx(0), displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0},
 	h(h), w(w)
 {
 	this->y = y;
 	this->x = x;
 	this->title = t;
-	// LOG("[taskPanel::taskPanel] initialized");
-    // printMap.push_back(std::string(width, '#'));
+
 	tasks_h = h-2;
 	tasks_w = w-PFX_SPACE-CKBX_SZ;
-	LOG("[TP::TP] tasks: h[%d], w[%d]", tasks_h, tasks_w);
+
+	this->dbh = dbh;	
 }
 
 taskPanel::~taskPanel()
@@ -30,8 +31,8 @@ void taskPanel::updateTasks(int y, int m, int d)
 		cur_d = d;
 		idx = 0; // only reset when date changed
 	}
-	dbh.queryDateTasks(cur_y, cur_m, cur_d);
-	std::vector<task_entry> res = dbh.getLastResults();
+	dbh->queryDateTasks(cur_y, cur_m, cur_d);
+	std::vector<task_entry> res = dbh->getLastResults();
 	for (int i=0; i<res.size(); i++) {
 		tasks.push_back(res[i]);
 	}
@@ -68,7 +69,11 @@ int taskPanel::handleOp(int ch)
 			idx = idx - tasks.size();
 		}
 	} else if (isEnter(ch)) {
-		tasks[idx].state = dbh.toggleState(tasks[idx].id, tasks[idx].state);
+		if (idx>=tasks.size()) {
+			LOG("[TP::handleOp] isEnter, but idx>=tasks.size()");
+			return rc;
+		}
+		tasks[idx].state = dbh->toggleState(tasks[idx].id, tasks[idx].state);
 	} else if (isCtrlE(ch)) {
 		LOG("[taskPanel::handleOp] is ctrl E");
 		rc = TP_EDIT_REQ;
@@ -83,14 +88,22 @@ void taskPanel::print()
     int ty = this->y+2; // 1st line for title
 
 	// calculate tasks number can fit in taskPanel
-	LOG("[TP::print] tasks: h[%d], w[%d]", tasks_h, tasks_w);
-	LOG("[TP::print] tasks_h=[%d], tasks_w=[%d], idx=[%d]", tasks_h, tasks_w, idx);
+	// LOG("[TP::print] tasks: h[%d], w[%d]", tasks_h, tasks_w);
+	// LOG("[TP::print] tasks_h=[%d], tasks_w=[%d], idx=[%d]", tasks_h, tasks_w, idx);
 
 	/*
 	==== determine printing tasks range ====
 	# the desc.size we are using for calculating lcnt should equal to 
 		total size of printed "ln" later so that actual used line cnt
 		could match.
+	- idx is current hovered task idx
+	- st_idx is the starting idx of printing tasks range
+
+	- ridx grows downwards, and means the toppest range we've already included
+		in printing range.
+	=> so ridx we make it start at idx+1 => check idx size => can fit in
+	=> add idx in printing range, ridx-1 = idx. rh-=idx_lcnt.
+		(Now the toppest printing range starts from idx)
 	*/
 	if (idx<st_idx) {
 		st_idx = idx;
@@ -98,9 +111,9 @@ void taskPanel::print()
 		int rh = h-2;
 		int ridx = idx+1; // checking start at (ridx-1)==(idx)
 		while (true) {
-			if (ridx==0) break;
-			// ridx--;
-			int lcnt = (tasks[ridx-1].desc.size()/tasks_w) + ((tasks[ridx-1].desc.size()%tasks_w)?1:0);
+			if (ridx==0) break; // already added idx=0 at toppest in range
+			int task_sz = tasks[ridx-1].cat.size()+3+tasks[ridx-1].desc.size();
+			int lcnt = (task_sz/tasks_w) + ((task_sz%tasks_w)?1:0);
 			LOG("[TP::print] checking ridx=[%d], lcnt=[%d]", ridx-1, lcnt);
 			if (rh-lcnt >= 0) { // we can add this task
 				rh -= lcnt;
@@ -119,10 +132,14 @@ void taskPanel::print()
 	
 	
 
-    // for (int i=0; i<tasks.size(); i++) {
+    // so now we just print tasks starting from st_idx, and until
+	// the new printint task cannot fit in tasks_h
 	for (int i=st_idx; i<tasks.size(); i++) {
-		int lcnt = (tasks[i].desc.size()/tasks_w) + ((tasks[i].desc.size()%tasks_w)?1:0);
-		LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));
+		std::string ptstr = (tasks[i].cat=="None")?
+			tasks[i].desc : "["+tasks[i].cat+"] "+tasks[i].desc;
+		int task_sz = ptstr.size();
+		int lcnt = (task_sz/tasks_w) + ((task_sz%tasks_w)?1:0);
+		// LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));
 		if (((ty+lcnt) - (this->y+2)) > tasks_h) {
 			LOG("[TP::print] i=[%d], breaking", i);
 			break;
@@ -137,7 +154,7 @@ void taskPanel::print()
 		}
 
 		// print tasks[i].desc
-		std::vector<std::string> words = splitBySpace(tasks[i].desc);
+		std::vector<std::string> words = splitBySpace(ptstr);
 		int widx = 0;
 		std::string ln;
 		int lnsz = 0;

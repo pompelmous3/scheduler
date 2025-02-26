@@ -22,9 +22,10 @@ class Calendar : public SubModule {
     std::vector<std::shared_ptr<Month>> mons;
     int mon_idx;
     bool delegToMon; // If op need to delegate to mons (mons activated)
+    std::shared_ptr<DBHandler> dbh;
 
 public:
-    Calendar(int, int, int, int);
+    Calendar(int, int, int, int, std::shared_ptr<DBHandler>);
     ~Calendar() override;
     void addMonth(std::shared_ptr<Month>);
     void shiftMonth(int);

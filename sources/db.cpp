@@ -16,65 +16,9 @@
 DBHandler::DBHandler(const char *p)
 {
     path = p;
-    // open connection
-    rc = sqlite3_open(path.c_str(), &db);
-    if (rc) {
-        LOG("[DBHandler] cannot open db: %s", sqlite3_errmsg(db));
-        // TODO: throw exception
-    }
+    initTables();
 
-    // create table "tasks"
-    snprintf(sql, sizeof(sql), "%s",
-        "CREATE TABLE If not exists tasks("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "year INT,"
-        "month INT,"
-        "day INT,"
-        "start_time TEXT,"
-        "last_time TEXT,"
-        "repeat TEXT,"
-        "category TEXT,"
-        "priority TEXT NOT NULL,"
-        "state TEXT NOT NULL,"
-        "description TEXT NOT NULL);");
-    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-    // close connection
-    if (rc) {
-        LOG("[DBHandler] create table tasks err: %s", sqlite3_errmsg(db));
-        // free the memory obtained from sqlite3_malloc()
-        sqlite3_free(zErrMsg);
-        // TODO: throw exception?
-    }
-
-    // create table "task_cats"
-    snprintf(sql, sizeof(sql), "%s",
-        "CREATE TABLE if not exists task_cats("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "name TEXT NOT NULL);");
-    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-    if (rc) {
-        LOG("[DBHandler] create table task_cats err: %s", sqlite3_errmsg(db));
-        sqlite3_free(zErrMsg);
-    }
-
-    // create table "exp_cats"
-    snprintf(sql, sizeof(sql), "%s",
-        "CREATE TABLE if not exists exp_cats("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "name TEXT NOT NULL);");
-    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-    if (rc) {
-        LOG("[DBHandler] create table exp_cats err: %s", sqlite3_errmsg(db));
-        sqlite3_free(zErrMsg);
-    }
-
-    sqlite3_close(db);
-
-
-    // insert test entries
-    snprintf(sql, sizeof(sql), "%s", "INSERT INTO "
-    "tasks (year, month, day, start_time, last_time, state, priority, description) "
-    "values (2023, 9, 24, '', 'Todo', 'Urgent', 'buy eggs')");
+    syncCatsFromDB();
 }
 
 DBHandler::~DBHandler()
@@ -94,8 +38,8 @@ std::unordered_map<int, int> DBHandler::getScheduledDays(int y, int m)
         goto end;
     }
 
-    snprintf(sql, sizeof(sql), "SELECT day FROM tasks WHERE year=%d and "
-        "month=%d GROUP BY day;", y, m);
+    snprintf(sql, sizeof(sql), "SELECT day FROM tasks WHERE year=%d AND "
+        "month=%d AND category IN %s GROUP BY day;", y, m, activeCats.c_str());
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         LOG("[getScheduledDays] prep failed: %s", sqlite3_errmsg(db));
@@ -132,8 +76,9 @@ void DBHandler::queryDateTasks(int y, int m, int d)
     }
 
     // compile sql statement (tasks)
-    snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE year=%d and "
-        "month=%d and day=%d ORDER BY description ASC;", y, m, d);
+    snprintf(sql, sizeof(sql),
+        "SELECT * FROM tasks WHERE year=%d AND month=%d AND day=%d"
+        " AND category IN %s ORDER BY description ASC;", y, m, d, activeCats.c_str());
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));
@@ -206,6 +151,121 @@ end:
     return res;
 }
 
+void DBHandler::initTables()
+{
+    // open connection
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[DBHandler] cannot open db: %s", sqlite3_errmsg(db));
+        // TODO: throw exception
+    }
+
+    // create table "tasks"
+    snprintf(sql, sizeof(sql), "%s",
+        "CREATE TABLE If not exists tasks("
+        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "year INT,"
+        "month INT,"
+        "day INT,"
+        "start_time TEXT,"
+        "last_time TEXT,"
+        "repeat TEXT,"
+        "category TEXT,"
+        "priority TEXT NOT NULL,"
+        "state TEXT NOT NULL,"
+        "description TEXT NOT NULL);");
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    // close connection
+    if (rc) {
+        LOG("[DBHandler] create table tasks err: %s", sqlite3_errmsg(db));
+        // free the memory obtained from sqlite3_malloc()
+        sqlite3_free(zErrMsg);
+        // TODO: throw exception?
+    }
+
+    // create table "task_cats"
+    /*
+        when 'task_cats' not exists, "NOT EXISTS (1)" will be false,
+        SELECT 'Work', 1 won't be executed, nothing to insert
+    */
+    bool task_cats_exists=true;
+    sqlite3_stmt *stmt;
+    snprintf(sql, sizeof(sql), "%s",
+        "SELECT name FROM sqlite_master WHERE type='table'"
+        "AND name='task_cats';"
+    );
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[DBH::initTables] prep failed when checking task_cats");
+        goto end;
+    }
+    if ((rc=sqlite3_step(stmt))==SQLITE_DONE) task_cats_exists=false;
+    if (task_cats_exists) goto end;
+    
+    // only create "task_cats" and INSERT df cats when !task_cats_exists
+    snprintf(sql, sizeof(sql), "%s",
+        "BEGIN TRANSACTION;"
+        "CREATE TABLE if not exists task_cats("
+        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL UNIQUE,"
+        "active INT);"
+    
+        "INSERT INTO task_cats (name, active) "
+        "SELECT 'Work', 1 "
+        "WHERE NOT EXISTS ("
+            "SELECT 1 FROM task_cats WHERE name='Work'"
+        ");"
+
+        "INSERT INTO task_cats (name, active) "
+        "SELECT 'Workout', 1 "
+        "WHERE NOT EXISTS ("
+            "SELECT 1 FROM task_cats WHERE name='Workout'"
+        ");"
+
+        "INSERT INTO task_cats (name, active) "
+        "SELECT 'Personal', 1 "
+        "WHERE NOT EXISTS ("
+            "SELECT 1 FROM task_cats WHERE name='Personal'"
+        ");"
+        "COMMIT;"
+        );
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    if (rc) {
+        LOG("[DBHandler] create table task_cats err: %s", sqlite3_errmsg(db));
+        sqlite3_free(zErrMsg);
+    }
+
+    // // create table "exp_cats"
+    // snprintf(sql, sizeof(sql), "%s",
+    //     "CREATE TABLE if not exists exp_cats("
+    //     "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+    //     "name TEXT NOT NULL);");
+    // rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    // if (rc) {
+    //     LOG("[DBHandler] create table exp_cats err: %s", sqlite3_errmsg(db));
+    //     sqlite3_free(zErrMsg);
+    // }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+void DBHandler::syncCatsFromDB()
+{
+    this->cats = queryTaskCats();
+
+    // update activeCats str from cats
+    activeCats.clear();
+    activeCats.append("(");
+    for (auto& cat : cats) {
+        if (cat.active) activeCats.append("'"+cat.cname+"',");
+    }
+    activeCats.pop_back(); // last ','
+    activeCats.append(")");
+    LOG("[DBH::updateActiveCats] updated activeCats=[%s]",activeCats.c_str());
+}
+
 void DBHandler::insertTask(std::string year, std::string month,
     std::string day, std::string start_time, std::string last_time,
     std::string repeat, std::string cat, std::string priority,
@@ -243,7 +303,6 @@ void DBHandler::insertTask(std::string year, std::string month,
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         LOG("[insertTask] sqlite3_step failed: %s", sqlite3_errmsg(db));
-        goto end;
     }
 
 end:
@@ -334,4 +393,126 @@ end:
     sqlite3_finalize(stmt);
     sqlite3_close(db);
     return set_state;
+}
+
+std::vector<task_cat> DBHandler::queryTaskCats()
+{
+    cats.clear();
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[getTask] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement
+    snprintf(sql, sizeof(sql), "SELECT * FROM task_cats");
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[queryTaskCats] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    while ((rc=sqlite3_step(stmt)) == SQLITE_ROW) {
+        // LOG("[DBH::queryTaskCats] Read a ROW");
+        task_cat ent;
+        ent.id = sqlite3_column_int(stmt, 0);
+        ent.cname = (const char*)sqlite3_column_text(stmt, 1);
+        ent.active = sqlite3_column_int(stmt, 2);
+        cats.push_back(ent);
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return cats;
+}
+
+void DBHandler::insertCat(std::string ncat)
+{
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[insertCat] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement
+    snprintf(sql, sizeof(sql), "INSERT INTO task_cats(name, active)"
+        "values (?,?)");
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[insertCat] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    sqlite3_bind_text(stmt, 1, ncat.c_str(), ncat.size(), NULL);
+    sqlite3_bind_int(stmt, 2, 1);
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[insertCat] sqlite3_step failed: %s", sqlite3_errmsg(db));
+    }
+    syncCatsFromDB();
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+void DBHandler::removeCat(std::string ncat)
+{
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[removeCat] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement
+    snprintf(sql, sizeof(sql), "DELETE FROM task_cats WHERE name='%s'"
+        , ncat.c_str());
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[removeCat] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[removeCat] sqlite3_step failed: %s", sqlite3_errmsg(db));
+    }
+    syncCatsFromDB();
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+void DBHandler::updateCat(std::string ncat, int active)
+{
+    sqlite3_stmt *stmt;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[updateCat] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // compile sql statement
+    snprintf(sql, sizeof(sql), "UPDATE task_cats SET active=%d WHERE"
+        " name='%s'", active, ncat.c_str());
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[updateCat] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[updateCat] sqlite3_step failed: %s", sqlite3_errmsg(db));
+    }
+    syncCatsFromDB();
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }

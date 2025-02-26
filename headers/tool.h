@@ -34,6 +34,7 @@ bool isEnter(int ch);
 bool isESC(int ch);
 bool isBS(int ch);
 bool isDEL(int ch);
+bool isCtrlD(int ch);
 bool isCtrlE(int ch);
 // time related
 
