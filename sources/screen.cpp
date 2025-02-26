@@ -9,9 +9,8 @@
 Screen::Screen()
 	: mode(0), tm_em(0), delegESC(false), lockTab(false)
 {
-
-	// only in Screen we check db tables
-	dbh.initTables();
+	// single instance, shared across multiple (sub)modules
+	dbh = std::make_shared<DBHandler>("./scheduler.db");
 
 	// initialize screen height, width
 	int h, w;
@@ -38,19 +37,20 @@ Screen::Screen()
 
 	// initialize submodules
 	calendar = std::make_shared<Calendar>(top_y+1, left_x+1,
-		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1);
+		MIN_CAL_H,((sc_w-SC_PADDING_X*2-1)/2)-1, dbh);
 	submods.push_back(calendar);
 	dateSpecificTasks = std::make_shared<taskPanel>(cal_end_y+2, left_x+1,
-		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Tasks"));
+		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Tasks"),
+		dbh);
 	submods.push_back(dateSpecificTasks);
 	tm = std::make_shared<taskManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
-		right_x-mid_x-1);
+		right_x-mid_x-1, dbh);
 	submods.push_back(tm);
 	// em = std::make_shared<expenseManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
 	// 	right_x-mid_x-1);
 	// submods.push_back(em);
 	cm = std::make_shared<categoryManager>(tm_bottom+1, mid_x+1, MNG_HEIGHT,
-		right_x-mid_x-1);
+		right_x-mid_x-1, dbh);
 	submods.push_back(cm);
 
 
@@ -260,6 +260,15 @@ void Screen::handleRC(int rc)
 	} else if (rc==SC_UNLOCK_TAB) {
 		lockTab = false;
 		update_dateSpecificTasks();
+	} else if (rc==CAT_UPDATED) {
+		/*
+		1. No need to update month scheduledDays because already updated
+			at every print.
+		2. update dateSpecificTasks
+		3. update TM->categoryField
+		*/
+		update_dateSpecificTasks();
+		tm->updateCatIF();
 	}
 
 }

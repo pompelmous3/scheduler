@@ -2,7 +2,8 @@
 #include "tool.h"
 #include "return_code.h"
 
-categoryManager::categoryManager(int y, int x, int h, int w)
+categoryManager::categoryManager(int y, int x, int h, int w,
+    std::shared_ptr<DBHandler> dbh)
     : cat_idx(0), in_new_cat(false) {
     this->y = y;
     this->x = x;
@@ -12,7 +13,8 @@ categoryManager::categoryManager(int y, int x, int h, int w)
     COLSZ = h-2;
 
     new_cat = std::make_shared<inputField>(this->y, this->x+26, "new_cat");
-    vals = dbh.queryTaskCats();
+    this->dbh = dbh;
+    updateVals();
 }
 
 categoryManager::~categoryManager() {}
@@ -28,14 +30,25 @@ int categoryManager::handleOp(int ch)
         if (cat_idx==-1) {
             new_cat->setSelected(true);
             in_new_cat = true;
+        } else {
+            vals[cat_idx].active++;
+            vals[cat_idx].active %= 2;
+            // update to =>dbh =>db
+            dbh->updateCat(vals[cat_idx].cname, vals[cat_idx].active);
+            res = CAT_UPDATED;
         }
+    } else if (isCtrlD(ch) && cat_idx!=-1) {
+        dbh->removeCat(vals[cat_idx].cname);
+        res = CAT_UPDATED;
+        vals.erase(vals.begin()+cat_idx);
+        cat_idx %= vals.size();
     }
 
     handleRC(res);
     return res;
 }
 
-void categoryManager::handleRC(int rc)
+void categoryManager::handleRC(int& rc)
 {
     if (rc==MNGR_STOP_IF) {
         new_cat->setSelected(false);
@@ -47,10 +60,14 @@ void categoryManager::handleRC(int rc)
         std::string ncat = new_cat->getVal();
         LOG("[CM::handleRC] inserting new cat =[%s]", ncat.c_str());
         if (ncat != "") {
-            dbh.insertCat(ncat);
-            new_cat->setVal("");
+            dbh->insertCat(ncat);
+            rc = CAT_UPDATED;
+            // new_cat->setVal("");
+            new_cat->clear();
         }
     }
+
+    if (rc==CAT_UPDATED) updateVals();
 }
 
 void categoryManager::arrowOp(int ch)
@@ -131,13 +148,18 @@ void categoryManager::print() {
     new_cat->print();
     mvprintw(this->y, this->x+17, "add new: ");
 
-    vals = dbh.queryTaskCats();
-
-    if (cat_idx==-1) new_cat->print();
     // print categories
     int py = this->y+2;
     int px = this->x+4;
+    int max_col_x = 0;
     for (int i=0; i<vals.size(); i++) {
+
+        if (i!=0 && (i%COLSZ == 0)) { // time to change column
+            px += max_col_x + CAT_MARGIN;
+            max_col_x = 0;
+            py = this->y+2;
+        }
+
         if (vals[i].active) mvprintw(py, px, u8"\u25A3");
         else mvprintw(py, px, u8"\u25A2");
 
@@ -146,7 +168,13 @@ void categoryManager::print() {
             mvprintwColor(py++, px+BX_SZ, vals[i].cname.c_str(), 108);
         else
             mvprintw(py++, px+BX_SZ, vals[i].cname.c_str());
+        max_col_x = std::max(max_col_x, (int)vals[i].cname.size()+BX_SZ);
     }
 
 
+}
+
+void categoryManager::updateVals()
+{
+    vals = dbh->queryTaskCats();
 }

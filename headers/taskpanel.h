@@ -18,7 +18,7 @@ class taskPanel : public SubModule
     int idx; // which task is selected now
     int st_idx;
     bool displayIdx; // taskpanel activated, need to highlight selected task
-    DBHandler dbh = DBHandler("./scheduler.db");
+    std::shared_ptr<DBHandler> dbh;
     int h;
     int tasks_h;
     int tasks_w;
@@ -28,7 +28,8 @@ class taskPanel : public SubModule
     int cur_d;
 
 public:
-    taskPanel(int y, int x, int h, int w, std::string);
+    taskPanel(int y, int x, int h, int w, std::string,
+        std::shared_ptr<DBHandler>);
     ~taskPanel() override;
     void updateTasks(int y=-1, int m=-1, int d=-1);
     int get_cur_taskid();

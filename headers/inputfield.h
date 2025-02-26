@@ -17,8 +17,10 @@ public:
     inputField(int, int, std::string);
     ~inputField();
     int handleOp(int) override;
+    // set vals[0] val
     int setVal(std::string) override;
     std::string getDV() override;
+    void clear();
     void print() override;
 };
 #endif

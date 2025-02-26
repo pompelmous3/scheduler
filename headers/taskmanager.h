@@ -42,7 +42,7 @@ private:
     int editing_tid;
     task_entry tk;
 
-    DBHandler dbh = DBHandler("./scheduler.db");
+    std::shared_ptr<DBHandler> dbh;
     int ifx, ify; // (-1,0) means type, else is index in fields[i]
     // int selected; // if selected, the curPos need to print in another color
     int h,w;
@@ -54,7 +54,7 @@ private:
     void shift_IFidx(int ch);
 
 public:
-    taskManager(int y, int x, int h, int w);
+    taskManager(int y, int x, int h, int w, std::shared_ptr<DBHandler>);
     ~taskManager() override;
     int handleOp(int ch) override;
     void handleRC(int& res);
@@ -62,6 +62,13 @@ public:
     void putTask(int tid);
     void setEdit(bool v, int tid);
     std::string getIFValue(std::string name);
+
+    /*
+    query latest ALL cats from dbh, send into catIF
+    1. 1st time init TM
+    2. When CM add/delete task cat
+    */
+    void updateCatIF();
 };
 
 #endif

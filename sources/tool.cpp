@@ -123,6 +123,10 @@ bool isDEL(int ch) {
     return (ch==KEY_DC || ch==330);
 }
 
+bool isCtrlD(int ch) {
+    return (ch==4);
+}
+
 bool isCtrlE(int ch) {
     return (ch==5);
 }

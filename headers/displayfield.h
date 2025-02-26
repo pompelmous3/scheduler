@@ -36,7 +36,11 @@ public:
     int setSelected(bool v);
     virtual int handleOp(int ch);
     void setValRange(int newRange); // only for "day"
-    virtual int setVal(std::string);
+
+    // Find v in vals, set idx to v
+    virtual int setVal(std::string v);
+    // Replace whole vals to be new_vals
+    void updateVals(std::vector<std::string> new_vals);
     std::string getVal();
     virtual std::string getDV(); // display val
     virtual void print();

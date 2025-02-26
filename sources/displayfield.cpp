@@ -122,6 +122,12 @@ int displayField::setVal(std::string v)
     return res;
 }
 
+void displayField::updateVals(std::vector<std::string> new_vals)
+{
+    vals = new_vals;
+    valIdx %= vals.size();
+}
+
 std::string displayField::getVal()
 {
     // LOG("[IF::getVal] name=[%s], vals.size()=[%d], valIdx=[%d]",
@@ -132,7 +138,9 @@ std::string displayField::getDV(){
     return getVal();
 }
 void displayField::print() {
+    LOG("[DF::print] called on name=[%s]", name.c_str());
     if (selected) {
+        // LOG
         mvprintwColor(y, x, getVal().c_str(), 100);
     } else if (hovered) {
         mvprintwColor(y, x, getDV().c_str(), 107);

@@ -4,5 +4,18 @@
 - [ ] Category filter
 - [ ] User manual
 
+- [ ] different display sorting options for Date Tasks
+
+CategoryManager
+- [O] change line
+- [ ] handle ENTER, update activeCats
+- [ ] shifting printing cats range like Date Tasks (check how many
+    cats can be print in range, and starting idx for the range)
+- [ ] remove acat, remove all tasks in that cat, or clear those tasks' cats
+
+General
+- [ ] confirm box when deleting something
+
+
 ## 🐛 Bug Fixes
 - remove all warnings

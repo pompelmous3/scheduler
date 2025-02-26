@@ -80,8 +80,15 @@ std::string inputField::getDV()
     return (val=="")?dfval:val;
 }
 
+void inputField::clear()
+{
+    vals[valIdx] = "";
+    cursorIdx = 0;
+}
+
 void inputField::print()
 {
+    LOG("[IF::print] called on name=[%s]", name.c_str());
     displayField::print();
     if (selected) {
         // TODO: handle (y,x) for cursorIdx in diff line

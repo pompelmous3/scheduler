@@ -8,6 +8,7 @@
 
 #define BX_SZ 2
 #define MAX_ENT_SZ 30
+#define CAT_MARGIN 4
 
 class categoryManager : public SubModule
 {
@@ -24,13 +25,19 @@ private:
     std::shared_ptr<inputField> new_cat;
     bool in_new_cat;
 
+    std::shared_ptr<DBHandler> dbh;
 
-    DBHandler dbh = DBHandler("./scheduler.db");
+    /*
+    update <task_cat> vals
+    1. 1st time init CM
+    ?
+    */
+    void updateVals();
 public:
-    categoryManager(int y, int x, int h, int w);
+    categoryManager(int y, int x, int h, int w, std::shared_ptr<DBHandler>);
     ~categoryManager() override;
     int handleOp(int ch) override;
-    void handleRC(int ch);
+    void handleRC(int& rc);
     void arrowOp(int ch);
     void print() override;
 };

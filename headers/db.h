@@ -36,7 +36,11 @@ class DBHandler {
     int last_m;
     int last_d;
     std::vector <task_entry> lastResults;
+    std::vector<task_cat> cats;
+    std::string activeCats; // ('cat1', 'cat2', 'cat3', ...)
 
+    void initTables();
+    void syncCatsFromDB();
 public:
     DBHandler(const char *p);
     ~DBHandler();
@@ -44,7 +48,6 @@ public:
     void queryDateTasks(int y, int m, int d);
     const std::vector <task_entry> getLastResults() const;
     task_entry getTask(int tid);
-    void initTables();
     void insertTask(std::string year, std::string month,
         std::string day, std::string start_time, std::string last_time,
         std::string repeat, std::string cat, std::string priority,
@@ -55,8 +58,10 @@ public:
         std::string state, std::string desc, int tid);
     std::string toggleState(int id, std::string cur_state);
 
-    // for task_cats table
+    // update cats, and return a copy
     std::vector<task_cat> queryTaskCats();
     void insertCat(std::string ncat);
+    void removeCat(std::string ncat);
+    void updateCat(std::string ncat, int active);
 };
 #endif

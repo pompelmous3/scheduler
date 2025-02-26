@@ -177,10 +177,10 @@ void taskManager::writeTask()
     if (desc.empty()) return;
     // initially just set last_time = ""
     if (editing) {
-        dbh.updateTask(year, month, day, start_time, tk.last_time,
+        dbh->updateTask(year, month, day, start_time, tk.last_time,
             repeat, cat, priority, state, desc, editing_tid);
     } else {
-        dbh.insertTask(year, month, day, start_time, "", repeat, cat,
+        dbh->insertTask(year, month, day, start_time, "", repeat, cat,
             priority, state, desc);
     }
 }
@@ -238,7 +238,7 @@ void taskManager::shift_IFidx(int ch)
     // LOG("[TM::shift_IFidx] after: ifx=[%d], ify=[%d]", ifx, ify);
 }
 
-taskManager::taskManager(int y, int x, int h, int w)
+taskManager::taskManager(int y, int x, int h, int w, std::shared_ptr<DBHandler> dbh)
     : h(h),w(w),inIF(false), printMap(3), fields(3), typenum(0),
     editing(false)
 {
@@ -259,6 +259,10 @@ taskManager::taskManager(int y, int x, int h, int w)
 
     init_fields();
     // LOG("[taskManager::taskManager] after init_fields: (%d, %d)", y, x);
+
+    this->dbh = dbh;
+
+    updateCatIF();
 }
 
 taskManager::~taskManager()
@@ -271,7 +275,7 @@ int taskManager::handleOp(int ch)
     // LOG("[taskManager::handleOp] ch=[%d]", ch);
     int res = 0;
     if (inIF) {
-        LOG("[taskManager::handleOp] sending into fields");
+        // LOG("[taskManager::handleOp] sending into fields");
         if (ifx==-1) res = type->handleOp(ch);
         else res = fields[typenum][ifx][ify]->handleOp(ch);
     }
@@ -291,7 +295,7 @@ int taskManager::handleOp(int ch)
     return res;
 }
 void taskManager::handleRC(int& res) {
-    LOG("[TM:handleRC] res=[%d]", res);
+    // LOG("[TM:handleRC] res=[%d]", res);
     if (res==MNGR_STOP_IF) {
         if (ifx==-1) type->setSelected(false);
         else fields[typenum][ifx][ify]->setSelected(false);
@@ -339,7 +343,7 @@ void taskManager::print()
 }
 
 void taskManager::putTask(int tid) {
-    tk = dbh.getTask(tid);
+    tk = dbh->getTask(tid);
 
     int res = 0;
     res = yearField->setVal(toStr(tk.y,4));
@@ -374,4 +378,12 @@ std::string taskManager::getIFValue(std::string name)
     }
     LOG("[getIFValue] cannot find [%s] in fields", name.c_str());
     return std::string("");
+}
+
+void taskManager::updateCatIF()
+{
+    std::vector<task_cat> cats = dbh->queryTaskCats();
+    std::vector<std::string> catsnames;
+    for (auto& cat : cats) catsnames.push_back(cat.cname);
+    categoryField->updateVals(catsnames);
 }

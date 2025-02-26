@@ -36,7 +36,8 @@ class Screen {
     std::shared_ptr<expenseManager> em;
     std::shared_ptr<categoryManager> cm;
 
-    DBHandler dbh = DBHandler("./scheduler.db");
+    // DBHandler dbh = DBHandler("./scheduler.db");
+    std::shared_ptr<DBHandler> dbh;
     std::thread timer_thrd;
     // TODO: current movable range of x and y
 public:
