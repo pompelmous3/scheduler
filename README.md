@@ -9,7 +9,7 @@ Run install.sh to install required tools. This script will also set UTF-8 env.
 ```sh
 git clone https://gitlab.com/pompelmous429/scheduler.git
 cd scheduler
-./install.sh
+./install.sh [ubuntu|mac]
 make
 ./scheduler
 
