@@ -24,7 +24,7 @@ if [ "$OS" = "ubuntu" ]; then
     else
         echo "g++ not found, installing..."
         sudo apt-get install -y g++
-
+    fi
     sudo apt-get install -y libncurses5-dev libncursesw5-dev libsqlite3-dev
     echo "Ubuntu environment setup complete."
 
@@ -43,7 +43,7 @@ elif [ "$OS" = "mac" ]; then
     else
         echo "g++ not found, installing..."
         brew install gcc
-
+    fi
     # Install ncurses using brew
     brew install ncurses
 
