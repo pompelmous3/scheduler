@@ -116,7 +116,10 @@ bool isESC(int ch) {
 }
 
 bool isBS(int ch) {
-    return (ch==KEY_BACKSPACE || ch==263);
+    /*
+    mac: 127
+    */
+    return (ch==KEY_BACKSPACE || ch==263 || ch==127);
 }
 
 bool isDEL(int ch) {
