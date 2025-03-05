@@ -32,8 +32,8 @@ void inputField::shiftCurs(int i)
 
 
 
-inputField::inputField(int y, int x, std::string n)
-    : displayField(y,x,n)
+inputField::inputField(int y, int x, std::string n, int mw, int mh)
+    : displayField(y,x,n,"",mw,mh)
 {
 
     if (n=="desc") {
@@ -61,8 +61,13 @@ int inputField::handleOp(int ch)
     else if (isArrow(ch)) {
         if (ch==KEY_LEFT) shiftCurs(-1);
         else if (ch==KEY_RIGHT) shiftCurs(1);
+        else if (ch==KEY_UP && (cursorIdx>=max_w)) cursorIdx-=max_w;
+        else if (ch==KEY_DOWN && (cursorIdx+max_w<=vals[valIdx].size())){
+            cursorIdx+=max_w;
+        }
     } else if (ch==KEY_END) shiftCurs(vals[valIdx].size());
     else if (ch==KEY_HOME) shiftCurs(-vals[valIdx].size());
+    else if (isCtrlD(ch)) this->clear();
     else insCh(ch);
 
     return res;
@@ -71,6 +76,7 @@ int inputField::handleOp(int ch)
 int inputField::setVal(std::string v)
 {
     vals[valIdx] = v;
+    if (cursorIdx>vals[valIdx].size()) cursorIdx=vals[valIdx].size();
     return 0;
 }
 
@@ -88,8 +94,10 @@ void inputField::clear()
 
 void inputField::print()
 {
-    LOG("[IF::print] called on name=[%s]", name.c_str());
+    // LOG("[IF::print] called on name=[%s]", name.c_str());
     displayField::print();
+
+    int pt_curidx = (cursorIdx>=(max_w*max_h))? (max_w*max_h-1) : cursorIdx;
     if (selected) {
         // TODO: handle (y,x) for cursorIdx in diff line
         std::string cursCh;
@@ -97,6 +105,8 @@ void inputField::print()
             cursCh = " ";
         else
             cursCh=vals[valIdx].substr(cursorIdx, 1).c_str();
-        mvprintwColor(y, x+cursorIdx, cursCh.c_str(), 108);   
+        // mvprintwColor(y, x+cursorIdx, cursCh.c_str(), 108);
+        mvprintwColor(y+pt_curidx/max_w,
+                        x+(pt_curidx%max_w), cursCh.c_str(), 108);
     }
 }

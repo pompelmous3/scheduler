@@ -153,6 +153,7 @@ int Month::getYear()
 }
 
 std::vector<int> Month::getDate() {
+	if (!selected) return {0,0,0};
 	return {year, month, cs_day};
 }
 

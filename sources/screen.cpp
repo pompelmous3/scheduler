@@ -275,5 +275,6 @@ void Screen::handleRC(int rc)
 
 void Screen::update_dateSpecificTasks() {
 	std::vector<int> date = calendar->getDate();
+	if (date[0]==0) return; // no month selected, we don't need to update
 	dateSpecificTasks->updateTasks(date[0],date[1],date[2]);
 }

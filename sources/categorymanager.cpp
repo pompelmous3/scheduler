@@ -12,7 +12,7 @@ categoryManager::categoryManager(int y, int x, int h, int w,
     this->w = w;
     COLSZ = h-2;
 
-    new_cat = std::make_shared<inputField>(this->y, this->x+26, "new_cat");
+    new_cat = std::make_shared<inputField>(this->y, this->x+26, "new_cat",w-26,1);
     this->dbh = dbh;
     updateVals();
 }

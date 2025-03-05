@@ -114,7 +114,7 @@ void taskPanel::print()
 			if (ridx==0) break; // already added idx=0 at toppest in range
 			int task_sz = tasks[ridx-1].cat.size()+3+tasks[ridx-1].desc.size();
 			int lcnt = (task_sz/tasks_w) + ((task_sz%tasks_w)?1:0);
-			LOG("[TP::print] checking ridx=[%d], lcnt=[%d]", ridx-1, lcnt);
+			// LOG("[TP::print] checking ridx=[%d], lcnt=[%d]", ridx-1, lcnt);
 			if (rh-lcnt >= 0) { // we can add this task
 				rh -= lcnt;
 				ridx--;
@@ -126,7 +126,7 @@ void taskPanel::print()
 		- when end, ridx should be the frontest task idx we can print
 			while tasks[idx] is included
 		*/
-		LOG("[TP::print] ridx=[%d]", ridx);
+		// LOG("[TP::print] ridx=[%d]", ridx);
 		if (ridx > st_idx) st_idx=ridx;
 	}
 	
@@ -141,7 +141,7 @@ void taskPanel::print()
 		int lcnt = (task_sz/tasks_w) + ((task_sz%tasks_w)?1:0);
 		// LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));
 		if (((ty+lcnt) - (this->y+2)) > tasks_h) {
-			LOG("[TP::print] i=[%d], breaking", i);
+			// LOG("[TP::print] i=[%d], breaking", i);
 			break;
 		}
 

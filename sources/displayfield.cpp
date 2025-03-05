@@ -4,8 +4,8 @@
 #include "return_code.h"
 
 // ######################## displayField ########################
-displayField::displayField(int y, int x, std::string n, std::string curv)
-    : y {y}, x {x}, name {n}, hovered(false), selected(false),
+displayField::displayField(int y, int x, std::string n, std::string curv, int mw, int mh)
+    : y {y}, x {x}, max_w(mw), max_h(mh), name {n}, hovered(false), selected(false),
     valIdx(0), vals(0), cursorIdx(0)
 {
 
@@ -138,14 +138,51 @@ std::string displayField::getDV(){
     return getVal();
 }
 void displayField::print() {
-    LOG("[DF::print] called on name=[%s]", name.c_str());
+    // LOG("[DF::print] called on name=[%s]", name.c_str());
+    // LOG("[DF::print] selected=[%d],hovered=[%d]", selected, hovered);
+    std::string ln = selected?getVal():getDV();
+
+    // set color on
     if (selected) {
-        // LOG
-        mvprintwColor(y, x, getVal().c_str(), 100);
+        attron(COLOR_PAIR(100));
     } else if (hovered) {
-        mvprintwColor(y, x, getDV().c_str(), 107);
+        attron(COLOR_PAIR(107));
     } else {
-        mvprintwColor(y, x, getDV().c_str(), 10);
+        attron(COLOR_PAIR(10));
+    }
+
+
+    if (max_w!=-1 && max_h!=-1) {
+        // LOG("[DF::print] %s: check range, max_w/h=[%d,%d]", name.c_str(), max_w,max_h);
+        // check printing range
+        int mxprg = max_w*max_h; // max print range
+        int st_idx = 0; // start printing index
+        if (cursorIdx>=mxprg) st_idx=cursorIdx-mxprg+1;
+
+        for (int i=0; i<max_h; i++) {
+            if (i*max_w>=ln.size()) break;
+            mvprintw(y+i, x, ln.substr(st_idx+i*max_w, max_w).c_str());
+        }
+    } else {
+        mvprintw(y, x, ln.c_str());
+        // if (selected) {
+        //     // LOG
+        //     mvprintwColor(y, x, ln.c_str(), 100);
+        // } else if (hovered) {
+        //     mvprintwColor(y, x, ln.c_str(), 107);
+        // } else {
+        //     mvprintwColor(y, x, ln.c_str(), 10);
+        // }
+    }
+
+
+    // set color off
+    if (selected) {
+        attroff(COLOR_PAIR(100));
+    } else if (hovered) {
+        attroff(COLOR_PAIR(107));
+    } else {
+        attroff(COLOR_PAIR(10));
     }
 }
 
