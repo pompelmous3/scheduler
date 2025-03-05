@@ -6,7 +6,7 @@ class displayField
 {
 protected:
     int y, x;
-    // int h, w; // only desc need this?
+    int max_w, max_h;
     std::string name;
     bool hovered;
     bool selected; // 
@@ -26,7 +26,7 @@ protected:
     // void delCh();
     // void shiftCurs(int i);
 public:
-    displayField(int y, int x, std::string n, std::string df="");
+    displayField(int y, int x, std::string n, std::string df="", int mw=-1, int mh=-1);
     ~displayField();
 
     int gety();

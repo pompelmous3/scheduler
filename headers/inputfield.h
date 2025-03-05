@@ -8,13 +8,12 @@ class inputField : public displayField
 private:
     // bool acptTyping;
     std::string dfval; // only acptTyping inputFields will use this
-
     void insCh(int ch);
     void bsCh();
     void delCh();
     void shiftCurs(int i);
 public:
-    inputField(int, int, std::string);
+    inputField(int, int, std::string, int, int);
     ~inputField();
     int handleOp(int) override;
     // set vals[0] val

@@ -124,7 +124,9 @@ void taskManager::init_fields()
     descField = std::make_shared<inputField>(
         y+6,
         x+12,
-        std::string("desc")
+        std::string("desc"),
+        w-12,
+        3
     );
     lineFour.push_back(descField);
     fields[0].push_back(lineFour);
@@ -134,7 +136,7 @@ void taskManager::init_fields()
     // ################ line 6 ################
     std::vector<std::shared_ptr<displayField>> lineSix;
     enterField = std::make_shared<displayField>(
-        y+8,
+        y+9,
         x+2+(w-4)/2-2,
         std::string("enter")
     );

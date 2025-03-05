@@ -1,28 +1,31 @@
 
 ## 🚀 Features
-- [ ] Custom colors
 - [ ] User manual
-- [O] Category filter
+- [ ] Custom colors
+- [ ] catch and handle screen size change
 
 dateSpecificTasks
 - [ ] different view (ex: w/ timeline)
 - [ ] different display sorting options for Date Tasks
 
 TaskManager
-- [ ] wrap-around for long desc
-- [ ] shortkey for clearing desc
+- [O] wrap-around for long desc
+- [O] shortkey for clearing desc
 
 CategoryManager
 
 - [ ] handle ENTER, update activeCats
 - [ ] shifting printing cats range like Date Tasks (check how many
     cats can be print in range, and starting idx for the range)
-- [ ] remove acat, remove all tasks in that cat, or clear those tasks' cats
-- [O] change column
+- [ ] remove a cat, remove all tasks in that cat, or clear those tasks' cats
+
+LOG
+- [ ] separate DEBUG and LOG function, or use different level in LOG
 
 General
 - [ ] confirm box when deleting something
-
+- [ ] backup of db data at a certain time
+- [ ] uninstall
 
 ## 🐛 Bug Fixes
 - remove all warnings
