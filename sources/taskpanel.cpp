@@ -3,8 +3,8 @@
 
 taskPanel::taskPanel(int y, int x, int h, int w, std::string t,
 	std::shared_ptr<DBHandler> dbh)
-    : idx(0), st_idx(0), displayIdx {false}, cur_y {0}, cur_m {0}, cur_d {0},
-	h(h), w(w)
+    : idx{0}, st_idx{0}, displayIdx {false}, h{h}, w{w},
+	cur_y {0}, cur_m {0}, cur_d {0}
 {
 	this->y = y;
 	this->x = x;
@@ -33,7 +33,7 @@ void taskPanel::updateTasks(int y, int m, int d)
 	}
 	dbh->queryDateTasks(cur_y, cur_m, cur_d);
 	std::vector<task_entry> res = dbh->getLastResults();
-	for (int i=0; i<res.size(); i++) {
+	for (size_t i=0; i<res.size(); i++) {
 		tasks.push_back(res[i]);
 	}
 
@@ -109,7 +109,7 @@ void taskPanel::print()
 		st_idx = idx;
 	} else if (idx>st_idx) { // make sure idx is in the printing range
 		int rh = h-2;
-		int ridx = idx+1; // checking start at (ridx-1)==(idx)
+		size_t ridx = idx+1; // checking start at (ridx-1)==(idx)
 		while (true) {
 			if (ridx==0) break; // already added idx=0 at toppest in range
 			int task_sz = tasks[ridx-1].cat.size()+3+tasks[ridx-1].desc.size();
@@ -134,13 +134,13 @@ void taskPanel::print()
 
     // so now we just print tasks starting from st_idx, and until
 	// the new printint task cannot fit in tasks_h
-	for (int i=st_idx; i<tasks.size(); i++) {
+	for (size_t i=st_idx; i<tasks.size(); i++) {
 		std::string ptstr = (tasks[i].cat=="None")?
 			tasks[i].desc : "["+tasks[i].cat+"] "+tasks[i].desc;
 		int task_sz = ptstr.size();
 		int lcnt = (task_sz/tasks_w) + ((task_sz%tasks_w)?1:0);
 		// LOG("[TP::print] calculate h after adding [%d]: %d", i, ((ty+lcnt) - (this->y+2) + 1));
-		if (((ty+lcnt) - (this->y+2)) > tasks_h) {
+		if (static_cast<size_t>((ty+lcnt) - (this->y+2)) > tasks_h) {
 			// LOG("[TP::print] i=[%d], breaking", i);
 			break;
 		}
@@ -155,9 +155,9 @@ void taskPanel::print()
 
 		// print tasks[i].desc
 		std::vector<std::string> words = splitBySpace(ptstr);
-		int widx = 0;
+		size_t widx = 0;
 		std::string ln;
-		int lnsz = 0;
+		size_t lnsz = 0;
 		std::string token;
 		while (widx<words.size()) {
 			token = (widx<words.size()-1)?(words[widx]+" "):(words[widx]);

@@ -93,7 +93,7 @@ int displayField::handleOp(int ch) {
     return res;
 }
 
-void displayField::setValRange(int newRange)
+void displayField::setValRange(size_t newRange)
 {
     if (name != "day") return;
     while (vals.size()>newRange) {
@@ -111,7 +111,7 @@ int displayField::setVal(std::string v)
 {
     int res = 0;
 
-    for (int i=0; i<vals.size(); i++) {
+    for (size_t i=0; i<vals.size(); i++) {
         if (vals[i]==v) {
             valIdx = i;
             break;
@@ -155,12 +155,12 @@ void displayField::print() {
     if (max_w!=-1 && max_h!=-1) {
         // LOG("[DF::print] %s: check range, max_w/h=[%d,%d]", name.c_str(), max_w,max_h);
         // check printing range
-        int mxprg = max_w*max_h; // max print range
+        size_t mxprg = max_w*max_h; // max print range
         int st_idx = 0; // start printing index
         if (cursorIdx>=mxprg) st_idx=cursorIdx-mxprg+1;
 
         for (int i=0; i<max_h; i++) {
-            if (i*max_w>=ln.size()) break;
+            if (i*max_w>=(int)ln.size()) break;
             mvprintw(y+i, x, ln.substr(st_idx+i*max_w, max_w).c_str());
         }
     } else {

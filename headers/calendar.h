@@ -20,7 +20,7 @@ class Calendar : public SubModule {
     int w;
     int max_mon_cnt;
     std::vector<std::shared_ptr<Month>> mons;
-    int mon_idx;
+    size_t mon_idx;
     bool delegToMon; // If op need to delegate to mons (mons activated)
     std::shared_ptr<DBHandler> dbh;
 

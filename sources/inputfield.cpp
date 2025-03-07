@@ -61,8 +61,9 @@ int inputField::handleOp(int ch)
     else if (isArrow(ch)) {
         if (ch==KEY_LEFT) shiftCurs(-1);
         else if (ch==KEY_RIGHT) shiftCurs(1);
-        else if (ch==KEY_UP && (cursorIdx>=max_w)) cursorIdx-=max_w;
-        else if (ch==KEY_DOWN && (cursorIdx+max_w<=vals[valIdx].size())){
+        else if (ch==KEY_UP && (cursorIdx>=static_cast<size_t>(max_w))) {
+            cursorIdx-=static_cast<size_t>(max_w);
+        } else if (ch==KEY_DOWN && (cursorIdx+max_w<=vals[valIdx].size())){
             cursorIdx+=max_w;
         }
     } else if (ch==KEY_END) shiftCurs(vals[valIdx].size());
@@ -97,7 +98,7 @@ void inputField::print()
     // LOG("[IF::print] called on name=[%s]", name.c_str());
     displayField::print();
 
-    int pt_curidx = (cursorIdx>=(max_w*max_h))? (max_w*max_h-1) : cursorIdx;
+    size_t pt_curidx = (cursorIdx>=static_cast<size_t>(max_w*max_h))? (max_w*max_h-1) : cursorIdx;
     if (selected) {
         // TODO: handle (y,x) for cursorIdx in diff line
         std::string cursCh;

@@ -7,8 +7,7 @@
 
 // ########################## Calendar ##########################
 Calendar::Calendar(int y, int x, int h, int w, std::shared_ptr<DBHandler> dbh)
-  : h(h), w(w), mon_idx(0), max_mon_cnt(0),
-    delegToMon(false)
+  : h{h}, w{w}, max_mon_cnt{0}, mon_idx{0}, delegToMon{false}
 {
 	this->y = y;
 	this->x = x;
@@ -133,7 +132,7 @@ void Calendar::print() {
 	SubModule::print();
 	// mons.size() == max_mon_cnt
 	// LOG("[Calendar::print] (%d, %d)", y, x);
-	for (int i=0; i<mons.size(); i++) {
+	for (size_t i=0; i<mons.size(); i++) {
 		mons[i]->print();
 	}
 }

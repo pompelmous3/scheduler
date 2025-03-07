@@ -91,12 +91,9 @@ void Screen::setMode(int m) {
 }
 void Screen::looping() {
 	int ch;
-	int mvx, mvy;
 	int rc = 0;
 	while(1)
 	{
-		mvx = 0;
-		mvy = 0;
 		ch = getch();
 		// LOG("[loopingMove] ch=[%d]",ch);
 
@@ -117,7 +114,7 @@ void Screen::timer_run() {
 	1. get current date cy/cm/cd
 	2. compare
 	*/
-	std::tm* curT = curTimeCompnt();
+	// std::tm* curT = curTimeCompnt();
 }
 
 void Screen::printFrame() {

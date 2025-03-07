@@ -241,8 +241,7 @@ void taskManager::shift_IFidx(int ch)
 }
 
 taskManager::taskManager(int y, int x, int h, int w, std::shared_ptr<DBHandler> dbh)
-    : h(h),w(w),inIF(false), printMap(3), fields(3), typenum(0),
-    editing(false)
+    : typenum{0},fields{3},editing{false},h{h},w{w},printMap{3},inIF{false}
 {
     this->y = y;
     this->x = x;
@@ -321,7 +320,7 @@ void taskManager::handleRC(int& res) {
         int IF_mon = std::stoi(monthField->getVal());
         int day_range = getYearMonths(IF_year)[IF_mon-1];
         LOG("[TM::handleRC] new day_range=[%d]", day_range);
-        dayField->setValRange(day_range);
+        dayField->setValRange((size_t)day_range);
     }
 }
 void taskManager::print()
@@ -334,7 +333,7 @@ void taskManager::print()
 
     type->print();
     int py = y+2;
-    for (int i=0; i<printMap[typenum].size(); i++) {
+    for (size_t i=0; i<printMap[typenum].size(); i++) {
         mvprintw(py++, x, printMap[typenum][i].c_str());
     }
 
@@ -371,8 +370,8 @@ void taskManager::setEdit(bool v, int tid)
 
 std::string taskManager::getIFValue(std::string name)
 {
-    for (int row=0; row<fields[typenum].size(); row++) {
-        for (int col=0; col<fields[typenum][row].size(); col++) {
+    for (size_t row=0; row<fields[typenum].size(); row++) {
+        for (size_t col=0; col<fields[typenum][row].size(); col++) {
             if (fields[typenum][row][col]->getname() == name) {
                 return fields[typenum][row][col]->getVal();
             }
