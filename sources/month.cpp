@@ -153,8 +153,8 @@ int Month::getYear()
 }
 
 std::vector<int> Month::getDate() {
-	if (!selected) return {0,0,0};
-	return {year, month, cs_day};
+	// if (!selected) return {0,0,0};
+	return {year, month, cs_day, selected};
 }
 
 std::vector<int> Month::getPos() {

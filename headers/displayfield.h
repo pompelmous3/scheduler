@@ -10,11 +10,11 @@ protected:
     std::string name;
     bool hovered;
     bool selected; // 
-    int valIdx;
+    size_t valIdx;
     std::vector<std::string> vals;
     // std::string dfval; // only acptTyping inputFields will use this
     // bool acptTyping;
-    int cursorIdx;
+    size_t cursorIdx;
 
     // for switching value
     int switchV(int i);
@@ -35,7 +35,7 @@ public:
     void setHovered(bool v);
     int setSelected(bool v);
     virtual int handleOp(int ch);
-    void setValRange(int newRange); // only for "day"
+    void setValRange(size_t newRange); // only for "day"
 
     // Find v in vals, set idx to v
     virtual int setVal(std::string v);

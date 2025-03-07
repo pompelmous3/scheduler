@@ -15,14 +15,13 @@
 class taskPanel : public SubModule
 {
     std::vector<task_entry> tasks;
-    int idx; // which task is selected now
-    int st_idx;
+    size_t idx; // which task is selected now
+    size_t st_idx;
     bool displayIdx; // taskpanel activated, need to highlight selected task
     std::shared_ptr<DBHandler> dbh;
-    int h;
-    int tasks_h;
-    int tasks_w;
-    int w;
+    int h, w;
+    size_t tasks_h;
+    size_t tasks_w;
     int cur_y;
     int cur_m;
     int cur_d;
@@ -34,8 +33,8 @@ public:
     void updateTasks(int y=-1, int m=-1, int d=-1);
     int get_cur_taskid();
     int setDisplayIdx(bool v);
-    int handleOp(int ch);
-    void print();
+    int handleOp(int ch) override;
+    void print() override;
     void setTaskColor(std::string priority, bool selected);
     void resetTaskColor(std::string priority, bool selected);
 };

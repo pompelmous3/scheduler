@@ -19,9 +19,9 @@ private:
     special case: -1 => for new_cat
     
     */
-    int cat_idx;
-    int h,w;
-    int COLSZ;
+    int cat_idx; // could be -1
+    size_t h,w;
+    size_t ROWMAX;
     std::shared_ptr<inputField> new_cat;
     bool in_new_cat;
 

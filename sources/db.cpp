@@ -373,8 +373,7 @@ std::string DBHandler::toggleState(int id, std::string cur_state)
         goto end;
     }
 
-    snprintf(sql, sizeof(sql), "UPDATE tasks set state = ? WHERE id = ?",
-        set_state.c_str(), id);
+    snprintf(sql, sizeof(sql), "UPDATE tasks set state = ? WHERE id = ?");
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc != SQLITE_OK) {
         LOG("[toggleState] prep failed: %s", sqlite3_errmsg(db));

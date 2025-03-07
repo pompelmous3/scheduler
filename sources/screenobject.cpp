@@ -28,7 +28,7 @@ ScreenObject::~ScreenObject()
 
 void ScreenObject::print()
 {
-    for (int i=0; i<printMap.size(); i++) {
+    for (size_t i=0; i<printMap.size(); i++) {
         mvprintw(y++, x, printMap[i].c_str());
     }
     x = init_x;
