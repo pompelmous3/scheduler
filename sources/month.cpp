@@ -255,7 +255,7 @@ void Month::print()
 	char tmp[128];
 
 	// month string
-	int mon_str_sz = sprintf(tmp, "%d %s", year, months[month-1].c_str());
+	int mon_str_sz = snprintf(tmp, sizeof(tmp), "%d %s", year, months[month-1].c_str());
 	if (selected) {
 		mvprintwColor(y, x, tmp, 201);
 	} else if (browsed) {
@@ -279,7 +279,7 @@ void Month::print()
 			if (col.second.size() == 0)
 				continue;
 
-			sprintf(tmp, "%d", col.second[0]);
+			snprintf(tmp, sizeof(tmp), "%d", col.second[0]);
 			// check if scheduled
 			iter = curTaskDays.find(col.second[0]);
 			if (iter != curTaskDays.end()) { // found
@@ -297,7 +297,7 @@ void Month::print()
 		if (iter != curTaskDays.end()) {
 			found = true;
 		}
-		sprintf(tmp, "%d", dmap[idx.first][idx.second][0]);
+		snprintf(tmp, sizeof(tmp), "%d", dmap[idx.first][idx.second][0]);
 		if (found) {
 			mvprintwColor(y+idx.first, x+dmap[idx.first][idx.second][1], tmp, 200);
 		} else {
