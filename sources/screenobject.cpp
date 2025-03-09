@@ -12,14 +12,14 @@ ScreenObject::ScreenObject(int sc_h, int sc_w)
     y = init_y;
 }
 
-ScreenObject::ScreenObject(int y, int x, int h, int w)
+ScreenObject::ScreenObject(int y_, int x_, int h_, int w_)
 {
-    height = h;
-    width = w;
-    init_x = x;
-    init_y = y;
-    this->x = x;
-    this->y = y;
+    height = h_;
+    width = w_;
+    init_x = x_;
+    init_y = y_;
+    this->x = x_;
+    this->y = y_;
 }
 
 ScreenObject::~ScreenObject()
@@ -29,7 +29,7 @@ ScreenObject::~ScreenObject()
 void ScreenObject::print()
 {
     for (size_t i=0; i<printMap.size(); i++) {
-        mvprintw(y++, x, printMap[i].c_str());
+        mvprintw(y++, x, "%s", printMap[i].c_str());
     }
     x = init_x;
     y = init_y;

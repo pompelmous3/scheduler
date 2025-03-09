@@ -44,8 +44,8 @@ class DBHandler {
 public:
     DBHandler(const char *p);
     ~DBHandler();
-    std::unordered_map<int, int> getScheduledDays(int y, int m);
-    void queryDateTasks(int y, int m, int d);
+    std::unordered_map<int, int> getScheduledDays(int, int);
+    void queryDateTasks(int, int, int);
     const std::vector <task_entry> getLastResults() const;
     task_entry getTask(int tid);
     void insertTask(std::string year, std::string month,

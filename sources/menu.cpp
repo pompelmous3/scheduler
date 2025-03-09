@@ -19,9 +19,9 @@ Menu::~Menu()
 {
 }
 
-void Menu::moveOption(int y)
+void Menu::moveOption(int y_)
 {
-    sl_idx = (sl_idx + y) % options.size();
+    sl_idx = (sl_idx + y_) % options.size();
 }
 
 void Menu::handleOp(int ch)
@@ -46,7 +46,7 @@ void Menu::printSelected()
     y += (1+sl_idx);
     x += 1;
     attron(COLOR_PAIR(5));
-    mvprintw(y, x, ln.c_str());
+    mvprintw(y, x, "%s", ln.c_str());
     attroff(COLOR_PAIR(5));
     x = init_x;
     y = init_y;

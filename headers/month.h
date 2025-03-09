@@ -17,7 +17,7 @@ std::vector<int> getYearMonths(int year);
 int getTotalWeeks(int td, int sd);
 void getTerminalSize(int& height, int&width);
 bool isLeapYear(int year);
-int getWeekDay(int day, int month, int year);
+int getWeekDay(int d_, int m_, int yr_);
 std::string getMonthStrPost(int month, int len);
 extern const int days_norm[12];
 
@@ -49,7 +49,7 @@ class Month {
 public:
     // DBHandler dbh = DBHandler("./scheduler.db");
     std::shared_ptr<DBHandler> dbh;
-    Month(int yr, int m, int y, int x, std::shared_ptr<DBHandler>);
+    Month(int, int, int, int, std::shared_ptr<DBHandler>);
     ~Month();
     int getMonth();
     int getYear();

@@ -92,7 +92,7 @@ void mvprintwColor(int y, int x, const char* str, int color, bool bold)
 	attron(COLOR_PAIR(color));
     if (bold) attron(A_BOLD);
 
-	mvprintw(y, x, str);
+	mvprintw(y, x, "%s", str);
 
     if (bold) attroff(A_BOLD);
 	attroff(COLOR_PAIR(color));
@@ -193,7 +193,7 @@ std::string rjust(const std::string& text, int length, char ch)
     return pre + text;
 }
 
-std::string specialLJust(const std::string& text, int length, char ch)
+std::string specialLJust(const std::string& text, int length)
 {
     std::string ret = std::string("#");
     ret.append(ljust(text, length-2, ' '));

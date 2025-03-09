@@ -1,34 +1,34 @@
 #include "taskpanel.h"
 #include "return_code.h"
 
-taskPanel::taskPanel(int y, int x, int h, int w, std::string t,
-	std::shared_ptr<DBHandler> dbh)
-    : idx{0}, st_idx{0}, displayIdx {false}, h{h}, w{w},
+taskPanel::taskPanel(int y_, int x_, int h_, int w_, std::string t_,
+	std::shared_ptr<DBHandler> dbh_)
+    : idx{0}, st_idx{0}, displayIdx {false}, h{h_}, w{w_},
 	cur_y {0}, cur_m {0}, cur_d {0}
 {
-	this->y = y;
-	this->x = x;
-	this->title = t;
+	this->y = y_;
+	this->x = x_;
+	this->title = t_;
 
-	tasks_h = h-2;
+	tasks_h = h_-2;
 	tasks_w = w-PFX_SPACE-CKBX_SZ;
 
-	this->dbh = dbh;	
+	this->dbh = dbh_;
 }
 
 taskPanel::~taskPanel()
 {
 }
 
-void taskPanel::updateTasks(int y, int m, int d)
+void taskPanel::updateTasks(int y_, int m_, int d_)
 {
 	tasks.clear();
 
 	// if y==-1, date not set, remains the same
-	if (y!=-1 && (cur_y!=y || cur_m!=m || cur_d!=d)) {
-		cur_y = y;
-		cur_m = m;
-		cur_d = d;
+	if (y_!=-1 && (cur_y!=y_ || cur_m!=m_ || cur_d!=d_)) {
+		cur_y = y_;
+		cur_m = m_;
+		cur_d = d_;
 		idx = 0; // only reset when date changed
 	}
 	dbh->queryDateTasks(cur_y, cur_m, cur_d);
@@ -38,7 +38,7 @@ void taskPanel::updateTasks(int y, int m, int d)
 	}
 
 	// after updated, current date's tasks cnt might change
-	idx %= tasks.size();
+	if (tasks.size()>0) idx %= tasks.size();
 }
 
 int taskPanel::get_cur_taskid()
@@ -58,16 +58,21 @@ int taskPanel::setDisplayIdx(bool v)
 int taskPanel::handleOp(int ch)
 {
 	int rc = 0;
-	if (ch==KEY_UP) {
-		idx -= 1;
-		if (idx < 0) {
-			idx = (tasks.size()-1) - (0-idx-1);
-		}
-	} else if (ch==KEY_DOWN) {
-		idx += 1;
-		if (idx >= tasks.size()) {
-			idx = idx - tasks.size();
-		}
+	// if (ch==KEY_UP) {
+	// 	idx -= 1;
+	// 	if (idx < 0) {
+	// 		idx = (tasks.size()-1) - (0-idx-1);
+	// 	}
+	// } else if (ch==KEY_DOWN) {
+	// 	idx += 1;
+	// 	if (idx >= tasks.size()) {
+	// 		idx = idx - tasks.size();
+	// 	}
+	if (ch==KEY_UP || ch==KEY_DOWN) {
+		idx += (ch==KEY_UP) ? -1 : 1;
+		if (idx==tasks.size()) idx=0;
+		if (idx>=tasks.size()) idx=tasks.size()-1;
+		// idx %= tasks.size();
 	} else if (isEnter(ch)) {
 		if (idx>=tasks.size()) {
 			LOG("[TP::handleOp] isEnter, but idx>=tasks.size()");
@@ -163,7 +168,7 @@ void taskPanel::print()
 			token = (widx<words.size()-1)?(words[widx]+" "):(words[widx]);
 
 			if (lnsz+token.size()>tasks_w) {
-				mvprintw(ty++, tx+CKBX_SZ, ln.c_str());
+				mvprintw(ty++, tx+CKBX_SZ, "%s", ln.c_str());
 				ln.clear();
 				lnsz = 0;
 			}
@@ -179,7 +184,7 @@ void taskPanel::print()
 			lnsz += token.size();
 			widx++;
 		}
-		mvprintw(ty++, tx+CKBX_SZ, ln.c_str());
+		mvprintw(ty++, tx+CKBX_SZ, "%s", ln.c_str());
         resetTaskColor(tasks[i].priority, (idx == i) ? true:false);
     }
 }

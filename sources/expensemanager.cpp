@@ -1,10 +1,10 @@
 #include "expensemanager.h"
 
-expenseManager::expenseManager(int y, int x, int h, int w) 
-    : h(h), w(w)
+expenseManager::expenseManager(int y_, int x_, int h_, int w_) 
+    : h(h_), w(w_)
 {
-    this->y = y;
-    this->x = x;
+    this->y = y_;
+    this->x = x_;
     this->title = "               Expense Manager";
 
     // init_fields()

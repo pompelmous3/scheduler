@@ -14,7 +14,7 @@ protected:
     std::vector<std::string> vals;
     // std::string dfval; // only acptTyping inputFields will use this
     // bool acptTyping;
-    size_t cursorIdx;
+    int cursorIdx;
 
     // for switching value
     int switchV(int i);

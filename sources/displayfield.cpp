@@ -4,8 +4,8 @@
 #include "return_code.h"
 
 // ######################## displayField ########################
-displayField::displayField(int y, int x, std::string n, std::string curv, int mw, int mh)
-    : y {y}, x {x}, max_w(mw), max_h(mh), name {n}, hovered(false), selected(false),
+displayField::displayField(int y_, int x_, std::string n, std::string curv, int mw, int mh)
+    : y {y_}, x {x_}, max_w(mw), max_h(mh), name {n}, hovered(false), selected(false),
     valIdx(0), vals(0), cursorIdx(0)
 {
 
@@ -157,14 +157,14 @@ void displayField::print() {
         // check printing range
         size_t mxprg = max_w*max_h; // max print range
         int st_idx = 0; // start printing index
-        if (cursorIdx>=mxprg) st_idx=cursorIdx-mxprg+1;
+        if (static_cast<size_t>(cursorIdx)>=mxprg) st_idx=static_cast<size_t>(cursorIdx)-mxprg+1;
 
         for (int i=0; i<max_h; i++) {
             if (i*max_w>=(int)ln.size()) break;
-            mvprintw(y+i, x, ln.substr(st_idx+i*max_w, max_w).c_str());
+            mvprintw(y+i, x, "%s", ln.substr(st_idx+i*max_w, max_w).c_str());
         }
     } else {
-        mvprintw(y, x, ln.c_str());
+        mvprintw(y, x, "%s", ln.c_str());
         // if (selected) {
         //     // LOG
         //     mvprintwColor(y, x, ln.c_str(), 100);

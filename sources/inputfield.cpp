@@ -18,7 +18,7 @@ void inputField::bsCh()
 
 void inputField::delCh()
 {
-    if (cursorIdx<vals[valIdx].size()) {
+    if (static_cast<size_t>(cursorIdx)<vals[valIdx].size()) {
         vals[valIdx].erase(cursorIdx, 1);
     }
 }
@@ -27,13 +27,13 @@ void inputField::shiftCurs(int i)
 {
     cursorIdx += i;
     if (cursorIdx < 0) cursorIdx = 0;
-    if (cursorIdx > vals[valIdx].size()) cursorIdx = vals[valIdx].size();
+    if (static_cast<size_t>(cursorIdx) > vals[valIdx].size()) cursorIdx = vals[valIdx].size();
 }
 
 
 
-inputField::inputField(int y, int x, std::string n, int mw, int mh)
-    : displayField(y,x,n,"",mw,mh)
+inputField::inputField(int y_, int x_, std::string n, int mw, int mh)
+    : displayField(y_,x_,n,"",mw,mh)
 {
 
     if (n=="desc") {
@@ -61,9 +61,9 @@ int inputField::handleOp(int ch)
     else if (isArrow(ch)) {
         if (ch==KEY_LEFT) shiftCurs(-1);
         else if (ch==KEY_RIGHT) shiftCurs(1);
-        else if (ch==KEY_UP && (cursorIdx>=static_cast<size_t>(max_w))) {
-            cursorIdx-=static_cast<size_t>(max_w);
-        } else if (ch==KEY_DOWN && (cursorIdx+max_w<=vals[valIdx].size())){
+        else if (ch==KEY_UP && (cursorIdx>=max_w)) {
+            cursorIdx-=max_w;
+        } else if (ch==KEY_DOWN && (static_cast<size_t>(cursorIdx+max_w)<=vals[valIdx].size())){
             cursorIdx+=max_w;
         }
     } else if (ch==KEY_END) shiftCurs(vals[valIdx].size());
@@ -77,7 +77,7 @@ int inputField::handleOp(int ch)
 int inputField::setVal(std::string v)
 {
     vals[valIdx] = v;
-    if (cursorIdx>vals[valIdx].size()) cursorIdx=vals[valIdx].size();
+    if (static_cast<size_t>(cursorIdx)>vals[valIdx].size()) cursorIdx=static_cast<int>(vals[valIdx].size());
     return 0;
 }
 
@@ -98,11 +98,11 @@ void inputField::print()
     // LOG("[IF::print] called on name=[%s]", name.c_str());
     displayField::print();
 
-    size_t pt_curidx = (cursorIdx>=static_cast<size_t>(max_w*max_h))? (max_w*max_h-1) : cursorIdx;
+    size_t pt_curidx = (cursorIdx>=max_w*max_h)? (max_w*max_h-1) : cursorIdx;
     if (selected) {
         // TODO: handle (y,x) for cursorIdx in diff line
         std::string cursCh;
-        if (vals[valIdx].empty() || cursorIdx >= vals[valIdx].size())
+        if (vals[valIdx].empty() || static_cast<size_t>(cursorIdx) >= vals[valIdx].size())
             cursCh = " ";
         else
             cursCh=vals[valIdx].substr(cursorIdx, 1).c_str();

@@ -1,6 +1,16 @@
 
 CXX = g++
+# CXXFLAGS += -std=c++17 -ggdb -Wall -Iheaders
 CXXFLAGS += -std=c++17 -ggdb -Wall -Iheaders
+CXXFLAGS += -Wextra -Wpedantic -Wformat=2
+CXXFLAGS += -Wformat-security -Wformat-nonliteral
+CXXFLAGS += -Wdeprecated -Wuninitialized -Wmaybe-uninitialized
+CXXFLAGS += -Wshadow -Wdelete-non-virtual-dtor -Werror=return-type
+CXXFLAGS += -Werror=unused-variable -Werror=uninitialized
+CXXFLAGS += -Werror=delete-non-virtual-dtor
+CXXFLAGS += -fstack-protector-strong -D_FORTIFY_SOURCE=2
+CXXFLAGS += -O2 -fsanitize=undefined,address
+
 LDFLAGS += -lncursesw -lsqlite3
 SOURCES = \
 	./sources/calendar.cpp \
