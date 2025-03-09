@@ -155,35 +155,34 @@ void taskManager::writeTask()
     // int year = std::stoi(getIFValue("year"));
     // int month = std::stoi(getIFValue("month"));
     // int day = std::stoi(getIFValue("day"));
-    std::string year = getIFValue("year");
-    std::string month = getIFValue("month");
-    std::string day = getIFValue("day");
-    std::string hour = getIFValue("hour");
-    std::string min = getIFValue("min");
-    std::string start_time = hour+":"+min;
-    std::string repeat = getIFValue("repeat");
-    std::string cat = getIFValue("category");
-    std::string priority = getIFValue("priority");
-    std::string state = getIFValue("state");
-    std::string desc = getIFValue("desc");
+    std::string yr_ = getIFValue("year");
+    std::string m_ = getIFValue("month");
+    std::string d_ = getIFValue("day");
+    std::string hr_ = getIFValue("hour");
+    std::string min_ = getIFValue("min");
+    std::string st_ = hr_+":"+min_;
+    std::string rpt_ = getIFValue("repeat");
+    std::string cat_ = getIFValue("category");
+    std::string prt_ = getIFValue("priority");
+    std::string state_ = getIFValue("state");
+    std::string desc_ = getIFValue("desc");
 
 
-    LOG("[TM::writeTask] Date: %s/%s/%s ", year.c_str(), month.c_str(), day.c_str());
-    LOG("[TM::writeTask] start_time=[%s]", start_time.c_str());
-    LOG("[TM::writeTask] repeat=[%s]", repeat.c_str());
-    LOG("[TM::writeTask] cat=[%s]", cat.c_str());
-    LOG("[TM::writeTask] priority=[%s]", priority.c_str());
-    LOG("[TM::writeTask] state=[%s]", state.c_str());
-    LOG("[TM::writeTask] desc=[%s]", desc.c_str());
+    LOG("[TM::writeTask] Date: %s/%s/%s ", yr_.c_str(), m_.c_str(), d_.c_str());
+    LOG("[TM::writeTask] start_time=[%s]", st_.c_str());
+    LOG("[TM::writeTask] repeat=[%s]", rpt_.c_str());
+    LOG("[TM::writeTask] cat=[%s]", cat_.c_str());
+    LOG("[TM::writeTask] priority=[%s]", prt_.c_str());
+    LOG("[TM::writeTask] state=[%s]", state_.c_str());
+    LOG("[TM::writeTask] desc=[%s]", desc_.c_str());
 
-    if (desc.empty()) return;
+    if (desc_.empty()) return;
     // initially just set last_time = ""
     if (editing) {
-        dbh->updateTask(year, month, day, start_time, tk.last_time,
-            repeat, cat, priority, state, desc, editing_tid);
+        dbh->updateTask(yr_, m_, d_, st_, tk.last_time,
+            rpt_, cat_, prt_, state_, desc_, editing_tid);
     } else {
-        dbh->insertTask(year, month, day, start_time, "", repeat, cat,
-            priority, state, desc);
+        dbh->insertTask(yr_, m_, d_, st_, "", rpt_, cat_, prt_, state_, desc_);
     }
 }
 
@@ -240,11 +239,11 @@ void taskManager::shift_IFidx(int ch)
     // LOG("[TM::shift_IFidx] after: ifx=[%d], ify=[%d]", ifx, ify);
 }
 
-taskManager::taskManager(int y, int x, int h, int w, std::shared_ptr<DBHandler> dbh)
-    : typenum{0},fields{3},editing{false},h{h},w{w},printMap{3},inIF{false}
+taskManager::taskManager(int y_, int x_, int h_, int w_, std::shared_ptr<DBHandler> dbh_)
+    : typenum{0},fields{3},editing{false},h{h_},w{w_},printMap{3},inIF{false}
 {
-    this->y = y;
-    this->x = x;
+    this->y = y_;
+    this->x = x_;
     this->title = "Task Manager";
 
     for (int i=0; i<=2; i++) printMap[i].push_back(" Type: ");
@@ -261,7 +260,7 @@ taskManager::taskManager(int y, int x, int h, int w, std::shared_ptr<DBHandler> 
     init_fields();
     // LOG("[taskManager::taskManager] after init_fields: (%d, %d)", y, x);
 
-    this->dbh = dbh;
+    this->dbh = dbh_;
 
     updateCatIF();
 }
@@ -334,7 +333,7 @@ void taskManager::print()
     type->print();
     int py = y+2;
     for (size_t i=0; i<printMap[typenum].size(); i++) {
-        mvprintw(py++, x, printMap[typenum][i].c_str());
+        mvprintw(py++, x, "%s", printMap[typenum][i].c_str());
     }
 
     // print fields

@@ -43,7 +43,8 @@ void Log::log(const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
     char buf[1028];
-    vsprintf(buf, fmt, args);
+    // vsprintf(buf, fmt, args);
+    vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     std::ofstream out(path, std::ios_base::app);
     out << curT << " " << buf << "\n";

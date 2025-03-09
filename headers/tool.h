@@ -45,7 +45,7 @@ std::string centerText(const std::string& text, int length);
 std::string specialWrapCenterText(const std::string& text, int length, char chr);
 std::string ljust(const std::string& text, int length, char ch);
 std::string rjust(const std::string& text, int length, char ch);
-std::string specialLJust(const std::string& text, int length, char ch);
+std::string specialLJust(const std::string&, int);
 std::string toStr(int n, int len);
 std::vector<std::string> splitBySpace(const std::string& str);
 #endif

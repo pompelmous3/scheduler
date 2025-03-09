@@ -47,7 +47,7 @@ bool isLeapYear(int year)
 	return false;
 }
 
-int getWeekDay(int day, int month, int year)
+int getWeekDay(int d_, int m_, int yr_)
 {
 	 /*
 		==== Calculate day in a week of a date ====
@@ -64,10 +64,10 @@ int getWeekDay(int day, int month, int year)
 		==== return value ====
 		0: Sun, 1: Mon, ..., 6: Sat
 	*/
-	int sum = day + month_code[month-1] + century_code[(year/100)%4]\
-		+ (year%100) + (year%100)/4;
+	int sum = d_ + month_code[m_-1] + century_code[(yr_/100)%4]\
+		+ (yr_%100) + (yr_%100)/4;
 	int remainder = sum%7;
-	if (isLeapYear(year) && month <= 2)
+	if (isLeapYear(yr_) && m_ <= 2)
 		remainder--;
 	return remainder;
 }
@@ -85,8 +85,8 @@ std::string getMonthStrPost(int month, int len)
 //########################################################################
 
 // class Month methods
-Month::Month(int yr, int m, int y, int x, std::shared_ptr<DBHandler> dbh)
-	: year {yr}, month {m}, init_x {x}, init_y {y},
+Month::Month(int yr_, int m_, int y_, int x_, std::shared_ptr<DBHandler> dbh_)
+	: year {yr_}, month {m_}, init_x {x_}, init_y {y_},
 	browsed {false}, selected {false}
 {
 	/*
@@ -134,7 +134,7 @@ Month::Month(int yr, int m, int y, int x, std::shared_ptr<DBHandler> dbh)
 	idx = std::make_pair(0, start_weekday);
 	cs_day = dmap[idx.first][idx.second][0];
 
-	this->dbh = dbh;
+	this->dbh = dbh_;
 }
 
 Month::~Month()
@@ -262,7 +262,7 @@ void Month::print()
 		// mvprintwColor(y, x, tmp, 103);
 		mvprintwColor(y, x, tmp, 12);
 	} else {
-		mvprintw(y, x, tmp);
+		mvprintw(y, x, "%s", tmp);
 	}
 
 	// month string post part

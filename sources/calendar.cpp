@@ -6,17 +6,17 @@
 
 
 // ########################## Calendar ##########################
-Calendar::Calendar(int y, int x, int h, int w, std::shared_ptr<DBHandler> dbh)
-  : h{h}, w{w}, max_mon_cnt{0}, mon_idx{0}, delegToMon{false}
+Calendar::Calendar(int y_, int x_, int h_, int w_, std::shared_ptr<DBHandler> dbh_)
+  : h{h_}, w{w_}, max_mon_cnt{0}, mon_idx{0}, delegToMon{false}
 {
-	this->y = y;
-	this->x = x;
+	this->y = y_;
+	this->x = x_;
 	this->title = "Calendar";
 	std::chrono::system_clock::time_point now = 
 		std::chrono::system_clock::now();
 	time_t tt = std::chrono::system_clock::to_time_t(now);
 	struct tm *local_t = localtime(&tt);
-	this->dbh = dbh;
+	this->dbh = dbh_;
 
 	int cur_yr, cur_mon;
 	cur_yr = (*local_t).tm_year+1900;

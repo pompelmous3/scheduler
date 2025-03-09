@@ -132,45 +132,45 @@ void Screen::printFrame() {
 
 	// TOP
 	for (int xsft=left_x; xsft<=right_x; xsft++) {
-		mvprintw(top_y, xsft, x_char.c_str());
+		mvprintw(top_y, xsft, "%s", x_char.c_str());
 	}
 	// BOTTOM
 	for (int xsft=left_x; xsft<=right_x; xsft++) {
-		mvprintw(bottom_y, xsft, x_char.c_str());
+		mvprintw(bottom_y, xsft, "%s", x_char.c_str());
 	}
 	// LEFT
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(top_y+ysft, left_x, y_char.c_str());
+		mvprintw(top_y+ysft, left_x, "%s", y_char.c_str());
 	}
 	// RIGHT
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(top_y+ysft, right_x, y_char.c_str());
+		mvprintw(top_y+ysft, right_x, "%s", y_char.c_str());
 	}
 
 	// TOP-LEFT
-	mvprintw(SC_PADDING_Y, SC_PADDING_X, tl_char.c_str());
+	mvprintw(SC_PADDING_Y, SC_PADDING_X, "%s", tl_char.c_str());
 	// TOP-RIGHT
-	mvprintw(SC_PADDING_Y, right_x, tr_char.c_str());
+	mvprintw(SC_PADDING_Y, right_x, "%s", tr_char.c_str());
 	// BOTTOM-LEFT
-	mvprintw(sc_h-1-SC_PADDING_Y, SC_PADDING_X, bl_char.c_str());
+	mvprintw(sc_h-1-SC_PADDING_Y, SC_PADDING_X, "%s", bl_char.c_str());
 	// BOTTOM-RIGHT
-	mvprintw(sc_h-1-SC_PADDING_Y, right_x, br_char.c_str());
+	mvprintw(sc_h-1-SC_PADDING_Y, right_x, "%s", br_char.c_str());
 
 
 	// middle vertical line
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(SC_PADDING_Y+ysft, mid_x, y_char.c_str());
+		mvprintw(SC_PADDING_Y+ysft, mid_x, "%s", y_char.c_str());
 	}
-	mvprintw(SC_PADDING_Y+0, mid_x, mdn_char.c_str());
-	mvprintw(SC_PADDING_Y+fr_h-1, mid_x, mup_char.c_str());
+	mvprintw(SC_PADDING_Y+0, mid_x, "%s", mdn_char.c_str());
+	mvprintw(SC_PADDING_Y+fr_h-1, mid_x, "%s", mup_char.c_str());
 
 
 	// horizontal line under Calendar
-	mvprintw(cal_end_y+1, SC_PADDING_X, mrt_char.c_str());
+	mvprintw(cal_end_y+1, SC_PADDING_X, "%s", mrt_char.c_str());
 	for (int xsft=1; xsft<fr_w/2; xsft++) {
-		mvprintw(cal_end_y+1, SC_PADDING_X+xsft, x_char.c_str());
+		mvprintw(cal_end_y+1, SC_PADDING_X+xsft, "%s", x_char.c_str());
 	}
-	mvprintw(cal_end_y+1, SC_PADDING_X+fr_w/2, mlft_char.c_str());
+	mvprintw(cal_end_y+1, SC_PADDING_X+fr_w/2, "%s", mlft_char.c_str());
 
 
 
@@ -180,17 +180,17 @@ void Screen::printFrame() {
 
 	// top of task/expense manager
 	for (int xsft=mid_x; xsft<=right_x; xsft++) {
-		mvprintw(mng_top, xsft, x_char.c_str());
+		mvprintw(mng_top, xsft, "%s", x_char.c_str());
 	}
-	mvprintw(mng_top, mid_x, mrt_char.c_str());
-	mvprintw(mng_top, right_x, mlft_char.c_str());
+	mvprintw(mng_top, mid_x, "%s", mrt_char.c_str());
+	mvprintw(mng_top, right_x, "%s", mlft_char.c_str());
 
 	// bottom of task/expense manager
 	for (int xsft=mid_x; xsft<=right_x; xsft++) {
-		mvprintw(tm_bottom, xsft, x_char.c_str());
+		mvprintw(tm_bottom, xsft, "%s", x_char.c_str());
 	}
-	mvprintw(tm_bottom, mid_x, mrt_char.c_str());
-	mvprintw(tm_bottom, right_x, mlft_char.c_str());
+	mvprintw(tm_bottom, mid_x, "%s", mrt_char.c_str());
+	mvprintw(tm_bottom, right_x, "%s", mlft_char.c_str());
 }
 
 void Screen::printScr()

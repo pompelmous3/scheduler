@@ -2,18 +2,18 @@
 #include "tool.h"
 #include "return_code.h"
 
-categoryManager::categoryManager(int y, int x, int h, int w,
-    std::shared_ptr<DBHandler> dbh)
+categoryManager::categoryManager(int y_, int x_, int h_, int w_,
+    std::shared_ptr<DBHandler> dbh_)
     : cat_idx(0), in_new_cat(false) {
-    this->y = y;
-    this->x = x;
+    this->y = y_;
+    this->x = x_;
     this->title = "Categories";
-    this->h = h;
-    this->w = w;
-    ROWMAX = h-2;
+    this->h = h_;
+    this->w = w_;
+    ROWMAX = h_-2;
 
-    new_cat = std::make_shared<inputField>(this->y, this->x+26, "new_cat",w-26,1);
-    this->dbh = dbh;
+    new_cat = std::make_shared<inputField>(y, x+26, "new_cat",w-26,1);
+    this->dbh = dbh_;
     updateVals();
 }
 
@@ -169,7 +169,7 @@ void categoryManager::print() {
         if (hovered && (static_cast<int>(i)==cat_idx))
             mvprintwColor(py++, px+BX_SZ, vals[i].cname.c_str(), 108);
         else
-            mvprintw(py++, px+BX_SZ, vals[i].cname.c_str());
+            mvprintw(py++, px+BX_SZ, "%s", vals[i].cname.c_str());
         max_col_x = std::max(max_col_x, (int)vals[i].cname.size()+BX_SZ);
     }
 
