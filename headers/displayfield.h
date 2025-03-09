@@ -27,7 +27,7 @@ protected:
     // void shiftCurs(int i);
 public:
     displayField(int y, int x, std::string n, std::string df="", int mw=-1, int mh=-1);
-    ~displayField();
+    virtual ~displayField();
 
     int gety();
     int getx();
