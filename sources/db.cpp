@@ -31,7 +31,7 @@ DBHandler::~DBHandler()
 std::unordered_map<int, int> DBHandler::getScheduledDays(int y, int m)
 {
     std::unordered_map<int, int> res;
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[getScheduledDays] cannot open db: %s", sqlite3_errmsg(db));
@@ -68,7 +68,7 @@ void DBHandler::queryDateTasks(int y_, int m_, int d_)
     */
    lastResults.clear();
 
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
@@ -115,7 +115,7 @@ const std::vector <task_entry> DBHandler::getLastResults() const
 
 task_entry DBHandler::getTask(int tid) {
     task_entry res;
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[getTask] cannot open db: %s", sqlite3_errmsg(db));
@@ -189,7 +189,7 @@ void DBHandler::initTables()
         SELECT 'Work', 1 won't be executed, nothing to insert
     */
     bool task_cats_exists=true;
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     snprintf(sql, sizeof(sql), "%s",
         "SELECT name FROM sqlite_master WHERE type='table'"
         "AND name='task_cats';"
@@ -271,7 +271,7 @@ void DBHandler::insertTask(std::string year, std::string month,
     std::string repeat, std::string cat, std::string priority,
     std::string state, std::string desc)
 {
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
@@ -315,7 +315,7 @@ void DBHandler::updateTask(std::string year, std::string month,
     std::string repeat, std::string cat, std::string priority,
     std::string state, std::string desc, int tid)
 {
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[queryDateTasks] cannot open db: %s", sqlite3_errmsg(db));
@@ -366,7 +366,7 @@ std::string DBHandler::toggleState(int id, std::string cur_state)
         set_state = "TODO";
     }
 
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[toggleState] cannot open db: %s", sqlite3_errmsg(db));
@@ -397,7 +397,7 @@ end:
 std::vector<task_cat> DBHandler::queryTaskCats()
 {
     cats.clear();
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[getTask] cannot open db: %s", sqlite3_errmsg(db));
@@ -429,7 +429,7 @@ end:
 
 void DBHandler::insertCat(std::string ncat)
 {
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[insertCat] cannot open db: %s", sqlite3_errmsg(db));
@@ -460,7 +460,7 @@ end:
 
 void DBHandler::removeCat(std::string ncat)
 {
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[removeCat] cannot open db: %s", sqlite3_errmsg(db));
@@ -489,7 +489,7 @@ end:
 
 void DBHandler::updateCat(std::string ncat, int active)
 {
-    sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt = nullptr;
     rc = sqlite3_open(path.c_str(), &db);
     if (rc) {
         LOG("[updateCat] cannot open db: %s", sqlite3_errmsg(db));

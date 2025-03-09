@@ -32,9 +32,6 @@ class DBHandler {
     int rc;
     std::string path;
     char sql[1024];
-    int last_y;
-    int last_m;
-    int last_d;
     std::vector <task_entry> lastResults;
     std::vector<task_cat> cats;
     std::string activeCats; // ('cat1', 'cat2', 'cat3', ...)
