@@ -29,6 +29,18 @@ class Screen {
     bool delegESC;
     bool lockTab;
 
+    // special character for printFrame
+    // wchar_t x_char;
+	// wchar_t y_char;
+	// wchar_t tl_char;
+	// wchar_t tr_char;
+	// wchar_t bl_char;
+	// wchar_t br_char;
+	// wchar_t mdn_char;
+	// wchar_t mup_char;
+	// wchar_t mlft_char;
+	// wchar_t mrt_char;
+
     std::shared_ptr<Calendar> calendar;
     std::shared_ptr<taskPanel> dateSpecificTasks;
     // std::shared_ptr<Menu> menu;

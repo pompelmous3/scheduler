@@ -78,7 +78,9 @@ void DBHandler::queryDateTasks(int y_, int m_, int d_)
     // compile sql statement (tasks)
     snprintf(sql, sizeof(sql),
         "SELECT * FROM tasks WHERE year=%d AND month=%d AND day=%d"
-        " AND category IN %s ORDER BY description ASC;", y_, m_, d_, activeCats.c_str());
+        " AND category IN %s"
+        "ORDER BY CASE state WHEN 'TODO' THEN 0 ELSE 1 END,"
+        "category ASC, description ASC;", y_, m_, d_, activeCats.c_str());
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (rc) {
         LOG("[queryDateTasks] prep failed: %s", sqlite3_errmsg(db));

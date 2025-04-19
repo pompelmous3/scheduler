@@ -18,6 +18,17 @@ Screen::Screen()
 	// LOG("[Screen::Screen] (h,w)=(%d,%d)", h, w);
 	// TODO: if w/h is smaller then MIN, exit?
 
+	// x_char = L'\u2550'; // ═
+	// y_char = L'\u2551'; // ║
+	// tl_char = L'\u2554'; // ╔
+	// tr_char = L'\u2557'; //  ╗
+	// bl_char = L'\u255A'; // ╚
+	// br_char = L'\u255D'; //  ╝
+	// mdn_char = L'\u2566'; // ╦
+	// mup_char = L'\u2569'; // ╩
+	// mlft_char = L'\u2563'; // ╣
+	// mrt_char = L'\u2560'; // ╠
+
 	sc_h = h;
 	sc_w = w;
 	fr_w = sc_w-2*SC_PADDING_X;
@@ -118,79 +129,73 @@ void Screen::timer_run() {
 }
 
 void Screen::printFrame() {
-	std::string x_char = u8"\u2550";
-	std::string y_char = u8"\u2551";
-	std::string tl_char = u8"\u2554"; // top left
-	std::string tr_char = u8"\u2557"; // top right
-	std::string bl_char = u8"\u255A"; // bottom left
-	std::string br_char = u8"\u255D"; // bottom right
-	std::string mdn_char = u8"\u2566"; // v (middle, go down)
-	std::string mup_char = u8"\u2569"; // ^ (middle, go up)
-	std::string mlft_char = u8"\u2563"; // <=| (middle, go left)
-	std::string mrt_char = u8"\u2560"; //    |=> (middle, go right)
+	wchar_t x_char = L'\u2550'; // ═
+	wchar_t y_char = L'\u2551'; // ║
+	wchar_t tl_char = L'\u2554'; // ╔
+	wchar_t tr_char = L'\u2557'; //  ╗
+	wchar_t bl_char = L'\u255A'; // ╚
+	wchar_t br_char = L'\u255D'; //  ╝
+	wchar_t mdn_char = L'\u2566'; // ╦
+	wchar_t mup_char = L'\u2569'; // ╩
+	wchar_t mlft_char = L'\u2563'; // ╣
+	wchar_t mrt_char = L'\u2560'; // ╠
 
 
 	// TOP
 	for (int xsft=left_x; xsft<=right_x; xsft++) {
-		mvprintw(top_y, xsft, "%s", x_char.c_str());
+		mvaddnwstr(top_y, xsft, &x_char, 1);
 	}
 	// BOTTOM
 	for (int xsft=left_x; xsft<=right_x; xsft++) {
-		mvprintw(bottom_y, xsft, "%s", x_char.c_str());
+		mvaddnwstr(bottom_y, xsft, &x_char, 1);
 	}
 	// LEFT
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(top_y+ysft, left_x, "%s", y_char.c_str());
+		mvaddnwstr(top_y+ysft, left_x, &y_char, 1);
 	}
 	// RIGHT
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(top_y+ysft, right_x, "%s", y_char.c_str());
+		mvaddnwstr(top_y+ysft, right_x, &y_char, 1);
 	}
 
 	// TOP-LEFT
-	mvprintw(SC_PADDING_Y, SC_PADDING_X, "%s", tl_char.c_str());
+	mvaddnwstr(SC_PADDING_Y, SC_PADDING_X, &tl_char, 1);
 	// TOP-RIGHT
-	mvprintw(SC_PADDING_Y, right_x, "%s", tr_char.c_str());
+	mvaddnwstr(SC_PADDING_Y, right_x, &tr_char, 1);
 	// BOTTOM-LEFT
-	mvprintw(sc_h-1-SC_PADDING_Y, SC_PADDING_X, "%s", bl_char.c_str());
+	mvaddnwstr(sc_h-1-SC_PADDING_Y, SC_PADDING_X, &bl_char, 1);
 	// BOTTOM-RIGHT
-	mvprintw(sc_h-1-SC_PADDING_Y, right_x, "%s", br_char.c_str());
+	mvaddnwstr(sc_h-1-SC_PADDING_Y, right_x, &br_char, 1);
 
 
 	// middle vertical line
 	for (int ysft=0; ysft<fr_h; ysft++) {
-		mvprintw(SC_PADDING_Y+ysft, mid_x, "%s", y_char.c_str());
+		mvaddnwstr(SC_PADDING_Y+ysft, mid_x, &y_char, 1);
 	}
-	mvprintw(SC_PADDING_Y+0, mid_x, "%s", mdn_char.c_str());
-	mvprintw(SC_PADDING_Y+fr_h-1, mid_x, "%s", mup_char.c_str());
-
+	mvaddnwstr(SC_PADDING_Y+0, mid_x, &mdn_char, 1);
+	mvaddnwstr(SC_PADDING_Y+fr_h-1, mid_x, &mup_char, 1);
 
 	// horizontal line under Calendar
-	mvprintw(cal_end_y+1, SC_PADDING_X, "%s", mrt_char.c_str());
+	mvaddnwstr(cal_end_y+1, SC_PADDING_X, &mrt_char, 1);
 	for (int xsft=1; xsft<fr_w/2; xsft++) {
-		mvprintw(cal_end_y+1, SC_PADDING_X+xsft, "%s", x_char.c_str());
+		mvaddnwstr(cal_end_y+1, SC_PADDING_X+xsft, &x_char, 1);
 	}
-	mvprintw(cal_end_y+1, SC_PADDING_X+fr_w/2, "%s", mlft_char.c_str());
+	mvaddnwstr(cal_end_y+1, SC_PADDING_X+fr_w/2, &mlft_char, 1);
 
 
-
-	
-
-
-
-	// top of task/expense manager
+	// top of task manager
 	for (int xsft=mid_x; xsft<=right_x; xsft++) {
-		mvprintw(mng_top, xsft, "%s", x_char.c_str());
+		mvaddnwstr(mng_top, xsft, &x_char, 1);
 	}
-	mvprintw(mng_top, mid_x, "%s", mrt_char.c_str());
-	mvprintw(mng_top, right_x, "%s", mlft_char.c_str());
+	mvaddnwstr(mng_top, mid_x, &mrt_char, 1);
+	mvaddnwstr(mng_top, right_x, &mlft_char, 1);
 
-	// bottom of task/expense manager
+	// bottom of task manager
 	for (int xsft=mid_x; xsft<=right_x; xsft++) {
-		mvprintw(tm_bottom, xsft, "%s", x_char.c_str());
+		mvaddnwstr(tm_bottom, xsft, &x_char, 1);
 	}
-	mvprintw(tm_bottom, mid_x, "%s", mrt_char.c_str());
-	mvprintw(tm_bottom, right_x, "%s", mlft_char.c_str());
+	mvaddnwstr(tm_bottom, mid_x, &mrt_char, 1);
+	mvaddnwstr(tm_bottom, right_x, &mlft_char, 1);
 }
 
 void Screen::printScr()
