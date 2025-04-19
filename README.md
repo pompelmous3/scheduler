@@ -21,7 +21,7 @@ Under `./docs`
 
 | File            | Audience       | Description |
 |-----------------|----------------|----------------------------------|
-| `USER_GUIDE.md` | End users      | Explains how to use the CLI scheduler |
-| `FUNCTIONS.md`  | Developers     | Detailed reference of functions and APIs |
-| `TEST_CASES.md` | Developers / Testers | Lists behaviors and edge cases to test |
-| `TODO`          | Developers     | Checklist of remaining features and improvements |
+| [`USER_GUIDE.md`](./docs/USER_GUIDE.md) | End users      | Explains how to use the CLI scheduler |
+| [`FUNCTIONS.md`](./docs/FUNCTIONS.md) | Developers     | Detailed reference of functions and APIs |
+| [`TEST_CASES.md`](./docs/TEST_CASES.md) | Developers | Lists behaviors and edge cases to test |
+| [`TODO`](./docs/TODO)          | Developers     | Checklist of remaining features and improvements |
