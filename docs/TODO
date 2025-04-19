@@ -1,0 +1,68 @@
+
+# scheduler TODOs
+
+## 🗂️ Documents
+
+- [ ] complete `USER_GUIDE.md`
+- [ ] complete `FUNCTIONS.md`
+- [ ] complete `TEST_CASES.md`
+
+## 🚀 Features
+
+- [ ] type: "Routine Task" taskpanel, query filter
+- [ ] type: "General (No Date)" taskpanel, query filter
+- [ ] Custom config
+  - colors, theme
+  - key remapping
+  - carryover_days
+- [ ] catch and handle screen size change
+- [ ] global task search
+
+  - a search bar over original rendering, display search result with sepcific type.
+  - If user press `ENTER` to select certain search result, jump control to that date/module accordingly. (If this task is with specific date, also reflect the selected date in Calendar)
+
+- [ ] auto-carry over incomplete tasks
+  > Prompt the user when launching the app or when current date changes:
+  > "You have 2 unfinished tasks from yesterday. Carry over to today? (y/n)"
+  - from the previous day?
+  - from the previous week?
+
+- [ ] backup/sync to iCloud(swift?)/gCloud for better portability, reliability
+- [ ] other clients easier to use for general users: Windows terminal, web/apps
+
+  - (currently preferred architecture) no central server, connect db on their own iCloud/gCloud
+
+### Date Tasks
+
+- [ ] different view (ex: w/ timeline)
+- [ ] different display sorting options for Date Tasks
+- [ ] shortkey for carrying over an expired (previous) task to current date (today).
+
+### TaskManager
+
+- [X] wrap-around for long desc
+- [X] shortkey for clearing desc
+
+### CategoryManager
+
+- [ ] handle ENTER, update activeCats
+- [ ] shifting printing cats range like Date Tasks (check how many
+    cats can be print in range, and starting idx for the range)
+- [ ] remove a cat, remove all tasks in that cat, or clear those tasks' cats
+
+### LOG
+
+- [ ] separate DEBUG and LOG function, or use different level in LOG
+
+### General
+
+- [ ] confirm box when deleting something
+- [ ] backup of db data at a certain time
+- [ ] uninstall
+
+## 🐛 Bug Fixes / Improvements
+
+- [ ] build is slow, how to make it faster
+- [ ] entering desc
+- [ ] remove all warnings on mac
+- [ ] remove all warnings on Linux
