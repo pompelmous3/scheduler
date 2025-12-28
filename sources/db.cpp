@@ -185,6 +185,7 @@ void DBHandler::initTables()
         // TODO: throw exception?
     }
 
+    LOG("[DBH::initTables] created table tasks successfully");
     // create table "task_cats"
     /*
         when 'task_cats' not exists, "NOT EXISTS (1)" will be false,
@@ -202,51 +203,59 @@ void DBHandler::initTables()
         goto end;
     }
     if ((rc=sqlite3_step(stmt))==SQLITE_DONE) task_cats_exists=false;
-    if (task_cats_exists) goto end;
-    
+
     // only create "task_cats" and INSERT df cats when !task_cats_exists
-    snprintf(sql, sizeof(sql), "%s",
-        "BEGIN TRANSACTION;"
-        "CREATE TABLE if not exists task_cats("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "name TEXT NOT NULL UNIQUE,"
-        "active INT);"
-    
-        "INSERT INTO task_cats (name, active) "
-        "SELECT 'Work', 1 "
-        "WHERE NOT EXISTS ("
-            "SELECT 1 FROM task_cats WHERE name='Work'"
-        ");"
+    if (!task_cats_exists) {
+        LOG("[DBH::initTables] table task_cats not exists, creating...");
+        snprintf(sql, sizeof(sql), "%s",
+            "BEGIN TRANSACTION;"
+            "CREATE TABLE if not exists task_cats("
+            "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "name TEXT NOT NULL UNIQUE,"
+            "active INT);"
+        
+            "INSERT INTO task_cats (name, active) "
+            "SELECT 'Work', 1 "
+            "WHERE NOT EXISTS ("
+                "SELECT 1 FROM task_cats WHERE name='Work'"
+            ");"
 
-        "INSERT INTO task_cats (name, active) "
-        "SELECT 'Workout', 1 "
-        "WHERE NOT EXISTS ("
-            "SELECT 1 FROM task_cats WHERE name='Workout'"
-        ");"
+            "INSERT INTO task_cats (name, active) "
+            "SELECT 'Workout', 1 "
+            "WHERE NOT EXISTS ("
+                "SELECT 1 FROM task_cats WHERE name='Workout'"
+            ");"
 
-        "INSERT INTO task_cats (name, active) "
-        "SELECT 'Personal', 1 "
-        "WHERE NOT EXISTS ("
-            "SELECT 1 FROM task_cats WHERE name='Personal'"
-        ");"
-        "COMMIT;"
-        );
-    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-    if (rc) {
-        LOG("[DBHandler] create table task_cats err: %s", sqlite3_errmsg(db));
-        sqlite3_free(zErrMsg);
+            "INSERT INTO task_cats (name, active) "
+            "SELECT 'Personal', 1 "
+            "WHERE NOT EXISTS ("
+                "SELECT 1 FROM task_cats WHERE name='Personal'"
+            ");"
+            "COMMIT;"
+            );
+        rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+        if (rc) {
+            LOG("[DBHandler] create table task_cats err: %s", sqlite3_errmsg(db));
+            sqlite3_free(zErrMsg);
+        }
+        LOG("[DBH::initTables] created table task_cats successfully");
     }
 
-    // // create table "exp_cats"
-    // snprintf(sql, sizeof(sql), "%s",
-    //     "CREATE TABLE if not exists exp_cats("
-    //     "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-    //     "name TEXT NOT NULL);");
-    // rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
-    // if (rc) {
-    //     LOG("[DBHandler] create table exp_cats err: %s", sqlite3_errmsg(db));
-    //     sqlite3_free(zErrMsg);
-    // }
+    // create table "pomodoro_sessions"
+    snprintf(sql, sizeof(sql), "%s",
+        "CREATE TABLE IF NOT EXISTS pomodoro_sessions("
+        "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "year INT,"
+        "month INT,"
+        "day INT,"
+        "session_count INT DEFAULT 0,"
+        "UNIQUE(year, month, day));");
+    rc = sqlite3_exec(db, sql, NULL, 0, &zErrMsg);
+    if (rc) {
+        LOG("[DBHandler] create table pomodoro_sessions err: %s", sqlite3_errmsg(db));
+        sqlite3_free(zErrMsg);
+    }
+    LOG("[DBH::initTables] created table pomodoro_sessions successfully");
 
 end:
     sqlite3_finalize(stmt);
@@ -516,4 +525,68 @@ void DBHandler::updateCat(std::string ncat, int active)
 end:
     sqlite3_finalize(stmt);
     sqlite3_close(db);
+}
+
+void DBHandler::recordPomodoroSession(int year, int month, int day)
+{
+    sqlite3_stmt *stmt = nullptr;
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[recordPomodoroSession] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    // Insert or update: increment session_count for this date
+    snprintf(sql, sizeof(sql),
+        "INSERT INTO pomodoro_sessions (year, month, day, session_count) "
+        "VALUES (%d, %d, %d, 1) "
+        "ON CONFLICT(year, month, day) DO UPDATE SET session_count = session_count + 1",
+        year, month, day);
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[recordPomodoroSession] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        LOG("[recordPomodoroSession] step failed: %s", sqlite3_errmsg(db));
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+int DBHandler::getTotalSessionsForDay(int year, int month, int day)
+{
+    sqlite3_stmt *stmt = nullptr;
+    int total_sessions = 0;
+    
+    rc = sqlite3_open(path.c_str(), &db);
+    if (rc) {
+        LOG("[getTotalSessionsForDay] cannot open db: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    snprintf(sql, sizeof(sql),
+        "SELECT session_count FROM pomodoro_sessions "
+        "WHERE year=%d AND month=%d AND day=%d",
+        year, month, day);
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc) {
+        LOG("[getTotalSessionsForDay] prep failed: %s", sqlite3_errmsg(db));
+        goto end;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        total_sessions = sqlite3_column_int(stmt, 0);
+    }
+
+end:
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return total_sessions;
 }

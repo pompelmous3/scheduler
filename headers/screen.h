@@ -4,6 +4,7 @@
 #include "taskmanager.h"
 #include "expensemanager.h"
 #include "categorymanager.h"
+#include "pomodoro.h"
 #include "tool.h"
 #include "submodule.h"
 
@@ -44,9 +45,10 @@ class Screen {
     std::shared_ptr<Calendar> calendar;
     std::shared_ptr<taskPanel> dateSpecificTasks;
     // std::shared_ptr<Menu> menu;
-    std::shared_ptr<taskManager> tm;
+    std::shared_ptr<taskManager> tm; // Not displayed, invoked when needed
     std::shared_ptr<expenseManager> em;
     std::shared_ptr<categoryManager> cm;
+    std::shared_ptr<Pomodoro> pomodoro;
 
     // DBHandler dbh = DBHandler("./scheduler.db");
     std::shared_ptr<DBHandler> dbh;

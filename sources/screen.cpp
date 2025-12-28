@@ -41,7 +41,7 @@ Screen::Screen()
 	mid_x = sc_w/2;
 	cal_end_y = SC_PADDING_Y+1+MIN_CAL_H;
 
-	// mng_top = top_y + (fr_h/8*3);
+	// Layout: CM at mng_top, Pomodoro at tm_bottom
 	mng_top = bottom_y -1 -MNG_HEIGHT -1 -MNG_HEIGHT;
 	tm_bottom = mng_top + MNG_HEIGHT + 1;
 
@@ -54,15 +54,19 @@ Screen::Screen()
 		bottom_y-1-(cal_end_y+1), mid_x-left_x-1, std::string("Date Tasks"),
 		dbh);
 	submods.push_back(dateSpecificTasks);
+	// Task Manager - created but not added to submods (invoke when needed)
 	tm = std::make_shared<taskManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
 		right_x-mid_x-1, dbh);
-	submods.push_back(tm);
 	// em = std::make_shared<expenseManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
 	// 	right_x-mid_x-1);
-	// submods.push_back(em);
-	cm = std::make_shared<categoryManager>(tm_bottom+1, mid_x+1, MNG_HEIGHT,
+	// Category Manager - moved to task manager position
+	cm = std::make_shared<categoryManager>(mng_top+1, mid_x+1, MNG_HEIGHT,
 		right_x-mid_x-1, dbh);
 	submods.push_back(cm);
+	// Pomodoro - new component at bottom
+	pomodoro = std::make_shared<Pomodoro>(tm_bottom+1, mid_x+1, MNG_HEIGHT,
+		right_x-mid_x-1, dbh);
+	submods.push_back(pomodoro);
 
 
 	submods[mode]->set_hovered(true);
@@ -105,7 +109,19 @@ void Screen::looping() {
 	int rc = 0;
 	while(1)
 	{
-		ch = getch();
+		// Check if pomodoro is running, if so use timeout for real-time updates
+		if (pomodoro && pomodoro->is_timer_running()) {
+			timeout(1000); // 1 second timeout
+			ch = getch();
+			if (ch == ERR) {
+				// Timeout occurred, just refresh
+				refreshScr();
+				continue;
+			}
+		} else {
+			timeout(-1); // Blocking mode
+			ch = getch();
+		}
 		// LOG("[loopingMove] ch=[%d]",ch);
 
 		if (ch==KEY_BTAB) {
@@ -203,9 +219,10 @@ void Screen::printScr()
 	printFrame();
 	calendar->print();
 	dateSpecificTasks->print();
-	tm->print();
 	cm->print();
+	pomodoro->print();
 
+	// Task manager not printed on screen (invoke when needed)
 	// switch tm/em
 	// if (!tm_em) tm->print();
 	// else em->print();

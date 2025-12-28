@@ -1,17 +1,23 @@
 
 CXX = g++
-# CXXFLAGS += -std=c++17 -ggdb -Wall -Iheaders
-CXXFLAGS += -std=c++17 -ggdb -Wall -Iheaders
+# Base flags
+CXXFLAGS += -std=c++17 -Wall -Iheaders
 CXXFLAGS += -Wextra -Wpedantic -Wformat=2
 CXXFLAGS += -Wformat-security -Wformat-nonliteral
 CXXFLAGS += -Wdeprecated -Wuninitialized
 CXXFLAGS += -Wshadow -Wdelete-non-virtual-dtor -Werror=return-type
 CXXFLAGS += -Werror=unused-variable -Werror=uninitialized
 CXXFLAGS += -Werror=delete-non-virtual-dtor
-CXXFLAGS += -fstack-protector-strong
-CXXFLAGS += -O2 -fsanitize=undefined,address
 
-LDFLAGS += -lncursesw -lsqlite3
+# Debug/Release modes (comment out one)
+# Debug: with sanitizers (slower compilation)
+# CXXFLAGS += -g -O0 -fsanitize=undefined,address -fstack-protector-strong
+# Release: optimized build (faster compilation)
+CXXFLAGS += -O2
+
+LDFLAGS = -lncursesw -lsqlite3
+# Uncomment if using sanitizers
+# LDFLAGS += -fsanitize=undefined,address
 SOURCES = \
 	./sources/calendar.cpp \
 	./sources/month.cpp \
@@ -28,6 +34,7 @@ SOURCES = \
 	./sources/inputfield.cpp \
 	./sources/categorymanager.cpp \
 	./sources/submodule.cpp \
+	./sources/pomodoro.cpp \
 	./main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = scheduler

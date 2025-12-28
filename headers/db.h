@@ -26,6 +26,14 @@ typedef struct {
     int active;
 } task_cat;
 
+typedef struct {
+    int id;
+    int year;
+    int month;
+    int day;
+    int session_count;
+} pomodoro_session;
+
 class DBHandler {
     sqlite3 *db;
     char *zErrMsg = 0;
@@ -60,5 +68,9 @@ public:
     void insertCat(std::string ncat);
     void removeCat(std::string ncat);
     void updateCat(std::string ncat, int active);
+    
+    // Pomodoro session tracking
+    void recordPomodoroSession(int year, int month, int day);
+    int getTotalSessionsForDay(int year, int month, int day);
 };
 #endif

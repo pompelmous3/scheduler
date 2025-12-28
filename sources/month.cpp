@@ -282,7 +282,8 @@ void Month::print()
 			snprintf(tmp, sizeof(tmp), "%d", col.second[0]);
 			// check if scheduled
 			iter = curTaskDays.find(col.second[0]);
-			if (iter != curTaskDays.end()) { // found
+
+			if (iter != curTaskDays.end()) { // found scheduled
 				// mvprintwColor(y+row.first, x+col.second[1], tmp, 101);
 				mvprintwColor(y+row.first, x+col.second[1], tmp, 8);
 			} else {
