@@ -232,10 +232,4 @@ void Pomodoro::print()
     // Print today's total completed sessions
     int total_sessions = get_today_total_sessions();
     mvprintw(y+6, left_x, "Today: %d sessions (%.1fh)", total_sessions, total_sessions * 40.0 / 60.0);
-    
-    // Print next break info (right side)
-    if (state == WORK || state == IDLE) {
-        int until_long = pomodoros_until_long_break - (completed_pomodoros % pomodoros_until_long_break);
-        mvprintw(y+6, right_x, "To long brk: %d", until_long);
-    }
 }
